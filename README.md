@@ -52,7 +52,7 @@ SIG TFX-Addons is a community-led open source project. As such, the project depe
 6. Projects are approved with a simple majority vote of the core team, and Google approval.
 
 ## Contacts
-- Project Lead(s):
+- Project Lead:
   - Robert Crowe (Google)
 - Community Lead(s)
   - Hannes Hapke (Digits)
