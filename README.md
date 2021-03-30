@@ -64,8 +64,8 @@ SIG TFX-Addons is a community-led open source project. As such, the project depe
   - Ryan Clough (Spotify)
   - Samuel Ngahane (Spotify)
   - Michal Brys (OpenX)
-  -  Baris Can Durak (maiot)
-  -  Hamza Tahir (maiot)
+  -  Baris Can Durak (ZenML)
+  -  Hamza Tahir (ZenML)
   -  Larry Price (OpenX)
 - Administrative questions: 
   - Thea Lamkin (Google): thealamkin at google dot com 
