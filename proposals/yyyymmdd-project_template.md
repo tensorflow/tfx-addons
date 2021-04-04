@@ -1,7 +1,7 @@
 #### SIG TFX-Addons
 # Project Proposal
 ## Instructions
-Copy this template, naming it with the date in ``yyyymmdd` format followed by a short name, and fill in the blanks below.
+Copy this template, naming it with the date in `yyyymmdd` format followed by a short name, and fill in the blanks below.
 When you're ready for review, place it in `/proposals` and create a pull request.
 
 ---
