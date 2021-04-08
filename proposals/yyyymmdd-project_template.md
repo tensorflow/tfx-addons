@@ -34,8 +34,7 @@ Please list any imports and dependencies that you plan to use.  Please
 highlight any dependencies which are not open-source.
 
 ## Project Team
-List the members of the project team.  Include their names and email addresses. Identify project
-leaders.
+List the members of the project team.  Include their names, Github user IDs, and email addresses. Identify project leaders.
 
 # Note
 Please be aware of the processes and requirements which are outlined here:
