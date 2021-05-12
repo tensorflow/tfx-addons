@@ -56,7 +56,7 @@ To be heavily based on the existing libraries by NitroML, ModelCard (see above) 
 `ml-pipelines-sdk>=0.26` - This will be needed to pull the type names used by TFX on ML Metadata.
 
 ## Project Team
-Suzen Fylke, [[To be filled]]
+Suzen Fylke, sue@twitter.com
 Vincent Nguyen, [[To be filled]]
-Paul Selden, [[To be filled]]
+Paul Selden, paul.selden@openx.com
 [[TFX team member TBD]]
