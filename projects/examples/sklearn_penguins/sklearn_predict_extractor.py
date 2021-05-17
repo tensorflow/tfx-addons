@@ -109,8 +109,8 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       if len(self._loaded_models) == 1:
         result[constants.PREDICTIONS_KEY] = preds
       elif constants.PREDICTIONS_KEY not in result:
-        result[constants.PREDICTIONS_KEY] = [
-            {model_name: pred} for pred in preds]
+        result[constants.PREDICTIONS_KEY] = np.array(
+            [{model_name: pred} for pred in preds])
       else:
         for i, pred in enumerate(preds):
           result[constants.PREDICTIONS_KEY][i][model_name] = pred

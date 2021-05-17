@@ -112,10 +112,7 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
       eval_args=trainer_pb2.EvalArgs())
 
   # Get the latest blessed model for model validation.
-  # TODO(humichael): Remove instance_name when upgrading to v0.30.0 or v1.0 as
-  # it will be removed by those versions.
   model_resolver = resolver.Resolver(
-      instance_name=None,
       strategy_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
       model=Channel(type=Model),
       model_blessing=Channel(

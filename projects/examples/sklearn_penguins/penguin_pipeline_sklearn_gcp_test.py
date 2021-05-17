@@ -14,7 +14,6 @@
 """Tests for penguin_pipeline_sklearn_gcp."""
 
 import os
-from unittest import mock
 
 import tensorflow as tf
 from tfx.dsl.io import fileio
@@ -50,13 +49,7 @@ class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
         'regions': ['us-central1'],
     }
 
-  @mock.patch('tfx.components.util.udf_utils.UserModuleFilePipDependency.'
-              'resolve')
-  def testPipelineConstruction(self, resolve_mock):
-    # Avoid actually performing user module packaging because relative path is
-    # not valid with respect to temporary directory.
-    resolve_mock.side_effect = lambda pipeline_root: None
-
+  def testPipelineConstruction(self):
     logical_pipeline = penguin_pipeline_sklearn_gcp._create_pipeline(
         pipeline_name=self._pipeline_name,
         pipeline_root=self._pipeline_root,

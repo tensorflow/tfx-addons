@@ -25,7 +25,6 @@ pip install -r requirements.txt
 </pre>
 
 ### Local Example
-**Note: This example is broken until TFX v0.30.0 or v1.0 is released.**
 Execute the pipeline python file. Output can be found at `~/tfx`:
 
 <pre class="devsite-terminal devsite-click-to-copy">
