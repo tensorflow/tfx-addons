@@ -1,43 +1,35 @@
 # Penguin Classification Scikit-learn Example
 
-Expanded the penguin example pipeline with instructions for using
-[scikit-learn](https://scikit-learn.org/stable/) in addition to TensorFlow/Keras
-to write and train the model. The support for scikit-learn in TFX is still
-experimental.
+Expanded the [TFX penguin example
+pipeline](https://github.com/tensorflow/tfx/tree/master/tfx/examples/penguin)
+with instructions for using [scikit-learn](https://scikit-learn.org/stable/) in
+to build and train the model.
 
 ## Instructions
 
-Clone the tfx repo to the home directory and copy the penguin directory from the
-tfx source to the home directory.
+Clone the tfx-addons repo and navigate tothe penguin directory.
 
 <pre class="devsite-terminal devsite-click-to-copy">
-git clone https://github.com/tensorflow/tfx ~/tfx-source && pushd ~/tfx-source
-cp -r ~/tfx-source/tfx/examples/penguin ~/
+git clone https://github.com/tensorflow/tfx-addons.git
+cd tfx-addons/projects/examples/sklearn_penguins
 </pre>
 
-Next, create a Python 3 virtual environment for this example and activate the
-`virtualenv`:
+Next, create a Python virtual environment for this example, activate the
+environment, and install dependencies. Make sure you are using a version of
+python supported by TFX.
 
 <pre class="devsite-terminal devsite-click-to-copy">
-virtualenv -p python3.7 penguin
+python -m venv venv
 source ./penguin/bin/activate
+pip install -r requirements.txt
 </pre>
-
-Then, install the dependencies required by the Penguin example:
-
-<pre class="devsite-terminal devsite-click-to-copy">
-pip install -U tfx[examples,kfp]
-</pre>
-
-TODO(b/183898519): Replace pip install in all examples to use [kfp] extra
-after 1.0.
-
 
 ### Local Example
+**Note: This example is broken until TFX v0.30.0 or v1.0 is released.**
 Execute the pipeline python file. Output can be found at `~/tfx`:
 
 <pre class="devsite-terminal devsite-click-to-copy">
-python ~/penguin/experimental/penguin_pipeline_sklearn_local.py
+python penguin_pipeline_sklearn_local.py
 </pre>
 
 ### GCP Example
@@ -47,7 +39,6 @@ version of scikit-learn is installed. Run the following commands to build this
 image and upload it to Google Container Registry (GCR).
 
 <pre class="devsite-terminal devsite-click-to-copy">
-cd ~/penguin/experimental
 gcloud auth configure-docker
 docker build \
   --tag gcr.io/[PROJECT-ID]/tfx-example-sklearn \
@@ -66,7 +57,7 @@ the following commands to copy the `~/penguin` directory to GCS and execute the
 pipeline python file. Output can be found at `[BUCKET]/tfx`.
 
 <pre class="devsite-terminal devsite-click-to-copy">
-vi ~/penguin/experimental/penguin_pipeline_sklearn_gcp.py
+vi penguin_pipeline_sklearn_gcp.py
 gsutil -m cp -r ~/penguin/data/* gs://[BUCKET]/penguin/data/
 gsutil -m cp ~/penguin/experimental/\*.py gs://[BUCKET]/penguin/experimental/
 
