@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""E2E Tests for tfx.examples.experimental.penguin_pipeline_sklearn_local."""
+"""E2E Tests for penguin_pipeline_sklearn_local."""
 
 import os
 from typing import Text
@@ -32,15 +32,14 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
     self._test_dir = os.path.join(
         os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', self.get_temp_dir()),
         self._testMethodName)
-    self._experimental_root = os.path.dirname(__file__)
-    self._penguin_root = os.path.dirname(self._experimental_root)
+    self._penguin_root = os.path.dirname(__file__)
 
     self._pipeline_name = 'sklearn_test'
     self._data_root = os.path.join(self._penguin_root, 'data')
     self._trainer_module_file = os.path.join(
-        self._experimental_root, 'penguin_utils_sklearn.py')
+        self._penguin_root, 'penguin_utils_sklearn.py')
     self._evaluator_module_file = os.path.join(
-        self._experimental_root, 'sklearn_predict_extractor.py')
+        self._penguin_root, 'sklearn_predict_extractor.py')
     self._serving_model_dir = os.path.join(self._test_dir, 'serving_model')
     self._pipeline_root = os.path.join(self._test_dir, 'tfx', 'pipelines',
                                        self._pipeline_name)

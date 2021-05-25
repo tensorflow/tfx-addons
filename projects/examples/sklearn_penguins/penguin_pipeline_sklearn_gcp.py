@@ -82,13 +82,13 @@ _data_root = os.path.join(_penguin_root, 'data')
 # Python module file to inject customized logic into the TFX components.
 # Trainer requires user-defined functions to run successfully.
 _trainer_module_file = os.path.join(
-    _penguin_root, 'experimental', 'penguin_utils_sklearn.py')
+    _penguin_root, 'penguin_utils_sklearn.py')
 
 # Python module file to inject customized logic into the TFX components. The
 # Evaluator component needs a custom extractor in order to make predictions
 # using the scikit-learn model.
 _evaluator_module_file = os.path.join(
-    _penguin_root, 'experimental', 'sklearn_predict_extractor.py')
+    _penguin_root, 'sklearn_predict_extractor.py')
 
 # Directory and data locations. This example assumes all of the
 # example code and metadata library is relative to $HOME, but you can store

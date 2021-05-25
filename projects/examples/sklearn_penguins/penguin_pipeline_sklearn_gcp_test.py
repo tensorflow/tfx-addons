@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for tfx.examples.experimental.penguin_pipeline_sklearn_gcp."""
+"""Tests for penguin_pipeline_sklearn_gcp."""
 
 import os
 from unittest import mock
 
 import tensorflow as tf
 from tfx import v1 as tfx
-from tfx.examples.penguin.experimental import penguin_pipeline_sklearn_gcp
 from tfx.utils import test_case_utils
+
+import penguin_pipeline_sklearn_gcp
 
 
 class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
@@ -28,15 +29,14 @@ class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
     super(PenguinPipelineSklearnGcpTest, self).setUp()
     self.enter_context(test_case_utils.change_working_dir(self.tmp_dir))
 
-    self._experimental_root = os.path.dirname(__file__)
-    self._penguin_root = os.path.dirname(self._experimental_root)
+    self._penguin_root = os.path.dirname(__file__)
 
     self._pipeline_name = 'sklearn_test'
     self._data_root = os.path.join(self._penguin_root, 'data')
     self._trainer_module_file = os.path.join(
-        self._experimental_root, 'penguin_utils_sklearn.py')
+        self._penguin_root, 'penguin_utils_sklearn.py')
     self._evaluator_module_file = os.path.join(
-        self._experimental_root, 'sklearn_predict_extractor.py')
+        self._penguin_root, 'sklearn_predict_extractor.py')
     self._pipeline_root = os.path.join(self.tmp_dir, 'tfx', 'pipelines',
                                        self._pipeline_name)
     self._ai_platform_training_args = {

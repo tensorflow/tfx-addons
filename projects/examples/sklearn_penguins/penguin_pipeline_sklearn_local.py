@@ -22,21 +22,21 @@ from tfx import v1 as tfx
 
 _pipeline_name = 'penguin_sklearn_local'
 
-# This example assumes that Penguin data is stored in ~/penguin/data and the
-# utility function is in ~/penguin. Feel free to customize as needed.
-_penguin_root = os.path.join(os.environ['HOME'], 'penguin')
+# This example assumes that the Penguin example is the working directory. Feel
+# free to customize as needed.
+_penguin_root = os.path.dirname(__file__)
 _data_root = os.path.join(_penguin_root, 'data')
 
 # Python module file to inject customized logic into the TFX components.
 # Trainer requires user-defined functions to run successfully.
 _trainer_module_file = os.path.join(
-    _penguin_root, 'experimental', 'penguin_utils_sklearn.py')
+    _penguin_root, 'penguin_utils_sklearn.py')
 
 # Python module file to inject customized logic into the TFX components. The
 # Evaluator component needs a custom extractor in order to make predictions
 # using the scikit-learn model.
 _evaluator_module_file = os.path.join(
-    _penguin_root, 'experimental', 'sklearn_predict_extractor.py')
+    _penguin_root, 'sklearn_predict_extractor.py')
 
 # Path which can be listened to by the model server.  Pusher will output the
 # trained model here.
