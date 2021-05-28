@@ -33,7 +33,9 @@ The load test component will integrate with TFX using the following approach:
 * The prediction time is also related to the infrastructure used for the load test. It means that we should only analyze the model prediction time relatively. The absolute numbers could be hard to reproduce in the production environment.
 
 ## Project Dependencies
-An open source tool for load testing (i.e. (HTTP) vegeta https://github.com/tsenart/vegeta or (gRPC) ghz https://github.com/bojand/ghz)
+- An open source tool for load testing (i.e. (HTTP) vegeta https://github.com/tsenart/vegeta or (gRPC) ghz https://github.com/bojand/ghz)
+- A k8s cluster (since it relies on the `InfraValidator TFX Pipeline Component` which runs only on Kubeflow)
+- `InfraValidator TFX Pipeline Component`
 
 ## Project Team
 Michal Brys, michal.brys@openx.com, [@michalbrys](https://github.com/michalbrys)
