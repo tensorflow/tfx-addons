@@ -30,8 +30,10 @@ The implementation will use the [TFDV library](https://www.tensorflow.org/tfx/da
 - [tfdv.set_domain](https://www.tensorflow.org/tfx/data_validation/api_docs/python/tfdv/set_domain)
 - [tfdv.write_schema_text](https://www.tensorflow.org/tfx/data_validation/api_docs/python/tfdv/write_schema_text)
 
+A similar implementation can be seen in the [Transform library](https://github.com/tensorflow/transform). Paricularly, the [schema_utils](https://github.com/tensorflow/transform/blob/master/tensorflow_transform/tf_metadata/schema_utils.py) method could come in useful.
+
 ## Project Team
+**Project Leader** : Pratishtha Abrol, pratishtha-abrol, pratishthaabrol@gmail.com
 1. Fatimah Adwan, FatimahAdwan, akilahafaf72@gmail.com
 2. Kshitijaa Jaglan, deutranium, jaglan.kshitijaa2@gmail.com
 3. Nirzari Gupta, nirzu97, nirzu97@gmail.com
-4. Pratishtha Abrol, pratishtha-abrol, pratishthaabrol@gmail.com
