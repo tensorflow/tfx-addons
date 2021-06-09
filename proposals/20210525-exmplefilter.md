@@ -1,10 +1,5 @@
 #### SIG TFX-Addons
 # Project Proposal
-## Instructions
-Copy this template, naming it with the date in `yyyymmdd` format followed by a short name, and fill in the blanks below.
-When you're ready for review, place it in `/proposals` and create a pull request.
-
----
 
 **Your name:** Ryan Clough
 
@@ -15,7 +10,7 @@ When you're ready for review, place it in `/proposals` and create a pull request
 **Project name:** Example Filter
 
 ## Project Description
-Beam bassed component that can filter Examples based on a user-defined predicate function.
+Beam based component that can filter Examples based on a user-defined predicate function.
 
 ## Project Category
 Choose 1: Component
@@ -25,17 +20,17 @@ Data can be imported into TFX in a number of ways, and indeed, sometimes the dat
 control. In cases like these, it is useful to have a component that can filter your input data with simple rules. Ex: filter 
 all records where `feature_a >= 1`. 
 
-Our organization currently has a component for this purpose that is in active use. It is not ass robust as it could be.
+Our organization currently has a component for this purpose that is in active use. It is not as robust as it could be.
 
 It is also worth conidering that we may wish to try and promote this functionality to be included in the TFX core base ExampleGen,
 so that the filtering could be done within any ExampleGen based component.
 
 ## Project Implementation
 Spotify can provide the current implementation, which is based off of an old version of Tensorflow Transform. At a high level, use
-of the coomponent looks like:
+of the component looks like:
 
 ```python
-def perdicate_fn(example)
+def predicate_fn(example)
     # Throw out Examples that used a credit card
     if b'Credit Card' in example['payment_type']:
         return False
@@ -58,7 +53,7 @@ current design. Some initial ideas for change might be:
 * Making the predicate_fn operate on true data types rather than bytes (see example above)
 * Adding an input that allows the user to specify splits (currently applies to all splits)
 
-Given that it's a beam component, I think it will have to be a fully custom component. In terms of packaging and providing,
+Given that it's a Beam component, I think it will have to be a fully custom component. In terms of packaging and providing,
 I'm not sure the best course of action as there is not much precedent set in TFX-addons just yet.
 
 ## Project Dependencies
