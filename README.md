@@ -41,15 +41,14 @@ SIG TFX-Addons is a community-led open source project. As such, the project depe
 ## Project Approvals
 1. Project proposals will be submitted to the SIG and published for open review and comment by SIG members for 2 weeks.
 2. Core team members will vote either in person or offline on whether to approve or reject project proposals.
-   - There will be a maximum of 5 voting core team members from any organization
-   - Voting core team members should be actively contributing to central SIG infrastructure (documentation, facilitation of SIG activities, CI, testing, vulnerabilities, upgrades, etc)
 3. All projects must meet the following criteria:
    - Team members must be named in the proposal
    - All team members must have completed a [Contributor License Agreement](https://cla.developers.google.com/)
    - The project must not violate the [TensorFlow Code of Conduct](https://github.com/tensorflow/tensorflow/blob/master/CODE_OF_CONDUCT.md), [Google AI Principles](https://ai.google/principles/) or [Responsible AI Practices](https://ai.google/responsibilities/responsible-ai-practices/).
 4. Projects must code to supported open interfaces only, and not reach into core TFX to make changes or rely on private classes, methods, properties, or interfaces.
 5. **Google retains the right to reject any proposal.**
-6. Projects are approved with a simple majority vote of the core team, and Google approval.
+6. Projects must first be approved by the Google team.  Projects are then sent for approval to the core community team.  Projects will be approved with a minimum of three `+1` votes, but 
+can be sent for changes and re-review with a single `-1` vote.
 
 ## Contacts
 - Project Lead:
