@@ -20,6 +20,7 @@ from typing import Dict, Iterable, List, Text
 
 import apache_beam as beam
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import tensorflow_model_analysis as tfma
 from tensorflow_model_analysis import constants
@@ -102,6 +103,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       features.append(np.concatenate(features_row))
       labels.append(features_dict[self._label_key])
     result[constants.LABELS_KEY] = np.concatenate(labels)
+    features = pd.DataFrame(features)
 
     # Generate predictions for each model.
     for model_name, loaded_model in self._loaded_models.items():

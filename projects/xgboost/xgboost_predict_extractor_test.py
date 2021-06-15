@@ -15,7 +15,7 @@
 
 import os
 import pickle
-
+import pandas as pd
 import xgboost as xgb
 import apache_beam as beam
 from apache_beam.testing import util
@@ -153,7 +153,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     model_file = os.path.basename(self._eval_shared_model.model_path)
     self.assertEqual(model_file, 'model.pkl')
     model = self._eval_shared_model.model_loader.construct_fn()
-    self.assertIsInstance(model, nn.MLPClassifier)
+    self.assertIsInstance(model, xgb.XGBClassifier)
 
   def test_custom_extractors(self):
     """Tests that the xgboost extractor is used when creating extracts."""
@@ -170,9 +170,9 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
         eval_export_dir: Directory to store a pickled xgboost model. This
             directory is created if it does not exist.
     """
-    x_train = [[3, 0], [4, 1]]
-    y_train = [0, 1]
-    model = nn.MLPClassifier(max_iter=1)
+    x_train = pd.DataFrame({"age": [3, 0], "language": [4, 1]})
+    y_train = pd.DataFrame({"label": [0, 1]})
+    model = xgb.XGBClassifier()
     model.feature_keys = ['age', 'language']
     model.label_key = 'label'
     model.fit(x_train, y_train)
