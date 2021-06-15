@@ -16,10 +16,10 @@
 import os
 from typing import Text
 import unittest
+import penguin_pipeline_xgboost_local
 
 import tensorflow as tf
 from tfx import v1 as tfx
-from tfx.examples.penguin.experimental import penguin_pipeline_xgboost_local
 from tfx.orchestration import metadata
 
 

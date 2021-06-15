@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Python source file include Penguin pipeline functions and necessary utils.
 
 The utilities in this file are used to build a model with xgboost.
@@ -23,9 +24,9 @@ from typing import Text, Tuple
 
 import absl
 import numpy as np
-from xgboost.neural_network import MLPClassifier
-from xgboost.pipeline import Pipeline
-from xgboost.preprocessing import StandardScaler
+from xgboost import XGBClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from tfx.components.trainer.fn_args_utils import DataAccessor
 from tfx.components.trainer.fn_args_utils import FnArgs
@@ -99,14 +100,7 @@ def run_fn(fn_args: FnArgs):
 
   steps_per_epoch = _TRAIN_DATA_SIZE / _TRAIN_BATCH_SIZE
 
-  estimator = MLPClassifier(
-      hidden_layer_sizes=[8, 8, 8],
-      activation='relu',
-      solver='adam',
-      batch_size=_TRAIN_BATCH_SIZE,
-      learning_rate_init=0.0005,
-      max_iter=int(fn_args.train_steps / steps_per_epoch),
-      verbose=True)
+  estimator = XGBClassifier()
 
   # Create a pipeline that standardizes the input data before passing it to an
   # estimator. Once the scaler is fit, it will use the same mean and stdev to
