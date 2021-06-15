@@ -107,7 +107,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     ])
     eval_export_dir_1 = os.path.join(self._eval_export_dir, '1')
     self._create_xgboost_model(eval_export_dir_1)
-    eval_shared_model_1 = xgboost_predict_extractor.custom_eval_shared_mo
+    eval_shared_model_1 = xgboost_predict_extractor.custom_eval_shared_model(
         eval_saved_model_path=eval_export_dir_1,
         model_name='model1',
         eval_config=eval_config)
