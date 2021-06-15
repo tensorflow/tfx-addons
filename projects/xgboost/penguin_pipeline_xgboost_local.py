@@ -34,7 +34,7 @@ _trainer_module_file = os.path.join(
 
 # Python module file to inject customized logic into the TFX components. The
 # Evaluator component needs a custom extractor in order to make predictions
-# using the scikit-learn model.
+# using the xgboost model.
 _evaluator_module_file = os.path.join(
     _penguin_root, 'xgboost_predict_extractor.py')
 
@@ -93,8 +93,6 @@ def _create_pipeline(
   # TODO(humichael): Handle applying transformation component in Milestone 3.
 
   # Uses user-provided Python function that trains a model using TF-Learn.
-  # Num_steps is not provided during evaluation because the scikit-learn model
-  # loads and evaluates the entire test set at once.
   trainer = tfx.components.Trainer(
       module_file=trainer_module_file,
       examples=example_gen.outputs['examples'],

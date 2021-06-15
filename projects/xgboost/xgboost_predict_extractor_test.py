@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the custom scikit-learn Evaluator module."""
+"""Tests for the custom xgboost Evaluator module."""
 
 import os
 import pickle
@@ -164,10 +164,10 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
         'XGBoostPredict', [extractor.stage_name for extractor in extractors])
 
   def _create_xgboost_model(self, eval_export_dir):
-    """Creates and pickles a toy scikit-learn model.
+    """Creates and pickles a toy xgboost model.
 
     Args:
-        eval_export_dir: Directory to store a pickled scikit-learn model. This
+        eval_export_dir: Directory to store a pickled xgboost model. This
             directory is created if it does not exist.
     """
     x_train = [[3, 0], [4, 1]]

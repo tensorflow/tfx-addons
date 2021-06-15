@@ -13,7 +13,7 @@
 # limitations under the License.
 """Python source file include Penguin pipeline functions and necessary utils.
 
-The utilities in this file are used to build a model with scikit-learn.
+The utilities in this file are used to build a model with xgboost.
 This module file will be used in Transform and generic Trainer.
 """
 

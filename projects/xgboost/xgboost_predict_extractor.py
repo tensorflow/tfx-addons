@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Predict extractor for scikit-learn models."""
+"""Predict extractor for xgboost models."""
 
 import copy
 import os
@@ -34,7 +34,7 @@ _PREDICT_EXTRACTOR_STAGE_NAME = 'XGBoostPredict'
 def _make_xgboost_predict_extractor(
     eval_shared_model: tfma.EvalSharedModel,
 ) -> extractor.Extractor:
-  """Creates an extractor for performing predictions using a scikit-learn model.
+  """Creates an extractor for performing predictions using a xgboost model.
 
   The extractor's PTransform loads and runs the serving pickle against
   every extract yielding a copy of the incoming extracts with an additional
@@ -138,7 +138,7 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
 
 
 def _custom_model_loader_fn(model_path: Text):
-  """Returns a function that loads a scikit-learn model."""
+  """Returns a function that loads a xgboost model."""
   return lambda: pickle.load(tf.io.gfile.GFile(model_path, 'rb'))
 
 
