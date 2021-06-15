@@ -139,7 +139,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
       def check_result(actual):
         try:
           for item in actual:
-            self.assertEqual(item['labels'].shape, item['predictions'].shape)
+            self.assertEqual(len(item['labels']), len(item['predictions']))
             self.assertIn('model1', item['predictions'][0])
             self.assertIn('model2', item['predictions'][0])
 

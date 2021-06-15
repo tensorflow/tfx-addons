@@ -16,10 +16,10 @@
 import os
 import pickle
 
+import xgboost as xgb
 import apache_beam as beam
 from apache_beam.testing import util
 from google.protobuf import text_format
-from xgboost import neural_network as nn
 from tensorflow_metadata.proto.v0 import schema_pb2
 from tensorflow_model_analysis import config
 from tensorflow_model_analysis import constants
@@ -139,7 +139,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
       def check_result(actual):
         try:
           for item in actual:
-            self.assertEqual(item['labels'].shape, item['predictions'].shape)
+            self.assertEqual(len(item['labels']), len(item['predictions']))
             self.assertIn('model1', item['predictions'][0])
             self.assertIn('model2', item['predictions'][0])
 
