@@ -38,7 +38,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     super(XGBoostPredictExtractorTest, self).setUp()
     self._eval_export_dir = os.path.join(self._getTempDir(), 'eval_export')
     self._create_xgboost_model(self._eval_export_dir)
-    self._eval_config = config.EvalConfig(model_specs=[config.ModelSpec()])
+    self._eval_config = config.EvalConfig(model_specs=[config.ModelSpec(name=None, label_key="label")])
     self._eval_shared_model = (
         xgboost_predict_extractor.custom_eval_shared_model(
             eval_saved_model_path=self._eval_export_dir,
@@ -104,8 +104,8 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
   def testMakeXGBoostPredictExtractorWithMultiModels(self):
     """Tests that predictions are made from extracts for multiple models."""
     eval_config = config.EvalConfig(model_specs=[
-        config.ModelSpec(name='model1'),
-        config.ModelSpec(name='model2'),
+        config.ModelSpec(name='model1', label_key="label"),
+        config.ModelSpec(name='model2', label_key="label"),
     ])
     eval_export_dir_1 = os.path.join(self._eval_export_dir, '1')
     self._create_xgboost_model(eval_export_dir_1)

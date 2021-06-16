@@ -16,6 +16,7 @@
 import copy
 import os
 import pickle
+import logging
 from typing import Dict, Iterable, List, Text
 
 import apache_beam as beam
@@ -64,7 +65,7 @@ def _make_xgboost_predict_extractor(
 class _TFMAPredictionDoFn(model_util.DoFnWithModels):
   """A DoFn that loads the models and predicts."""
 
-  def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel], eval_config: types.EvalConfig):
+  def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel], eval_config: tfma.EvalConfig):
     super(_TFMAPredictionDoFn, self).__init__(
         {k: v.model_loader for k, v in eval_shared_models.items()})
     self._eval_config = eval_config
@@ -72,6 +73,9 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
   def setup(self):
     # models are loaded and stored into self._loaded_models below
     super(_TFMAPredictionDoFn, self).setup()
+    self._feature_keys = None
+    self._label_keys = None
+
     # check to see whether each of these loaded models has a corresponding model spec
     if self._eval_config:
       label_config = self.extract_model_specs()
@@ -92,13 +96,16 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
         self._feature_keys = feature_keys
         self._label_key = label_config[name]
       else:
-        raise ValueError('Missing feature or label keys in loaded model.')
+        raise ValueError(f'Missing feature or label keys in loaded model {name}.')
 
   # TODO: type labels
   def extract_model_specs(self):
     label_specs = {}
     for config in self._eval_config.model_specs:
-      label_specs[config.name] = config.label_key
+      if config.name:
+        label_specs[config.name] = config.label_key
+      else: # if the input name to ModelSpec is None, ModelSpec doesn't save it and config.name resolves to ''.
+        label_specs[None] = config.label_key
     return label_specs
 
   def process(self, elem: types.Extracts) -> Iterable[types.Extracts]:
@@ -143,7 +150,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
 def _ExtractPredictions(  # pylint: disable=invalid-name
     extracts: beam.pvalue.PCollection,
     eval_shared_models: Dict[Text, types.EvalSharedModel],
-    eval_config: types.EvalConfig,
+    eval_config: tfma.EvalConfig,
 ) -> beam.pvalue.PCollection:
   """A PTransform that adds predictions and possibly other tensors to extracts.
 
