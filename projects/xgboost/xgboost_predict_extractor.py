@@ -98,8 +98,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       else:
         raise ValueError(f'Missing feature or label keys in loaded model {name}.')
 
-  # TODO: type labels
-  def extract_model_specs(self):
+  def extract_model_specs(self) -> Dict[Text, Text]:
     label_specs = {}
     for config in self._eval_config.model_specs:
       if config.name:
