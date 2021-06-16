@@ -6,3 +6,6 @@
 
 # Sci-Kit Learn Example using the Penguins dataset
 /projects/examples/sklearn_penguins/ @TheMichaelHu @1025kb
+
+# MLMD Client Library
+/projects/libraries/mlmd-client/ @codesue @pselden @casassg
