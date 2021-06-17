@@ -37,7 +37,7 @@ class PenguinPipelineXGBoostLocalEndToEndTest(tf.test.TestCase):
     self._pipeline_name = 'xgboost_test'
     self._data_root = os.path.join(self._penguin_root, 'data')
     self._trainer_module_file = os.path.join(
-        self._penguin_root, 'penguin_utils_xgboost.py')
+        self._penguin_root, 'penguin_trainer_xgboost.py')
     self._evaluator_module_file = os.path.join(
         self._penguin_root, 'xgboost_predict_extractor.py')
     self._serving_model_dir = os.path.join(self._test_dir, 'serving_model')

@@ -30,7 +30,7 @@ _data_root = os.path.join(_penguin_root, 'data')
 # Python module file to inject customized logic into the TFX components.
 # Trainer requires user-defined functions to run successfully.
 _trainer_module_file = os.path.join(
-    _penguin_root, 'penguin_utils_xgboost.py')
+    _penguin_root, 'penguin_trainer_xgboost.py')
 
 # Python module file to inject customized logic into the TFX components. The
 # Evaluator component needs a custom extractor in order to make predictions
