@@ -31,6 +31,11 @@ from tfx_bsl.tfxio import test_util
 
 import xgboost_predict_extractor
 
+class XGBTester(xgb.XGBClassifier):
+  def __init__(self):
+    self.feature_keys = None
+    self.label_keys = None
+    super().__init__()
 
 class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
@@ -172,7 +177,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     """
     x_train = pd.DataFrame({"age": [3, 0], "language": [4, 1]})
     y_train = pd.DataFrame({"label": [0, 1]})
-    model = xgb.XGBClassifier()
+    model = XGBTester()
     model.feature_keys = ['age', 'language']
     model.label_key = 'label'
     model.fit(x_train, y_train)
