@@ -77,9 +77,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
         xgboost_predict_extractor._make_xgboost_predict_extractor(
-            self._eval_shared_model,
-            self._eval_config,
-          ))
+            self._eval_shared_model))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
           pipeline
@@ -126,9 +124,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
             eval_shared_model={
                 'model1': eval_shared_model_1,
                 'model2': eval_shared_model_2,
-            },
-            eval_config=eval_config
-        ))
+            }))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
           pipeline
