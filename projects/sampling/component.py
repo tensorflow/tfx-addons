@@ -24,7 +24,7 @@ def UndersamplingComponent(
                 yield item
             
         split, tfxio = split_and_tfxio[0]
-        # TODO: alter this code to account for multiple files in the uri
+        # TODO: alter this code to account for multiple files in the uri and possibly different URI paths
         uri = examples.uri.split("/")
         uri[3] = "UndersamplingComponent"
         uri.append(f"Split-{split}")
