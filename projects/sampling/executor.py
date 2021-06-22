@@ -1,23 +1,19 @@
 # TODO: fix these imports and simplify them (only import what we have to from everything instead of full modules), same for other files
-import json
 import os
 import numpy as np
-from typing import Any, Dict, List, Text
 import tensorflow as tf
+import random
+import apache_beam as beam
+from typing import Any, Dict, List, Text
 
 from tfx import types
 from tfx.dsl.components.base import base_executor
 from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
 from tfx.utils import io_utils
-
-from tfx import v1 as tfx
-from tfx.types import artifact_utils
-from tfx.utils import io_utils
 from tfx.components.util import tfxio_utils
 from tfx.dsl.component.experimental.decorators import component
-import apache_beam as beam
-import random
+
 
 class UndersamplingExecutor(base_executor.BaseExecutor):
   """Executor for UndersamplingComponent."""
@@ -95,7 +91,6 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     with beam.Pipeline() as p:
         data = (
             # TODO: convert to list and back using a schema to save key space?
-            # TODO: name every single one of the pipeline segments
             # TODO: input the actual label instead of "company" placeholder below
             p 
             | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
