@@ -1,4 +1,4 @@
-from typing import Optional, Text
+from typing import Optional, Text, List
 
 from tfx import types
 from tfx.dsl.components.base import base_component
@@ -14,6 +14,7 @@ class UndersamplingComponentSpec(types.ComponentSpec):
 
   PARAMETERS = {
       'name': ExecutionParameter(type=Text, optional=True),
+      'splits': ExecutionParameter(type=List[Text], optional=True)
   }
   INPUTS = {
       'input_data': ChannelParameter(type=standard_artifacts.Examples),
@@ -30,7 +31,8 @@ class UndersamplingComponent(base_component.BaseComponent):
   def __init__(self,
                input_data: types.Channel = None,
                output_data: types.Channel = None,
-               name: Optional[Text] = None):
+               name: Optional[Text] = None,
+               splits: Optional[List[Text]] = ['train']):
 
     """Construct an UndersamplingComponent.
     Args:
@@ -44,6 +46,5 @@ class UndersamplingComponent(base_component.BaseComponent):
     if not output_data:
       output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
-    spec = UndersamplingComponentSpec(input_data=input_data,
-                              output_data=output_data, name=name)
+    spec = UndersamplingComponentSpec(input_data=input_data, output_data=output_data, name=name, splits=splits)
     super(UndersamplingComponent, self).__init__(spec=spec)
