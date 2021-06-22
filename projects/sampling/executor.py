@@ -1,4 +1,3 @@
-# TODO: fix these imports and simplify them (only import what we have to from everything instead of full modules), same for other files
 import os
 import numpy as np
 import tensorflow as tf
@@ -41,6 +40,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     self._log_startup(input_dict, output_dict, exec_properties)
     splits = exec_properties['splits']
     copy_others = exec_properties['copy_others']
+    shards = exec_properties['shards']
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict['input_data'])
@@ -107,6 +107,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
         )
 
         val = (
+          # TODO: do not include None-labeled data points in this count!
             data
             | 'CountPerKey' >> beam.combiners.Count.PerKey()
             | 'Values' >> beam.Values()
@@ -126,6 +127,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             # TODO: add the options for multiple files (same as the original artifact?)
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
                 output_dir,
+                shards=shards,
                 compression_type=beam.io.filesystem.CompressionTypes.GZIP)
         )
         
