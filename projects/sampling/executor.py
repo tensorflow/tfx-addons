@@ -36,12 +36,14 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       exec_properties: A dict of execution properties, including:
         - name: Optional unique name. Necessary iff multiple Hello components
           are declared in the same pipeline.
+        - splits: Optional list of splits to undersample. Defaults to ['train'].
     Returns:
       None
     Raises:
       OSError and its subclasses
     """
     self._log_startup(input_dict, output_dict, exec_properties)
+    splits = exec_properties["splits"]
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict['input_data'])
@@ -65,7 +67,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     
     # just copy the rest of the data that isn't split
     for split, instance in split_to_instance.items():
-      if split != "train":
+      if not split in splits:
         input_dir = instance
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
