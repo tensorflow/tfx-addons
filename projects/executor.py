@@ -51,32 +51,26 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
         output_dict['output_data'])
     output_artifact.split_names = input_artifact.split_names
 
-    split_to_instance = {}
-
-    for split in json.loads(input_artifact.split_names):
-      uri = artifact_utils.get_split_uri([input_artifact], split)
-      split_to_instance[split] = uri
-
-    # TODO: refactor the below code
+    split_data = {}
     tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[input_artifact], telemetry_descriptors=[])
-    split_and_tfxio = [(split, tfxio_factory(io_utils.all_files_pattern(artifact_utils.get_split_uri([input_artifact], split))))
-                    for split in artifact_utils.decode_split_names(input_artifact.split_names)[:1]]
+
+    for split in artifact_utils.decode_split_names(input_artifact.split_names):
+      uri = artifact_utils.get_split_uri([input_artifact], split)
+      split_data[split] = [uri, tfxio_factory(io_utils.all_files_pattern(artifact_utils.get_split_uri([input_artifact], split)))]
     
-    # TODO: add option to undersample more splits
-    self.undersample(split_and_tfxio[0], artifact_utils.get_split_uri([output_artifact], split))
-    
-    # just copy the rest of the data that isn't split
-    for split, instance in split_to_instance.items():
-      if not split in splits:
-        input_dir = instance
-        output_dir = artifact_utils.get_split_uri([output_artifact], split)
-        os.mkdir(output_dir)
+    for split, data in split_data.items():
+      input_dir = data[0]
+      output_dir = artifact_utils.get_split_uri([output_artifact], split)
+      os.mkdir(output_dir)
+      if split in splits:
+        self.undersample(split, data[1], output_dir)
+      else:
         for filename in fileio.listdir(input_dir):
           input_uri = os.path.join(input_dir, filename)
           output_uri = os.path.join(output_dir, filename)
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
-  def undersample(self, input_data, output_dir):
+  def undersample(self, split, tfxio, output_dir):
     def generate_elements(data):
         for i in range(len(data[list(data.keys())[0]])):
             yield {key: data[key][i][0] if len(data[key][i]) > 0 else "" for key in data.keys()}
@@ -97,8 +91,6 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             else:
                 features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[data[key]]))
         return tf.train.Example(features=tf.train.Features(feature=features))
-
-    split, tfxio = input_data
 
     with beam.Pipeline() as p:
         data = (
