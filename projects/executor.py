@@ -100,7 +100,6 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     with beam.Pipeline() as p:
         data = (
             # TODO: convert to list and back using a schema to save key space?
-            # TODO: input the actual label instead of "company" placeholder below
             p 
             | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
             | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
@@ -109,10 +108,10 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
         )
 
         val = (
-          # TODO: do not include None-labeled data points in this count!
             data
             | 'CountPerKey' >> beam.combiners.Count.PerKey()
             | 'Values' >> beam.Values()
+            | 'FilterNull' >> beam.Filter(lambda x: x[0])
             | 'FindMinimum' >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
 
