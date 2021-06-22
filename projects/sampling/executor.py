@@ -39,13 +39,18 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       OSError and its subclasses
     """
     self._log_startup(input_dict, output_dict, exec_properties)
-    splits = exec_properties["splits"]
+    splits = exec_properties['splits']
+    copy_others = exec_properties['copy_others']
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict['input_data'])
     output_artifact = artifact_utils.get_single_instance(
         output_dict['output_data'])
-    output_artifact.split_names = input_artifact.split_names
+
+    if copy_others:
+      output_artifact.split_names = input_artifact.split_names
+    else:
+      output_artifact.split_names = str(splits).replace("'", "\"")
 
     split_data = {}
     tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[input_artifact], telemetry_descriptors=[])
@@ -55,12 +60,14 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       split_data[split] = [uri, tfxio_factory(io_utils.all_files_pattern(artifact_utils.get_split_uri([input_artifact], split)))]
     
     for split, data in split_data.items():
-      input_dir = data[0]
-      output_dir = artifact_utils.get_split_uri([output_artifact], split)
-      os.mkdir(output_dir)
-      if split in splits:
+      if split in splits:        
+        output_dir = artifact_utils.get_split_uri([output_artifact], split)
+        os.mkdir(output_dir)
         self.undersample(split, data[1], output_dir)
-      else:
+      elif copy_others:
+        input_dir = data[0]
+        output_dir = artifact_utils.get_split_uri([output_artifact], split)
+        os.mkdir(output_dir)
         for filename in fileio.listdir(input_dir):
           input_uri = os.path.join(input_dir, filename)
           output_uri = os.path.join(output_dir, filename)
