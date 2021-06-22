@@ -20,24 +20,19 @@ import apache_beam as beam
 import random
 
 class UndersamplingExecutor(base_executor.BaseExecutor):
-  """Executor for HelloComponent."""
+  """Executor for UndersamplingComponent."""
 
   def Do(self, input_dict: Dict[Text, List[types.Artifact]],
          output_dict: Dict[Text, List[types.Artifact]],
          exec_properties: Dict[Text, Any]) -> None:
-    """Copy the input_data to the output_data.
-    For this example that is all that the Executor does.  For a different
-    custom component, this is where the real functionality of the component
-    would be included.
-    This component both reads and writes Examples, but a different component
-    might read and write artifacts of other types.
+    """Function that randomly undersamples the 'test' split, and simply
+      copies all other splits into the output artifact.
+
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
-        - input_data: A list of type `standard_artifacts.Examples` which will
-          often contain two splits, 'train' and 'eval'.
+        - input_data: A list of type `standard_artifacts.Examples`.
       output_dict: Output dict from key to a list of artifacts, including:
-        - output_data: A list of type `standard_artifacts.Examples` which will
-          usually contain the same splits as input_data.
+        - output_data: A list of type `standard_artifacts.Examples`.
       exec_properties: A dict of execution properties, including:
         - name: Optional unique name. Necessary iff multiple Hello components
           are declared in the same pipeline.
@@ -110,30 +105,30 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             # TODO: input the actual label instead of "company" placeholder below
             p 
             | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
-            | beam.Map(lambda x: x.to_pydict())
-            | beam.FlatMap(generate_elements)
-            | beam.Map(lambda x: (x["company"], x))
+            | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
+            | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
+            | 'MapToLabel' >> beam.Map(lambda x: (x["company"], x))
         )
 
         val = (
             data
-            | beam.combiners.Count.PerKey()
-            | beam.Values()
-            | beam.CombineGlobally(lambda elements: min(elements or [-1]))
+            | 'CountPerKey' >> beam.combiners.Count.PerKey()
+            | 'Values' >> beam.Values()
+            | 'FindMinimum' >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
 
         res = (
             data 
-            | beam.GroupByKey()
-            | beam.FlatMapTuple(sample, side=beam.pvalue.AsSingleton(val))
+            | 'GroupBylabel' >> beam.GroupByKey()
+            | 'Undersample' >> beam.FlatMapTuple(sample, side=beam.pvalue.AsSingleton(val))
         )
         
         _ = (
             res
-            | "ToTFExample" >> beam.Map(lambda x: convert_to_tfexample(x))
-            | "Serialize" >> beam.Map(lambda x: x.SerializeToString())
+            | 'ToTFExample' >> beam.Map(lambda x: convert_to_tfexample(x))
+            | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
             # TODO: add the options for multiple files (same as the original artifact?)
-            | "WriteToTFRecord" >> beam.io.tfrecordio.WriteToTFRecord(
+            | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
                 output_dir,
                 compression_type=beam.io.filesystem.CompressionTypes.GZIP)
         )
