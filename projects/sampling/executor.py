@@ -17,7 +17,8 @@ from tfx.dsl.component.experimental.decorators import component
 class UndersamplingExecutor(base_executor.BaseExecutor):
   """Executor for UndersamplingComponent."""
 
-  def Do(self, input_dict: Dict[Text, List[types.Artifact]],
+  def Do(self, 
+         input_dict: Dict[Text, List[types.Artifact]],
          output_dict: Dict[Text, List[types.Artifact]],
          exec_properties: Dict[Text, Any]) -> None:
     """Function that randomly undersamples the 'test' split, and simply
@@ -38,6 +39,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       OSError and its subclasses
     """
     self._log_startup(input_dict, output_dict, exec_properties)
+    label = exec_properties['label']
     splits = exec_properties['splits']
     copy_others = exec_properties['copy_others']
     shards = exec_properties['shards']
@@ -63,7 +65,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       if split in splits:        
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
-        self.undersample(split, data[1], output_dir)
+        self.undersample(split, data[1], label, shards, output_dir)
       elif copy_others:
         input_dir = data[0]
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -73,7 +75,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
           output_uri = os.path.join(output_dir, filename)
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
-  def undersample(self, split, tfxio, output_dir):
+  def undersample(self, split, tfxio, label, shards, output_dir):
     def generate_elements(data):
         for i in range(len(data[list(data.keys())[0]])):
             yield {key: data[key][i][0] if len(data[key][i]) > 0 else "" for key in data.keys()}
@@ -103,7 +105,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
             | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
             | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
-            | 'MapToLabel' >> beam.Map(lambda x: (x["company"], x))
+            | 'MapToLabel' >> beam.Map(lambda x: (x[label], x))
         )
 
         val = (
@@ -124,10 +126,9 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             res
             | 'ToTFExample' >> beam.Map(lambda x: convert_to_tfexample(x))
             | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
-            # TODO: add the options for multiple files (same as the original artifact?)
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
                 output_dir,
-                shards=shards,
+                num_shards=shards,
                 compression_type=beam.io.filesystem.CompressionTypes.GZIP)
         )
         

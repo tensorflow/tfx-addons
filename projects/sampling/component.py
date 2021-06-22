@@ -13,10 +13,11 @@ from tfx.types.component_spec import ExecutionParameter
 class UndersamplingComponentSpec(types.ComponentSpec):
 
   PARAMETERS = {
+      'label': ExecutionParameter(type=str),
       'name': ExecutionParameter(type=Text, optional=True),
       'splits': ExecutionParameter(type=List[Text], optional=True),
       'copy_others': ExecutionParameter(type=bool, optional=True),
-      'shards': ExecutionParamter(type=int, optional=True),
+      'shards': ExecutionParameter(type=int, optional=True),
   }
   INPUTS = {
       'input_data': ChannelParameter(type=standard_artifacts.Examples),
@@ -31,6 +32,7 @@ class UndersamplingComponent(base_component.BaseComponent):
   EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(UndersamplingExecutor)
 
   def __init__(self,
+               label: str, # temporary until we find a better way to input the label
                input_data: types.Channel = None,
                output_data: types.Channel = None,
                name: Optional[Text] = None,
@@ -50,5 +52,5 @@ class UndersamplingComponent(base_component.BaseComponent):
     if not output_data:
       output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
-    spec = UndersamplingComponentSpec(input_data=input_data, output_data=output_data, name=name, splits=splits, copy_others=copy_others, shards=shards)
+    spec = UndersamplingComponentSpec(input_data=input_data, output_data=output_data, label=label, name=name, splits=splits, copy_others=copy_others, shards=shards)
     super(UndersamplingComponent, self).__init__(spec=spec)
