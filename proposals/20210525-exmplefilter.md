@@ -44,6 +44,18 @@ filtered_examples = ExampleFilter(
 )
 ```
 
+## Packaging
+
+Given that it's a Beam component, I think it will have to be a fully custom component. 
+
+In terms of packaging and providing, we can provide the code, and a sample docker file and example pipeline for the component.
+
+## Future Considerations
+
+For the purposes of this proposal, the `ExampleFilter` component will be submitted as-is, as to not let "perfect" become the 
+enemy of "good enough". There are a number of potential improvements that could be made to the component, but working 
+through them should be a separate process from this initial proposal to get a working MVP.
+
 The current implementation is a bit dated and not so robust. It depends on a deprecated TFT proto coder, and only works on
 TF Records, as it does not make use of TFXIO. As part of bringing this to TFX-addons, I think it is worth iterating on the
 current design. Some initial ideas for change might be:
@@ -53,12 +65,9 @@ current design. Some initial ideas for change might be:
 * Making the predicate_fn operate on true data types rather than bytes (see example above)
 * Adding an input that allows the user to specify splits (currently applies to all splits)
 
-Given that it's a Beam component, I think it will have to be a fully custom component. In terms of packaging and providing,
-I'm not sure the best course of action as there is not much precedent set in TFX-addons just yet.
-
 ## Project Dependencies
 Current implementation uses a [proto decoder](https://github.com/tensorflow/transform/blob/v0.24.1/tensorflow_transform/coders/example_proto_coder.py#L329-L339)
-deprecated from TFX 0.25 onwards, though with help we could possibly remake the componnt with TFXIO.
+deprecated from TFX 0.25 onwards. Otherwise the project uses standard TFX dependencies.
 
 ## Project Team
 * Ryan Clough, rclough@spotify.com, @rclough
