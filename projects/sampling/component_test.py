@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tensorflow_data_validation as tfdv
 import component
+from absl.testing import absltest
 from tfx.types import artifact_utils
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
@@ -13,7 +14,7 @@ SPLIT_KEY = 'splits'
 COPY_KEY = 'copy_others'
 SHARDS_KEY = 'shards'
 
-class ComponentTest(tf.test.TestCase):
+class ComponentTest(absltest.TestCase):
   def testConstruct(self):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
@@ -54,10 +55,5 @@ class ComponentTest(tf.test.TestCase):
     self.assertEqual(
         under.spec.exec_properties[SHARDS_KEY], 10)
 
-def run_tests():
-  t = ComponentTest()
-  t.testConstruct()
-  t.testConstructWithOptions()
-
 if __name__ == '__main__':
-  run_tests()
+  tf.test.main()
