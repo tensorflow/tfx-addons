@@ -77,8 +77,8 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
 
   def undersample(self, split, tfxio, label, shards, output_dir):
     def generate_elements(data):
-        for i in range(len(data[list(data.keys())[0]])):
-            yield {key: data[key][i][0] if len(data[key][i]) > 0 else "" for key in data.keys()}
+      for i in range(len(data[list(data.keys())[0]])):
+            yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else "" for key in data.keys()}
 
     def sample(key, value, side=0):
         for item in random.sample(value, side):
@@ -110,8 +110,8 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
         val = (
             data
             | 'CountPerKey' >> beam.combiners.Count.PerKey()
-            | 'Values' >> beam.Values()
             | 'FilterNull' >> beam.Filter(lambda x: x[0])
+            | 'Values' >> beam.Values()
             | 'FindMinimum' >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
 
@@ -126,7 +126,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             | 'ToTFExample' >> beam.Map(lambda x: convert_to_tfexample(x))
             | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
-                output_dir,
+                os.path.join(output_dir, f'Split-{split}'),
                 num_shards=shards,
                 compression_type=beam.io.filesystem.CompressionTypes.GZIP)
         )
