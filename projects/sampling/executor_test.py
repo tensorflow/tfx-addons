@@ -1,16 +1,16 @@
 import os
 import tempfile
+import executor
 import tensorflow as tf
 import tensorflow_data_validation as tfdv
 import tfx
+import filecmp
 from absl.testing import absltest
 from tfx.dsl.io import fileio
-from tfx.components.statistics_gen import component
 from tfx.types import artifact_utils
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
 from tfx.types import standard_component_specs
-import executor
 from tfx.utils import json_utils
 
 INPUT_KEY = 'input_data'
@@ -22,8 +22,14 @@ COPY_KEY = 'copy_others'
 SHARDS_KEY = 'shards'
 
 class ExecutorTest(absltest.TestCase):
-  def _validate_output(self):
+  def _validate_output(self, output):
     pass
+
+  def _validate_same(self, dir0, dir1):
+    comp = filecmp.dircmp(dir0, dir1)
+    self.assertTrue(comp.left_only == [])
+    self.assertTrue(comp.right_only == [])
+    self.assertTrue(comp.diff_files == [])
   
   def testDo(self):
     source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
@@ -40,12 +46,11 @@ class ExecutorTest(absltest.TestCase):
     }
     
     exec_properties = {
-      # List needs to be serialized before being passed into Do function.
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
-      SPLIT_KEY: json_utils.dumps(['train']),
+      SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
       COPY_KEY: True,
-      SHARDS_KEY: 10
+      SHARDS_KEY: 1,
     }
     
     # Create output dict.
@@ -59,9 +64,9 @@ class ExecutorTest(absltest.TestCase):
     under = executor.UndersamplingExecutor()
     under.Do(input_dict, output_dict, exec_properties)
 
-    # Check statistics_gen outputs.
-    self._validate_output(os.path.join(stats.uri, 'Split-train'))
-    self._validate_output(os.path.join(stats.uri, 'Split-eval'))
+    # Check outputs.
+    self._validate_output(os.path.join(output.uri, 'Split-train'))
+    self._validate_same(os.path.join(output.uri, 'Split-eval'), artifact_utils.get_split_uri([examples], 'eval'))
 
     self.assertTrue(
         fileio.exists(os.path.join(output.uri, 'Split-train')))
