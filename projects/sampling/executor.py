@@ -20,7 +20,6 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
 
   def Do(self, 
          input_dict: Dict[Text, List[types.Artifact]],
-         schema: Dict[Text, List[types.Artifact]],
          output_dict: Dict[Text, List[types.Artifact]],
          exec_properties: Dict[Text, Any]) -> None:
     """Function that randomly undersamples the 'test' split, and simply
@@ -48,6 +47,8 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict['input_data'])
+    schema = artifact_utils.get_single_instance(
+        input_dict['schema'])
     output_artifact = artifact_utils.get_single_instance(
         output_dict['output_data'])
 
@@ -80,13 +81,13 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
 
   def parse_schema(self, schema):
     # schema = schema_gen.outputs['schema']
-    parsed = io_utils.parse_pbtxt_file(os.path.join(schema._artifacts[0].uri, "schema.pbtxt"), schema_pb2.Schema())
+    parsed = io_utils.parse_pbtxt_file(os.path.join(schema.uri, "schema.pbtxt"), schema_pb2.Schema())
     return {feat.name: feat.type for feat in parsed.feature}
 
   def undersample(self, split, tfxio, schema, label, shards, output_dir):
     def generate_elements(data):
       for i in range(len(data[list(data.keys())[0]])):
-            yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else "" for key in data.keys()}
+            yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else None for key in data.keys()}
 
     def sample(key, value, side=0):
         for item in random.sample(value, side):
@@ -95,15 +96,19 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     def convert_to_tfexample(data, schema):
         features = dict()
         for key, val in data.items():
+            if not val:
+                features[key] = tf.train.Feature()
+                continue
+
             if schema[key] == 2:
-                features[key] = tf.train.Feature(int64_list=tf.train.Int64List(value=[data[key]]))
+                features[key] = tf.train.Feature(int64_list=tf.train.Int64List(value=[val]))
             elif schema[key] == 3:
-                features[key] = tf.train.Feature(float_list=tf.train.FloatList(value=[data[key]]))
+                features[key] = tf.train.Feature(float_list=tf.train.FloatList(value=[val]))
             elif schema[key] == 1:
                 # features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[str.encode(data[key])]))
-                features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[data[key]]))
+                features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[val]))
             else:
-                features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[data[key]]))
+                features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[val]))
         return tf.train.Example(features=tf.train.Features(feature=features))
 
     with beam.Pipeline() as p:
