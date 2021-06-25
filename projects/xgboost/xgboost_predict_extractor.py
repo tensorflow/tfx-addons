@@ -172,3 +172,6 @@ def custom_extractors(
       eval_config=eval_config,
       tensor_adapter_config=tensor_adapter_config,
       custom_predict_extractor=predict_extractor)
+
+def get_module_file():
+    return os.path.abspath(__file__)

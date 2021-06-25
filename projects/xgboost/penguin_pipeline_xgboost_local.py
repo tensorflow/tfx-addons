@@ -20,6 +20,8 @@ import absl
 import tensorflow_model_analysis as tfma
 from tfx import v1 as tfx
 
+from xgboost_predict_extractor import get_module_file
+
 _pipeline_name = 'penguin_xgboost_local'
 
 # This example assumes that the Penguin example is the working directory. Feel
@@ -36,7 +38,7 @@ _trainer_module_file = os.path.join(
 # Evaluator component needs a custom extractor in order to make predictions
 # using the xgboost model.
 _evaluator_module_file = os.path.join(
-    _penguin_root, 'xgboost_predict_extractor.py')
+    _penguin_root, get_module_file())
 
 # Path which can be listened to by the model server.  Pusher will output the
 # trained model here.
