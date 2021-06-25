@@ -5,6 +5,9 @@ import tensorflow as tf
 import tensorflow_data_validation as tfdv
 import tfx
 import filecmp
+import apache_beam as beam
+from apache_beam.testing.util import assert_that
+from apache_beam.testing.util import equal_to
 from absl.testing import absltest
 from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
@@ -12,6 +15,8 @@ from tfx.types import channel_utils
 from tfx.types import standard_artifacts
 from tfx.types import standard_component_specs
 from tfx.utils import json_utils
+from tfx.utils import io_utils
+from tfx.components.util import tfxio_utils
 
 INPUT_KEY = 'input_data'
 OUTPUT_KEY = 'output_data'
@@ -22,8 +27,30 @@ COPY_KEY = 'copy_others'
 SHARDS_KEY = 'shards'
 
 class ExecutorTest(absltest.TestCase):
-  def _validate_output(self, output):
-    pass
+  def _validate_output(self, output, splits):
+    def generate_elements(data):
+      for i in range(len(data[list(data.keys())[0]])):
+        yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else "" for key in data.keys()}
+
+    tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[output], telemetry_descriptors=[])
+    for split in splits:
+      tfxio = tfxio_factory(io_utils.all_files_pattern(artifact_utils.get_split_uri([output], split)))
+
+      with beam.Pipeline() as p:
+        data = (
+          p 
+          | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
+          | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
+          | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
+          | 'MapToLabel' >> beam.Map(lambda x: (x['company'], x)) # change
+          | 'CountPerKey' >> beam.combiners.Count.PerKey()
+          | 'FilterNull' >> beam.Filter(lambda x: x[0])
+          | 'Values' >> beam.Values()
+          | 'Distinct' >> beam.Distinct()
+          | 'Count' >> beam.combiners.Count.Globally()
+        )
+
+    assert_that(data, equal_to([1]))
 
   def _validate_same(self, dir0, dir1):
     comp = filecmp.dircmp(dir0, dir1)
@@ -65,7 +92,7 @@ class ExecutorTest(absltest.TestCase):
     under.Do(input_dict, output_dict, exec_properties)
 
     # Check outputs.
-    self._validate_output(os.path.join(output.uri, 'Split-train'))
+    self._validate_output(output, ['train'])
     self._validate_same(os.path.join(output.uri, 'Split-eval'), artifact_utils.get_split_uri([examples], 'eval'))
 
     self.assertTrue(

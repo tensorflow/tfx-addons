@@ -52,7 +52,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     if copy_others:
       output_artifact.split_names = input_artifact.split_names
     else:
-      output_artifact.split_names = str(splits).replace("'", "\"")
+      output_artifact.split_names = artifact_utils.encode_split_names(splits)
 
     split_data = {}
     tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[input_artifact], telemetry_descriptors=[])
@@ -127,6 +127,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
                 os.path.join(output_dir, f'Split-{split}'),
+                file_name_suffix='.gz',
                 num_shards=shards,
                 compression_type=beam.io.filesystem.CompressionTypes.GZIP)
         )
