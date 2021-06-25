@@ -7,6 +7,7 @@ from tfx.types import channel_utils
 from tfx.types import standard_artifacts
 
 INPUT_KEY = 'input_data'
+SCHEMA_KEY = 'schema'
 OUTPUT_KEY = 'output_data'
 LABEL_KEY = 'label'
 NAME_KEY = 'name'
@@ -18,9 +19,11 @@ class ComponentTest(absltest.TestCase):
   def testConstruct(self):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+    schema = standard_artifacts.Schema()
     
     under = component.UndersamplingComponent(
         input_data=channel_utils.as_channel([examples]),
+        schema=channel_utils.as_channel([schema]),
         label='label')
 
     self.assertEqual(
@@ -33,9 +36,11 @@ class ComponentTest(absltest.TestCase):
   def testConstructWithOptions(self):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+    schema = standard_artifacts.Schema()
 
     under = component.UndersamplingComponent(
         input_data=channel_utils.as_channel([examples]),
+        schema=channel_utils.as_channel([schema]),
         label='test_label',
         name='test_name',
         splits=['train', 'eval'],

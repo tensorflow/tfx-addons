@@ -21,7 +21,7 @@ class UndersamplingComponentSpec(types.ComponentSpec):
   }
   INPUTS = {
       'input_data': ChannelParameter(type=standard_artifacts.Examples),
-      'schema': ChannelParameter(type=standard_artifacts.Schema)
+      'schema': ChannelParameter(type=standard_artifacts.Schema),
   }
   OUTPUTS = {
       'output_data': ChannelParameter(type=standard_artifacts.Examples),
