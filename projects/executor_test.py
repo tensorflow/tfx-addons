@@ -189,10 +189,82 @@ class ExecutorTest(absltest.TestCase):
     self.assertTrue(len([name for name in os.listdir(out) if os.path.isfile(os.path.join(out, name))]) == 20)
 
   def testSplits(self):
-    pass
+    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+    output_data_dir = os.path.join(
+      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
+    fileio.makedirs(output_data_dir)
+
+    examples = standard_artifacts.Examples()
+    examples.uri = os.path.join(source_data_dir, "example_gen")
+    examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+
+    schema = standard_artifacts.Schema()
+    schema.uri = os.path.join(source_data_dir, 'schema_gen')
+
+    input_dict = {
+        INPUT_KEY: [examples],
+        SCHEMA_KEY: [schema],
+    }
+    
+    exec_properties = {
+      LABEL_KEY: 'company',
+      NAME_KEY: 'undersampling',
+      SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
+      COPY_KEY: True,
+      SHARDS_KEY: 1,
+      CLASSES_KEY: json_utils.dumps([]),
+    }
+    
+    # Create output dict.
+    output = standard_artifacts.Examples()
+    output.uri = output_data_dir
+    output_dict = {
+      OUTPUT_KEY: [output],
+    }
+    
+    # Run executor.
+    under = executor.UndersamplingExecutor()
+    under.Do(input_dict, output_dict, exec_properties)
+
+    # Check outputs.
+    self._validate_output(output, ['train'])
+    self._validate_output(output, ['eval'])
 
   def testCopy(self):
-    pass
+    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+    output_data_dir = os.path.join(
+      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
+    fileio.makedirs(output_data_dir)
+
+    examples = standard_artifacts.Examples()
+    examples.uri = os.path.join(source_data_dir, "example_gen")
+    examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+
+    schema = standard_artifacts.Schema()
+    schema.uri = os.path.join(source_data_dir, 'schema_gen')
+
+    input_dict = {
+        INPUT_KEY: [examples],
+        SCHEMA_KEY: [schema],
+    }
+    
+    exec_properties = {
+      LABEL_KEY: 'company',
+      NAME_KEY: 'undersampling',
+      SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      COPY_KEY: False,
+      SHARDS_KEY: 1,
+      CLASSES_KEY: json_utils.dumps([]),
+    }
+    
+    # Create output dict.
+    output = standard_artifacts.Examples()
+    output.uri = output_data_dir
+    output_dict = {
+      OUTPUT_KEY: [output],
+    }
+    
+    self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 
 if __name__ == '__main__':
     tf.test.main()
