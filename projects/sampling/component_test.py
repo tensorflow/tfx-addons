@@ -14,6 +14,7 @@ NAME_KEY = 'name'
 SPLIT_KEY = 'splits'
 COPY_KEY = 'copy_others'
 SHARDS_KEY = 'shards'
+CLASSES_KEY = 'keep_classes'
 
 class ComponentTest(absltest.TestCase):
   def testConstruct(self):
@@ -45,7 +46,8 @@ class ComponentTest(absltest.TestCase):
         name='test_name',
         splits=['train', 'eval'],
         copy_others=False,
-        shards=10)
+        shards=10,
+        keep_classes=['label'])
 
     self.assertEqual(
         standard_artifacts.Examples.TYPE_NAME, under.outputs[OUTPUT_KEY].type_name)
@@ -59,6 +61,9 @@ class ComponentTest(absltest.TestCase):
         under.spec.exec_properties[COPY_KEY], False)
     self.assertEqual(
         under.spec.exec_properties[SHARDS_KEY], 10)
+    self.assertEqual(
+        under.spec.exec_properties[CLASSES_KEY], ['label'])
+
 
 if __name__ == '__main__':
   tf.test.main()
