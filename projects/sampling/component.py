@@ -18,6 +18,7 @@ class UndersamplingComponentSpec(types.ComponentSpec):
       'splits': ExecutionParameter(type=List[Text], optional=True),
       'copy_others': ExecutionParameter(type=bool, optional=True),
       'shards': ExecutionParameter(type=int, optional=True),
+      'keep_classes': ExecutionParameter(type=List[Text], optional=True),
   }
   INPUTS = {
       'input_data': ChannelParameter(type=standard_artifacts.Examples),
@@ -40,7 +41,8 @@ class UndersamplingComponent(base_component.BaseComponent):
                name: Optional[Text] = None,
                splits: Optional[List[Text]] = ['train'],
                copy_others: Optional[bool] = True,
-               shards: Optional[int] = 0):
+               shards: Optional[int] = 0,
+               keep_classes: Optional[List[Text]] = None):
 
     """Construct an UndersamplingComponent.
     Args:
@@ -54,5 +56,5 @@ class UndersamplingComponent(base_component.BaseComponent):
     if not output_data:
       output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
-    spec = UndersamplingComponentSpec(input_data=input_data, schema=schema, output_data=output_data, label=label, name=name, splits=splits, copy_others=copy_others, shards=shards)
+    spec = UndersamplingComponentSpec(input_data=input_data, schema=schema, output_data=output_data, label=label, name=name, splits=splits, copy_others=copy_others, shards=shards, keep_classes=keep_classes)
     super(UndersamplingComponent, self).__init__(spec=spec)

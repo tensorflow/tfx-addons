@@ -44,6 +44,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     splits = exec_properties['splits']
     copy_others = exec_properties['copy_others']
     shards = exec_properties['shards']
+    keep_classes = exec_properties['keep_classes']
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict['input_data'])
@@ -69,7 +70,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       if split in splits:        
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
-        self.undersample(split, data[1], schema, label, shards, output_dir)
+        self.undersample(split, data[1], schema, label, shards, keep_classes, output_dir)
       elif copy_others:
         input_dir = data[0]
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -80,11 +81,10 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
   def parse_schema(self, schema):
-    # schema = schema_gen.outputs['schema']
     parsed = io_utils.parse_pbtxt_file(os.path.join(schema.uri, "schema.pbtxt"), schema_pb2.Schema())
     return {feat.name: feat.type for feat in parsed.feature}
 
-  def undersample(self, split, tfxio, schema, label, shards, output_dir):
+  def undersample(self, split, tfxio, schema, label, shards, keep_classes, output_dir):
     def generate_elements(data):
       for i in range(len(data[list(data.keys())[0]])):
             yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else None for key in data.keys()}
@@ -111,6 +111,14 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
                 features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[val]))
         return tf.train.Example(features=tf.train.Features(feature=features))
 
+    def filter_null(item, keep_null=False, null_vals=None):
+      if null_vals:
+        keep = str(item[0]) in null_vals
+      else:
+        keep = not item[0] # Note that 0 is included in this filter!
+      keep ^= not keep_null # null is True if we want to keep nulls
+      return keep
+
     with beam.Pipeline() as p:
         data = (
             # TODO: convert to list and back using a schema to save key space?
@@ -124,7 +132,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
         val = (
             data
             | 'CountPerKey' >> beam.combiners.Count.PerKey()
-            | 'FilterNull' >> beam.Filter(lambda x: x[0])
+            | 'FilterNull' >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
             | 'Values' >> beam.Values()
             | 'FindMinimum' >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
@@ -135,6 +143,11 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             | 'Undersample' >> beam.FlatMapTuple(sample, side=beam.pvalue.AsSingleton(val))
         )
         
+        null = (
+            data
+            | 'ExtractNull' >> beam.Filter(lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
+        )
+
         _ = (
             res
             | 'ToTFExample' >> beam.Map(lambda x: convert_to_tfexample(x, schema))
