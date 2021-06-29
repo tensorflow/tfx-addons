@@ -26,6 +26,7 @@ NAME_KEY = 'name'
 SPLIT_KEY = 'splits'
 COPY_KEY = 'copy_others'
 SHARDS_KEY = 'shards'
+CLASSES_KEY = 'keep_classes'
 
 class ExecutorTest(absltest.TestCase):
   def _validate_output(self, output, splits):
@@ -83,6 +84,7 @@ class ExecutorTest(absltest.TestCase):
       SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
       COPY_KEY: True,
       SHARDS_KEY: 1,
+      CLASSES_KEY: json_utils.dumps([]),
     }
     
     # Create output dict.
