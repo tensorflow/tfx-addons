@@ -14,15 +14,15 @@ from tfx.components.util import tfxio_utils
 from tfx.dsl.component.experimental.decorators import component
 
 
-class UndersamplingExecutor(base_executor.BaseExecutor):
-  """Executor for UndersamplingComponent."""
+class Executor(base_executor.BaseExecutor):
+  """Executor for Undersample."""
 
   def Do(self, 
          input_dict: Dict[Text, List[types.Artifact]],
          output_dict: Dict[Text, List[types.Artifact]],
          exec_properties: Dict[Text, Any]) -> None:
 
-    """UndersamplingComponent executor entrypoint.
+    """Undersample executor entrypoint.
 
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
