@@ -10,7 +10,8 @@ from tfx.types.component_spec import ChannelParameter
 from tfx.types.component_spec import ExecutionParameter
 
 
-class UndersamplingComponentSpec(types.ComponentSpec):
+class UndersamplingSpec(types.ComponentSpec):
+  """Undersampling component spec."""
 
   PARAMETERS = {
       'label': ExecutionParameter(type=str),
@@ -29,11 +30,41 @@ class UndersamplingComponentSpec(types.ComponentSpec):
 
 
 class UndersamplingComponent(base_component.BaseComponent):
-  SPEC_CLASS = UndersamplingComponentSpec
+  """A TFX component to undersample examples.
+
+  The Undersampling component wraps an Apache Beam pipeline to process
+  data in an TFX pipeline. This component loads in tf.Record files from 
+  an earlier example artifact, processes the 'train' split by default,
+  undersamples the split by a given label's classes, and stores the new
+  set of undersampled examples into its own example artifact in 
+  tf.Record format.
+
+  By default, the component will ignore all examples with a null value
+  (more precisely, a value that evaluates to False) for the given label,
+  although more values can be added in as necessary. Additionally, it will
+  copy all non-'train' splits, through this behavior can be changed as well.
+  The component will save the examples in a user-specified number of files,
+  and it can be given a name as well.
+
+  ## Example
+  ```
+  # Performs transformations and feature engineering in training and serving.
+  under = Undersampling(
+      examples=example_gen.outputs['examples'])
+  ```
+
+  Component `outputs` contains:
+   - `undersampled_examples`: Channel of type `standard_artifacts.Examples` for
+                              materialized undersampled examples, based on the
+                              input splits, which includes copied splits unless 
+                              otherwise specified by copy_others.
+  """
+  
+  SPEC_CLASS = UndersamplingSpec
   EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(UndersamplingExecutor)
 
   def __init__(self,
-               label: str, # temporary until we find a better way to input the label
+               label: str,
                input_data: types.Channel = None,
                output_data: types.Channel = None,
                name: Optional[Text] = None,
@@ -49,6 +80,15 @@ class UndersamplingComponent(base_component.BaseComponent):
         By default, only the train split is sampled; all others are copied.
       name: Optional unique name. Necessary if multiple components are
         declared in the same pipeline.
+      label: The name of the column containing class names to
+        undersample by.
+      splits: A list containing splits to undersample.
+      copy_others: Determines whether we copy over the splits that aren't
+        undersampled, or just exclude them from the output artifact.
+      shards: The number of files that each undersampled split should
+        contain. Default 0 is Beam's tfrecordio function's default.
+      keep_classes: A list determining which classes that we shoult
+        not undersample.
     """
 
     if not output_data:
