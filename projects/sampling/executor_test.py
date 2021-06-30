@@ -2,18 +2,15 @@ import os
 import tempfile
 import executor
 import tensorflow as tf
-import tensorflow_data_validation as tfdv
-import tfx
 import filecmp
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
 from apache_beam.testing.util import equal_to
 from absl.testing import absltest
+
 from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
-from tfx.types import channel_utils
 from tfx.types import standard_artifacts
-from tfx.types import standard_component_specs
 from tfx.utils import json_utils
 from tfx.utils import io_utils
 from tfx.components.util import tfxio_utils
@@ -31,7 +28,8 @@ class ExecutorTest(absltest.TestCase):
   def _validate_output(self, output, splits, num=1):
     def generate_elements(data):
       for i in range(len(data[list(data.keys())[0]])):
-        yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else "" for key in data.keys()}
+        yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0
+          else "" for key in data.keys()}
 
     tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[output], telemetry_descriptors=[])
     for split in splits:
@@ -39,7 +37,7 @@ class ExecutorTest(absltest.TestCase):
 
       with beam.Pipeline() as p:
         data = (
-          p 
+          p
           | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
           | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
           | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
@@ -58,7 +56,7 @@ class ExecutorTest(absltest.TestCase):
     self.assertTrue(comp.left_only == [])
     self.assertTrue(comp.right_only == [])
     self.assertTrue(comp.diff_files == [])
-  
+
   def _run_exec(self, exec_properties):
     source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
     output_data_dir = os.path.join(
@@ -72,21 +70,21 @@ class ExecutorTest(absltest.TestCase):
     input_dict = {
         INPUT_KEY: [examples],
     }
-    
+
     # Create output dict.
     output = standard_artifacts.Examples()
     output.uri = output_data_dir
     output_dict = {
       OUTPUT_KEY: [output],
     }
-    
+
     # Run executor.
     under = executor.Executor()
     under.Do(input_dict, output_dict, exec_properties)
 
     return output
 
-  def testDo(self):  
+  def testDo(self):
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -95,7 +93,7 @@ class ExecutorTest(absltest.TestCase):
       SHARDS_KEY: 1,
       CLASSES_KEY: json_utils.dumps([]),
     }
-    
+
     output = self._run_exec(exec_properties)
 
     # Check outputs.
@@ -112,13 +110,13 @@ class ExecutorTest(absltest.TestCase):
       SHARDS_KEY: 1,
       CLASSES_KEY: json_utils.dumps(['None']),
     }
-    
+
     output = self._run_exec(exec_properties)
 
     # Check outputs.
     self._validate_output(output, ['train'], 2)
 
-  def testShards(self):    
+  def testShards(self):
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -127,14 +125,15 @@ class ExecutorTest(absltest.TestCase):
       SHARDS_KEY: 20,
       CLASSES_KEY: json_utils.dumps([]),
     }
-    
+
     output = self._run_exec(exec_properties)
 
     # Check outputs.
     out = os.path.join(output.uri, 'Split-train')
-    self.assertTrue(len([name for name in os.listdir(out) if os.path.isfile(os.path.join(out, name))]) == 20)
+    self.assertTrue(len([name for name in os.listdir(out)
+      if os.path.isfile(os.path.join(out, name))]) == 20)
 
-  def testSplits(self):    
+  def testSplits(self):
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -145,12 +144,12 @@ class ExecutorTest(absltest.TestCase):
     }
 
     output = self._run_exec(exec_properties)
-    
+
     # Check outputs.
     self._validate_output(output, ['train'])
     self._validate_output(output, ['eval'])
 
-  def testCopy(self):    
+  def testCopy(self):
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -161,8 +160,8 @@ class ExecutorTest(absltest.TestCase):
     }
 
     output = self._run_exec(exec_properties)
-    
+
     self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 
 if __name__ == '__main__':
-    tf.test.main()
+  tf.test.main()
