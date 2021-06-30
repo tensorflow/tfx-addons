@@ -19,7 +19,6 @@ from tfx.utils import io_utils
 from tfx.components.util import tfxio_utils
 
 INPUT_KEY = 'input_data'
-SCHEMA_KEY = 'schema'
 OUTPUT_KEY = 'output_data'
 LABEL_KEY = 'label'
 NAME_KEY = 'name'
@@ -70,12 +69,8 @@ class ExecutorTest(absltest.TestCase):
     examples.uri = os.path.join(source_data_dir, "example_gen")
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
-    schema = standard_artifacts.Schema()
-    schema.uri = os.path.join(source_data_dir, 'schema_gen')
-
     input_dict = {
         INPUT_KEY: [examples],
-        SCHEMA_KEY: [schema],
     }
     
     exec_properties = {
@@ -115,12 +110,9 @@ class ExecutorTest(absltest.TestCase):
     examples.uri = os.path.join(source_data_dir, "example_gen")
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
-    schema = standard_artifacts.Schema()
-    schema.uri = os.path.join(source_data_dir, 'schema_gen')
 
     input_dict = {
         INPUT_KEY: [examples],
-        SCHEMA_KEY: [schema],
     }
     
     exec_properties = {
@@ -156,12 +148,8 @@ class ExecutorTest(absltest.TestCase):
     examples.uri = os.path.join(source_data_dir, "example_gen")
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
-    schema = standard_artifacts.Schema()
-    schema.uri = os.path.join(source_data_dir, 'schema_gen')
-
     input_dict = {
         INPUT_KEY: [examples],
-        SCHEMA_KEY: [schema],
     }
     
     exec_properties = {
@@ -198,12 +186,9 @@ class ExecutorTest(absltest.TestCase):
     examples.uri = os.path.join(source_data_dir, "example_gen")
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
-    schema = standard_artifacts.Schema()
-    schema.uri = os.path.join(source_data_dir, 'schema_gen')
 
     input_dict = {
         INPUT_KEY: [examples],
-        SCHEMA_KEY: [schema],
     }
     
     exec_properties = {
@@ -240,12 +225,8 @@ class ExecutorTest(absltest.TestCase):
     examples.uri = os.path.join(source_data_dir, "example_gen")
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
-    schema = standard_artifacts.Schema()
-    schema.uri = os.path.join(source_data_dir, 'schema_gen')
-
     input_dict = {
         INPUT_KEY: [examples],
-        SCHEMA_KEY: [schema],
     }
     
     exec_properties = {

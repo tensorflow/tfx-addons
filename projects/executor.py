@@ -12,7 +12,6 @@ from tfx.types import artifact_utils
 from tfx.utils import io_utils
 from tfx.components.util import tfxio_utils
 from tfx.dsl.component.experimental.decorators import component
-from tensorflow_metadata.proto.v0 import schema_pb2
 
 
 class UndersamplingExecutor(base_executor.BaseExecutor):
@@ -48,8 +47,6 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict['input_data'])
-    schema = artifact_utils.get_single_instance(
-        input_dict['schema'])
     output_artifact = artifact_utils.get_single_instance(
         output_dict['output_data'])
 
@@ -67,7 +64,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       if split in splits:        
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
-        self.undersample(split, uri, schema, label, shards, keep_classes, output_dir)
+        self.undersample(split, uri, label, shards, keep_classes, output_dir)
       elif copy_others:
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -77,11 +74,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
           output_uri = os.path.join(output_dir, filename)
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
-  def parse_schema(self, schema):
-    parsed = io_utils.parse_pbtxt_file(os.path.join(schema.uri, "schema.pbtxt"), schema_pb2.Schema())
-    return {feat.name: feat.type for feat in parsed.feature}
-
-  def undersample(self, split, uri, schema, label, shards, keep_classes, output_dir):
+  def undersample(self, split, uri, label, shards, keep_classes, output_dir):
     def generate_elements(x):
         parsed = tf.train.Example.FromString(x.numpy())
         val = parsed.features.feature['company'].bytes_list.value
