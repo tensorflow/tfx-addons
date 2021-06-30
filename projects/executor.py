@@ -59,20 +59,17 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       output_artifact.split_names = artifact_utils.encode_split_names(splits)
 
     split_data = {}
-    schema = self.parse_schema(schema)
-    tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[input_artifact], telemetry_descriptors=[])
-
     for split in artifact_utils.decode_split_names(input_artifact.split_names):
       uri = artifact_utils.get_split_uri([input_artifact], split)
-      split_data[split] = [uri, tfxio_factory(io_utils.all_files_pattern(artifact_utils.get_split_uri([input_artifact], split)))]
+      split_data[split] = uri
     
-    for split, data in split_data.items():
+    for split, uri in split_data.items():
       if split in splits:        
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
-        self.undersample(split, data[1], schema, label, shards, keep_classes, output_dir)
+        self.undersample(split, uri, schema, label, shards, keep_classes, output_dir)
       elif copy_others:
-        input_dir = data[0]
+        input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
         for filename in fileio.listdir(input_dir):
@@ -84,32 +81,19 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     parsed = io_utils.parse_pbtxt_file(os.path.join(schema.uri, "schema.pbtxt"), schema_pb2.Schema())
     return {feat.name: feat.type for feat in parsed.feature}
 
-  def undersample(self, split, tfxio, schema, label, shards, keep_classes, output_dir):
-    def generate_elements(data):
-      for i in range(len(data[list(data.keys())[0]])):
-            yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else None for key in data.keys()}
+  def undersample(self, split, uri, schema, label, shards, keep_classes, output_dir):
+    def generate_elements(x):
+        parsed = tf.train.Example.FromString(x.numpy())
+        val = parsed.features.feature['company'].bytes_list.value
+        if len(val) > 0:
+          label = val[0].decode()
+        else:
+          label = None
+        return (label, parsed)
 
     def sample(key, value, side=0):
         for item in random.sample(value, side):
             yield item
-            
-    def convert_to_tfexample(data, schema):
-        features = dict()
-        for key, val in data.items():
-            if not val:
-                features[key] = tf.train.Feature()
-                continue
-
-            if schema[key] == 2:
-                features[key] = tf.train.Feature(int64_list=tf.train.Int64List(value=[val]))
-            elif schema[key] == 3:
-                features[key] = tf.train.Feature(float_list=tf.train.FloatList(value=[val]))
-            elif schema[key] == 1:
-                # features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[str.encode(data[key])]))
-                features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[val]))
-            else:
-                features[key] = tf.train.Feature(bytes_list=tf.train.BytesList(value=[val]))
-        return tf.train.Example(features=tf.train.Features(feature=features))
 
     def filter_null(item, keep_null=False, null_vals=None):
       if null_vals:
@@ -119,14 +103,14 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
       keep ^= not keep_null # null is True if we want to keep nulls
       return keep
 
+    files = [os.path.join(uri, name) for name in os.listdir(uri)]
+    dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
+
     with beam.Pipeline() as p:
         data = (
-            # TODO: convert to list and back using a schema to save key space?
             p 
-            | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
-            | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
-            | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
-            | 'MapToLabel' >> beam.Map(lambda x: (x[label], x))
+            | 'DatasetToPCollection' >> beam.Create(dataset)
+            | 'MapToLabel' >> beam.Map(lambda x: generate_elements(x))
         )
 
         val = (
@@ -150,7 +134,6 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
 
         _ = (
             res
-            | 'ToTFExample' >> beam.Map(lambda x: convert_to_tfexample(x, schema))
             | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
                 os.path.join(output_dir, f'Split-{split}'),
