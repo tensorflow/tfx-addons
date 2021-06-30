@@ -96,12 +96,12 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             yield item
 
     def filter_null(item, keep_null=False, null_vals=None):
+      keep = not item[0] # Note that 0 is included in this filter!
       if null_vals:
-        keep = str(item[0]) in null_vals
-      else:
-        keep = not item[0] # Note that 0 is included in this filter!
+        keep = keep or str(item[0]) in null_vals
       keep ^= not keep_null # null is True if we want to keep nulls
-      return keep
+      if keep:
+        return item[1]
 
     files = [os.path.join(uri, name) for name in os.listdir(uri)]
     dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
@@ -130,10 +130,13 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
         null = (
             data
             | 'ExtractNull' >> beam.Filter(lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
+            | 'NullValues' >> beam.Values()
         )
 
+        merged = ((res, null) | 'Merge PCollections' >> beam.Flatten())
+
         _ = (
-            res
+            merged
             | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
                 os.path.join(output_dir, f'Split-{split}'),
