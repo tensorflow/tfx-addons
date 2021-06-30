@@ -1,7 +1,7 @@
 import tensorflow as tf
-import tensorflow_data_validation as tfdv
 import component
 from absl.testing import absltest
+
 from tfx.types import artifact_utils
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
@@ -19,7 +19,7 @@ class ComponentTest(absltest.TestCase):
   def testConstruct(self):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
-    
+
     under = component.Undersample(
         input_data=channel_utils.as_channel([examples]),
         label='label')
