@@ -59,7 +59,7 @@ class ExecutorTest(absltest.TestCase):
     self.assertTrue(comp.right_only == [])
     self.assertTrue(comp.diff_files == [])
   
-  def testDo(self):
+  def _run_exec(self, exec_properties):
     source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
     output_data_dir = os.path.join(
       os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
@@ -71,15 +71,6 @@ class ExecutorTest(absltest.TestCase):
 
     input_dict = {
         INPUT_KEY: [examples],
-    }
-    
-    exec_properties = {
-      LABEL_KEY: 'company',
-      NAME_KEY: 'undersampling',
-      SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      COPY_KEY: True,
-      SHARDS_KEY: 1,
-      CLASSES_KEY: json_utils.dumps([]),
     }
     
     # Create output dict.
@@ -93,28 +84,26 @@ class ExecutorTest(absltest.TestCase):
     under = executor.UndersamplingExecutor()
     under.Do(input_dict, output_dict, exec_properties)
 
+    return output
+
+  def testDo(self):  
+    exec_properties = {
+      LABEL_KEY: 'company',
+      NAME_KEY: 'undersampling',
+      SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      COPY_KEY: True,
+      SHARDS_KEY: 1,
+      CLASSES_KEY: json_utils.dumps([]),
+    }
+    
+    output = self._run_exec(exec_properties)
+
     # Check outputs.
     self._validate_output(output, ['train'])
-    self._validate_same(os.path.join(output.uri, 'Split-eval'), artifact_utils.get_split_uri([examples], 'eval'))
-
     self.assertTrue(fileio.exists(os.path.join(output.uri, 'Split-train')))
     self.assertTrue(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 
   def testKeepClasses(self):
-    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
-    output_data_dir = os.path.join(
-      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
-    fileio.makedirs(output_data_dir)
-
-    examples = standard_artifacts.Examples()
-    examples.uri = os.path.join(source_data_dir, "example_gen")
-    examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
-
-
-    input_dict = {
-        INPUT_KEY: [examples],
-    }
-    
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -124,34 +113,12 @@ class ExecutorTest(absltest.TestCase):
       CLASSES_KEY: json_utils.dumps(['None']),
     }
     
-    # Create output dict.
-    output = standard_artifacts.Examples()
-    output.uri = output_data_dir
-    output_dict = {
-      OUTPUT_KEY: [output],
-    }
-    
-    # Run executor.
-    under = executor.UndersamplingExecutor()
-    under.Do(input_dict, output_dict, exec_properties)
+    output = self._run_exec(exec_properties)
 
     # Check outputs.
     self._validate_output(output, ['train'], 2)
 
-  def testShards(self):
-    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
-    output_data_dir = os.path.join(
-      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
-    fileio.makedirs(output_data_dir)
-
-    examples = standard_artifacts.Examples()
-    examples.uri = os.path.join(source_data_dir, "example_gen")
-    examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
-
-    input_dict = {
-        INPUT_KEY: [examples],
-    }
-    
+  def testShards(self):    
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -161,36 +128,13 @@ class ExecutorTest(absltest.TestCase):
       CLASSES_KEY: json_utils.dumps([]),
     }
     
-    # Create output dict.
-    output = standard_artifacts.Examples()
-    output.uri = output_data_dir
-    output_dict = {
-      OUTPUT_KEY: [output],
-    }
-    
-    # Run executor.
-    under = executor.UndersamplingExecutor()
-    under.Do(input_dict, output_dict, exec_properties)
+    output = self._run_exec(exec_properties)
 
     # Check outputs.
     out = os.path.join(output.uri, 'Split-train')
     self.assertTrue(len([name for name in os.listdir(out) if os.path.isfile(os.path.join(out, name))]) == 20)
 
-  def testSplits(self):
-    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
-    output_data_dir = os.path.join(
-      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
-    fileio.makedirs(output_data_dir)
-
-    examples = standard_artifacts.Examples()
-    examples.uri = os.path.join(source_data_dir, "example_gen")
-    examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
-
-
-    input_dict = {
-        INPUT_KEY: [examples],
-    }
-    
+  def testSplits(self):    
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -199,36 +143,14 @@ class ExecutorTest(absltest.TestCase):
       SHARDS_KEY: 1,
       CLASSES_KEY: json_utils.dumps([]),
     }
-    
-    # Create output dict.
-    output = standard_artifacts.Examples()
-    output.uri = output_data_dir
-    output_dict = {
-      OUTPUT_KEY: [output],
-    }
-    
-    # Run executor.
-    under = executor.UndersamplingExecutor()
-    under.Do(input_dict, output_dict, exec_properties)
 
+    output = self._run_exec(exec_properties)
+    
     # Check outputs.
     self._validate_output(output, ['train'])
     self._validate_output(output, ['eval'])
 
-  def testCopy(self):
-    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
-    output_data_dir = os.path.join(
-      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
-    fileio.makedirs(output_data_dir)
-
-    examples = standard_artifacts.Examples()
-    examples.uri = os.path.join(source_data_dir, "example_gen")
-    examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
-
-    input_dict = {
-        INPUT_KEY: [examples],
-    }
-    
+  def testCopy(self):    
     exec_properties = {
       LABEL_KEY: 'company',
       NAME_KEY: 'undersampling',
@@ -237,17 +159,8 @@ class ExecutorTest(absltest.TestCase):
       SHARDS_KEY: 1,
       CLASSES_KEY: json_utils.dumps([]),
     }
-    
-    # Create output dict.
-    output = standard_artifacts.Examples()
-    output.uri = output_data_dir
-    output_dict = {
-      OUTPUT_KEY: [output],
-    }
 
-    # Run executor.
-    under = executor.UndersamplingExecutor()
-    under.Do(input_dict, output_dict, exec_properties)
+    output = self._run_exec(exec_properties)
     
     self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 
