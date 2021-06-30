@@ -263,6 +263,10 @@ class ExecutorTest(absltest.TestCase):
     output_dict = {
       OUTPUT_KEY: [output],
     }
+
+    # Run executor.
+    under = executor.UndersamplingExecutor()
+    under.Do(input_dict, output_dict, exec_properties)
     
     self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 

@@ -56,7 +56,7 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     if copy_others:
       output_artifact.split_names = input_artifact.split_names
     else:
-      output_artifact.split_names = artifact_utils.encode_split_names(splits)
+      output_artifact.split_names = splits
 
     split_data = {}
     for split in artifact_utils.decode_split_names(input_artifact.split_names):
