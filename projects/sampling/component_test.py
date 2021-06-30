@@ -20,7 +20,7 @@ class ComponentTest(absltest.TestCase):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
     
-    under = component.UndersamplingComponent(
+    under = component.Undersample(
         input_data=channel_utils.as_channel([examples]),
         label='label')
 
@@ -35,7 +35,7 @@ class ComponentTest(absltest.TestCase):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
-    under = component.UndersamplingComponent(
+    under = component.Undersample(
         input_data=channel_utils.as_channel([examples]),
         label='test_label',
         name='test_name',

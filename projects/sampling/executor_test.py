@@ -81,7 +81,7 @@ class ExecutorTest(absltest.TestCase):
     }
     
     # Run executor.
-    under = executor.UndersamplingExecutor()
+    under = executor.Executor()
     under.Do(input_dict, output_dict, exec_properties)
 
     return output

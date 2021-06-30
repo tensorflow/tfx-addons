@@ -3,14 +3,14 @@ from typing import Optional, Text, List
 from tfx import types
 from tfx.dsl.components.base import base_component
 from tfx.dsl.components.base import executor_spec
-from executor import UndersamplingExecutor
+from executor import Executor
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
 from tfx.types.component_spec import ChannelParameter
 from tfx.types.component_spec import ExecutionParameter
 
 
-class UndersamplingSpec(types.ComponentSpec):
+class UndersampleSpec(types.ComponentSpec):
   """Undersampling component spec."""
 
   PARAMETERS = {
@@ -29,7 +29,7 @@ class UndersamplingSpec(types.ComponentSpec):
   }
 
 
-class UndersamplingComponent(base_component.BaseComponent):
+class Undersample(base_component.BaseComponent):
   """A TFX component to undersample examples.
 
   The Undersampling component wraps an Apache Beam pipeline to process
@@ -49,7 +49,7 @@ class UndersamplingComponent(base_component.BaseComponent):
   ## Example
   ```
   # Performs transformations and feature engineering in training and serving.
-  under = Undersampling(
+  under = Undersample(
       examples=example_gen.outputs['examples'])
   ```
 
@@ -60,8 +60,8 @@ class UndersamplingComponent(base_component.BaseComponent):
                               otherwise specified by copy_others.
   """
   
-  SPEC_CLASS = UndersamplingSpec
-  EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(UndersamplingExecutor)
+  SPEC_CLASS = UndersampleSpec
+  EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(Executor)
 
   def __init__(self,
                label: str,
@@ -73,7 +73,7 @@ class UndersamplingComponent(base_component.BaseComponent):
                shards: Optional[int] = 0,
                keep_classes: Optional[List[Text]] = None):
 
-    """Construct an UndersamplingComponent.
+    """Construct an UndersampleComponent.
     Args:
       input_data: A Channel of type `standard_artifacts.Examples`.
       output_data: A Channel of type `standard_artifacts.Examples`.
@@ -87,12 +87,12 @@ class UndersamplingComponent(base_component.BaseComponent):
         undersampled, or just exclude them from the output artifact.
       shards: The number of files that each undersampled split should
         contain. Default 0 is Beam's tfrecordio function's default.
-      keep_classes: A list determining which classes that we shoult
+      keep_classes: A list determining which classes that we should s
         not undersample.
     """
 
     if not output_data:
       output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
-    spec = UndersamplingComponentSpec(input_data=input_data, output_data=output_data, label=label, name=name, splits=splits, copy_others=copy_others, shards=shards, keep_classes=keep_classes)
-    super(UndersamplingComponent, self).__init__(spec=spec)
+    spec = UndersampleSpec(input_data=input_data, output_data=output_data, label=label, name=name, splits=splits, copy_others=copy_others, shards=shards, keep_classes=keep_classes)
+    super(Undersample, self).__init__(spec=spec)
