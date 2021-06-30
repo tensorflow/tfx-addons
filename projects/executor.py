@@ -21,23 +21,35 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
          input_dict: Dict[Text, List[types.Artifact]],
          output_dict: Dict[Text, List[types.Artifact]],
          exec_properties: Dict[Text, Any]) -> None:
-    """Function that randomly undersamples the 'test' split, and simply
-      copies all other splits into the output artifact.
+
+    """UndersamplingComponent executor entrypoint.
 
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
-        - input_data: A list of type `standard_artifacts.Examples`.
+        - examples: A list of type `standard_artifacts.Examples` which should
+          contain custom splits specified in splits_config. If custom split is
+          not provided, this should contain two splits 'train' and 'eval'.
       output_dict: Output dict from key to a list of artifacts, including:
-        - output_data: A list of type `standard_artifacts.Examples`.
+        - undersampled_examples: Undersampled examples, only for the given
+          splits as specified in splits. May also include copies of the
+          other non-undersampled spits, as specified by keep_classes.
       exec_properties: A dict of execution properties, including:
-        - name: Optional unique name. Necessary iff multiple Hello components
-          are declared in the same pipeline.
-        - splits: Optional list of splits to undersample. Defaults to ['train'].
-    Returns:
+        - name: Optional unique name. Necessary if multiple components are
+          declared in the same pipeline.
+        - label: The name of the column containing class names to undersample by.
+        - splits: A list containing splits to undersample. Defaults to ['train'].
+        - copy_others: Determines whether we copy over the splits that aren't
+          undersampled, or just exclude them from the output artifact. Defualts
+          to True.
+        - shards: The number of files that each undersampled split should
+          contain. Default 0 is Beam's tfrecordio function's default.
+        - keep_classes: A list determining which classes that we should
+          not undersample. Defaults to None.
+
+    Returns: 
       None
-    Raises:
-      OSError and its subclasses
     """
+
     self._log_startup(input_dict, output_dict, exec_properties)
     label = exec_properties['label']
     splits = exec_properties['splits']
@@ -55,17 +67,18 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     else:
       output_artifact.split_names = splits
 
+    # Fetch the input uri for each split
     split_data = {}
     for split in artifact_utils.decode_split_names(input_artifact.split_names):
       uri = artifact_utils.get_split_uri([input_artifact], split)
       split_data[split] = uri
     
     for split, uri in split_data.items():
-      if split in splits:        
+      if split in splits: # Undersampling split
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
-        self.undersample(split, uri, label, shards, keep_classes, output_dir)
-      elif copy_others:
+        self.undersample(uri, label, shards, keep_classes, os.path.join(output_dir, f'Split-{split}'))
+      elif copy_others: # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
@@ -74,7 +87,22 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
           output_uri = os.path.join(output_dir, filename)
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
-  def undersample(self, split, uri, label, shards, keep_classes, output_dir):
+  def undersample(self, uri, label, shards, keep_classes, output_dir):
+    """Function that actually undersamples the given split.
+
+    Args:
+      uri: The input uri for the specific split of the input example artifact.
+      label: The name of the column containing class names to undersample by.
+      shards: The number of files that each undersampled split should
+        contain. Default 0 is Beam's tfrecordio function's default.
+      keep_classes: A list determining which classes that we should
+        not undersample. Defaults to None.
+      output_dir: The output directory for the specific split of the output artifact.    
+
+    Returns: 
+      None
+    """
+
     def generate_elements(x):
         parsed = tf.train.Example.FromString(x.numpy())
         val = parsed.features.feature['company'].bytes_list.value
@@ -100,12 +128,16 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
     dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
 
     with beam.Pipeline() as p:
+        # Take the input TFRecordDataset and extract the class label that we want.
+        # Output format is a K-V PCollection: {class_label: TFRecord in string format}
         data = (
             p 
             | 'DatasetToPCollection' >> beam.Create(dataset)
             | 'MapToLabel' >> beam.Map(lambda x: generate_elements(x))
         )
 
+        # Finds the minimum frequency of all classes in the input label.
+        # Output is a singleton PCollection with the minimum # of examples.
         val = (
             data
             | 'CountPerKey' >> beam.combiners.Count.PerKey()
@@ -114,25 +146,28 @@ class UndersamplingExecutor(base_executor.BaseExecutor):
             | 'FindMinimum' >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
 
+        # Actually performs the undersampling functionality.
+        # Output format is a K-V PCollection: {class_label: TFRecord in string format}
         res = (
             data 
             | 'GroupBylabel' >> beam.GroupByKey()
             | 'Undersample' >> beam.FlatMapTuple(sample, side=beam.pvalue.AsSingleton(val))
         )
         
+        # Take out all the null values from the beginning and put them back in the pipeline
         null = (
             data
             | 'ExtractNull' >> beam.Filter(lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
             | 'NullValues' >> beam.Values()
         )
-
         merged = ((res, null) | 'Merge PCollections' >> beam.Flatten())
 
+        # Write the final set of TFRecords to the output artifact's files.
         _ = (
             merged
             | 'Serialize' >> beam.Map(lambda x: x.SerializeToString())
             | 'WriteToTFRecord' >> beam.io.tfrecordio.WriteToTFRecord(
-                os.path.join(output_dir, f'Split-{split}'),
+                output_dir,
                 file_name_suffix='.gz',
                 num_shards=shards,
                 compression_type=beam.io.filesystem.CompressionTypes.GZIP)
