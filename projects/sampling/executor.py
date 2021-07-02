@@ -11,6 +11,7 @@ from tfx.dsl.components.base import base_executor
 from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
 from tfx.components.util import tfxio_utils
+from tfx.utils import json_utils
 
 
 class Executor(base_executor.BaseExecutor):
@@ -53,10 +54,10 @@ class Executor(base_executor.BaseExecutor):
 
     self._log_startup(input_dict, output_dict, exec_properties)
     label = exec_properties["label"]
-    splits = exec_properties["splits"]
+    splits = json_utils.loads(exec_properties["splits"])
     copy_others = exec_properties["copy_others"]
     shards = exec_properties["shards"]
-    keep_classes = exec_properties["keep_classes"]
+    keep_classes = json_utils.loads(exec_properties["keep_classes"])
 
     input_artifact = artifact_utils.get_single_instance(input_dict["input_data"])
     output_artifact = artifact_utils.get_single_instance(output_dict["output_data"])
