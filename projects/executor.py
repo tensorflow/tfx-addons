@@ -12,6 +12,7 @@ from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
 from tfx.components.util import tfxio_utils
 from tfx.utils import json_utils
+from tfx.utils import io_utils
 
 
 class Executor(base_executor.BaseExecutor):
@@ -104,26 +105,32 @@ class Executor(base_executor.BaseExecutor):
     """
 
     def generate_elements(x):
+      class_label = None
       parsed = tf.train.Example.FromString(x.numpy())
-      val = parsed.features.feature[label].bytes_list.value
-      if len(val) > 0:
-        class_label = val[0].decode()
+      if parsed.features.feature[label].int64_list.value:
+        val = parsed.features.feature[label].int64_list.value
+        if len(val) > 0:
+          class_label = val[0]
       else:
-        class_label = None
+        val = parsed.features.feature[label].bytes_list.value
+        if len(val) > 0:
+          class_label = val[0].decode()
       return (class_label, parsed)
 
     def sample(key, value, side=0):
       for item in random.sample(value, side):
         yield item
 
-    def filter_null(item, keep_null=False, null_vals=None):
-      keep = not item[0]  # Note that 0 is included in this filter!
+    def filter_null(item, keep_null=False, null_vals=None, pr=False):
+      if pr:
+        print(item)
+      keep = (not item[0]) or item[0] == 0  # Note that 0 is included in this filter!
       if null_vals:
         keep = keep or str(item[0]) in null_vals
       keep ^= not keep_null  # null is True if we want to keep nulls
       if keep:
         return item[1]
-
+  
     files = [os.path.join(uri, name) for name in os.listdir(uri)]
     dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
 
@@ -142,7 +149,7 @@ class Executor(base_executor.BaseExecutor):
         (
           data
           | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes, pr=True))
           | "Values" >> beam.Values()
           | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
