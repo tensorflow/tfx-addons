@@ -10,6 +10,7 @@ from tfx.types import channel_utils
 from tfx.types import standard_artifacts
 from tfx.types.component_spec import ChannelParameter
 from tfx.types.component_spec import ExecutionParameter
+from tfx.utils import json_utils
 
 
 class UndersampleSpec(types.ComponentSpec):
@@ -18,10 +19,10 @@ class UndersampleSpec(types.ComponentSpec):
   PARAMETERS = {
     "label": ExecutionParameter(type=str),
     "name": ExecutionParameter(type=Text, optional=True),
-    "splits": ExecutionParameter(type=List[Text], optional=True),
-    "copy_others": ExecutionParameter(type=bool, optional=True),
+    "splits": ExecutionParameter(type=str, optional=True),
+    "copy_others": ExecutionParameter(type=int, optional=True),
     "shards": ExecutionParameter(type=int, optional=True),
-    "keep_classes": ExecutionParameter(type=List[Text], optional=True),
+    "keep_classes": ExecutionParameter(type=str, optional=True),
   }
   INPUTS = {
     "input_data": ChannelParameter(type=standard_artifacts.Examples),
@@ -103,9 +104,10 @@ class Undersample(base_component.BaseComponent):
       output_data=output_data,
       label=label,
       name=name,
-      splits=splits,
-      copy_others=copy_others,
+      splits=json_utils.dumps(splits),
+      copy_others=int(copy_others),
       shards=shards,
-      keep_classes=keep_classes,
+      keep_classes=json_utils.dumps(keep_classes),
     )
+
     super().__init__(spec=spec)
