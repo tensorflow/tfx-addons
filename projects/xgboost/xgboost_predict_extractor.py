@@ -35,6 +35,7 @@ _PREDICT_EXTRACTOR_STAGE_NAME = 'XGBoostPredict'
 
 def _make_xgboost_predict_extractor(
     eval_shared_model: tfma.EvalSharedModel,
+    eval_config: tfma.EvalConfig,
 ) -> extractor.Extractor:
   """Creates an extractor for performing predictions using a xgboost model.
 
@@ -54,7 +55,9 @@ def _make_xgboost_predict_extractor(
   return extractor.Extractor(
       stage_name=_PREDICT_EXTRACTOR_STAGE_NAME,
       ptransform=_ExtractPredictions(  # pylint: disable=no-value-for-parameter
-          eval_shared_models={m.model_name: m for m in eval_shared_models}))
+          eval_shared_models={m.model_name: m for m in eval_shared_models},
+          eval_config=eval_config
+      ))
 
 
 @beam.typehints.with_input_types(types.Extracts)
@@ -62,27 +65,46 @@ def _make_xgboost_predict_extractor(
 class _TFMAPredictionDoFn(model_util.DoFnWithModels):
   """A DoFn that loads the models and predicts."""
 
-  def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel]):
+  def __init__(self, 
+    eval_shared_models: Dict[Text, types.EvalSharedModel], 
+    eval_config: types.EvalConfig):
     super(_TFMAPredictionDoFn, self).__init__(
         {k: v.model_loader for k, v in eval_shared_models.items()})
+    self._eval_config = eval_config
 
   def setup(self):
+    # models are loaded and stored into self._loaded_models below
     super(_TFMAPredictionDoFn, self).setup()
     self._feature_keys = None
     self._label_key = None
-    for loaded_model in self._loaded_models.values():
+
+    # check to see whether each of these loaded models has a corresponding model spec
+    if self._eval_config:
+      label_config = self.extract_model_specs()
+      for name in self._loaded_models:
+        if name not in label_config:
+          raise ValueError(f"Missing model spec for loaded model {name}.")
+
+    for name, loaded_model in self._loaded_models.items():
+      feature_keys = loaded_model.feature_names
       if self._feature_keys and self._label_key:
-        assert self._feature_keys == loaded_model.feature_keys, (
+        assert self._feature_keys == feature_keys, (
             f'Features mismatch in loaded models. Expected {self._feature_keys}'
-            f', got {loaded_model.feature_keys} instead.')
-        assert self._label_key == loaded_model.label_key, (
+            f', got {lfeature_keys} instead.')
+        assert self._label_key == label_config[name], (
             f'Label mismatch in loaded models. Expected "{self._label_key}"'
-            f', got "{loaded_model.label_key}" instead.')
-      elif loaded_model.feature_keys and loaded_model.label_key:
-        self._feature_keys = loaded_model.feature_keys
-        self._label_key = loaded_model.label_key
+            f', got "{label_config[name]}" instead.')
+      elif feature_keys and label_config[name]:
+        self._feature_keys = feature_keys
+        self._label_key = label_config[name]
       else:
-        raise ValueError(f'Missing feature or label keys in loaded model {name}.')
+        raise ValueError('Missing feature or label keys in loaded model.')
+
+  def extract_model_specs(self):
+    label_specs = {}
+    for config in self._eval_config.model_specs:
+      label_specs[config.name] = config.label_key
+    return label_specs
 
   def process(self, elem: types.Extracts) -> Iterable[types.Extracts]:
     """Uses loaded models to make predictions on batches of data.
@@ -100,7 +122,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
     labels = []
     result = copy.copy(elem)
     for features_dict in result[constants.FEATURES_KEY]:
-      features_row = [features_dict[key] for key in self._feature_keys]
+      features_row = [features_dict[key] for key in self._feature_names]
       features.append(np.concatenate(features_row))
       labels.append(features_dict[self._label_key])
     result[constants.LABELS_KEY] = np.concatenate(labels)
@@ -126,6 +148,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
 def _ExtractPredictions(  # pylint: disable=invalid-name
     extracts: beam.pvalue.PCollection,
     eval_shared_models: Dict[Text, types.EvalSharedModel],
+    eval_config: types.EvalConfig,
 ) -> beam.pvalue.PCollection:
   """A PTransform that adds predictions and possibly other tensors to extracts.
 
@@ -137,7 +160,7 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
     PCollection of Extracts updated with the predictions.
   """
   return extracts | 'Predict' >> beam.ParDo(
-      _TFMAPredictionDoFn(eval_shared_models))
+      _TFMAPredictionDoFn(eval_shared_models, eval_config))
 
 
 def _custom_model_loader_fn(model_path: Text):
