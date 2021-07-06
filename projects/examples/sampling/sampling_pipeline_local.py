@@ -1,4 +1,4 @@
-"""Chicago taxi example using TFX."""
+"""Sampling pipeline example using TFX."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,24 +34,14 @@ from tfx.types.standard_artifacts import ModelBlessing
 from component import Undersample
 
 _pipeline_name = 'sampling_credit_card'
-
-# This example assumes that the taxi data is stored in ~/taxi/data and the
-# taxi utility function is in ~/taxi.  Feel free to customize this as needed.
 _sampling_root = os.path.dirname(__file__)
 _data_root = os.path.join(_sampling_root, 'data')
 # Python module file to inject customized logic into the TFX components. The
 # Transform and Trainer both require user-defined functions to run successfully.
 _module_file = os.path.join(_sampling_root, 'sampling_utils.py')
-# Path which can be listened to by the model server.  Pusher will output the
-# trained model here.
 _serving_model_dir = os.path.join(_sampling_root, 'serving_model', _pipeline_name)
-
-# Directory and data locations.  This example assumes all of the chicago taxi
-# example code and metadata library is relative to $HOME, but you can store
-# these files anywhere on your local filesystem.
 _tfx_root = os.path.join(os.environ['HOME'], 'tfx')
 _pipeline_root = os.path.join(_tfx_root, 'pipelines', _pipeline_name)
-# Sqlite ML-metadata db path.
 _metadata_path = os.path.join(_tfx_root, 'metadata', _pipeline_name,
                               'metadata.db')
 
@@ -64,46 +54,34 @@ _beam_pipeline_args = [
 ]
 
 
-# TODO(b/137289334): rename this as simple after DAG visualization is done.
 def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
                      module_file: Text, serving_model_dir: Text,
                      metadata_path: Text,
                      beam_pipeline_args: List[Text]) -> pipeline.Pipeline:
   """Implements the chicago taxi pipeline with TFX."""
 
-  # Brings data into the pipeline or otherwise joins/converts training data.
   example_gen = CsvExampleGen(input_base=data_root)
-
-  # Computes statistics over data for visualization and example validation.
   statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
-
-  # Generates schema based on statistics files.
   schema_gen = SchemaGen(
       statistics=statistics_gen.outputs['statistics'],
       infer_feature_shape=False)
-
-  # Performs anomaly detection based on statistics and data schema.
   example_validator = ExampleValidator(
       statistics=statistics_gen.outputs['statistics'],
       schema=schema_gen.outputs['schema'])
 
+  # Undersample component, with input examples and class label.
   undersample = Undersample(
       input_data=example_gen.outputs['examples'],
       label='Class',
   )
 
-  # Performs transformations and feature engineering in training and serving.
   transform = Transform(
       examples=undersample.outputs['output_data'],
       schema=schema_gen.outputs['schema'],
       module_file=module_file)
-
-  # Get the latest model so that we can warm start from the model.
   latest_model_resolver = resolver.Resolver(
       strategy_class=latest_artifacts_resolver.LatestArtifactsResolver,
       latest_model=Channel(type=Model)).with_id('latest_model_resolver')
-
-  # Uses user-provided Python function that implements a model using TF-Learn.
   trainer = Trainer(
       module_file=module_file,
       custom_executor_spec=executor_spec.ExecutorClassSpec(Executor),
@@ -113,8 +91,6 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
       transform_graph=transform.outputs['transform_graph'],
       train_args=trainer_pb2.TrainArgs(num_steps=10000),
       eval_args=trainer_pb2.EvalArgs(num_steps=5000))
-
-  # Get the latest blessed model for model validation.
   model_resolver = resolver.Resolver(
       strategy_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
       model=Channel(type=Model),
@@ -141,15 +117,12 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
                               absolute={'value': -1e-10}))
               })
       ])
+
   evaluator = Evaluator(
       examples=example_gen.outputs['examples'],
       model=trainer.outputs['model'],
       baseline_model=model_resolver.outputs['model'],
-      # Change threshold will be ignored if there is no baseline (first run).
       eval_config=eval_config)
-
-  # Checks whether the model passed the validation steps and pushes the model
-  # to a file destination if check passed.
   pusher = Pusher(
       model=trainer.outputs['model'],
       model_blessing=evaluator.outputs['blessing'],
