@@ -56,7 +56,7 @@ class TaxiPipelineLocalEndToEndTest(tf.test.TestCase, parameterized.TestCase):
     self.assertExecutedOnce('CsvExampleGen')
     self.assertExecutedOnce('Evaluator')
     self.assertExecutedOnce('ExampleValidator')
-    self.assertExecutedOnce('Undersample')
+    self.assertExecutedOnce('Undersampler')
     self.assertExecutedOnce('Pusher')
     self.assertExecutedOnce('SchemaGen')
     self.assertExecutedOnce('StatisticsGen')
