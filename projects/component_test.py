@@ -5,59 +5,56 @@ from absl.testing import absltest
 from tfx.types import artifact_utils
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
+from tfx.utils import json_utils
 
-INPUT_KEY = 'input_data'
-OUTPUT_KEY = 'output_data'
-LABEL_KEY = 'label'
-NAME_KEY = 'name'
-SPLIT_KEY = 'splits'
-COPY_KEY = 'copy_others'
-SHARDS_KEY = 'shards'
-CLASSES_KEY = 'keep_classes'
 
 class ComponentTest(absltest.TestCase):
   def testConstruct(self):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+    params = {
+        component.UNDERSAMPLER_INPUT_KEY: channel_utils.as_channel([examples]),
+        component.UNDERSAMPLER_LABEL_KEY: 'label'
+    }
 
-    under = component.Undersampler(
-        input_data=channel_utils.as_channel([examples]),
-        label='label')
+    under = component.Undersampler(**params)
 
     self.assertEqual(
-        standard_artifacts.Examples.TYPE_NAME, under.outputs[OUTPUT_KEY].type_name)
+        standard_artifacts.Examples.TYPE_NAME, under.outputs[component.UNDERSAMPLER_OUTPUT_KEY].type_name)
     self.assertEqual(
-        under.spec.exec_properties[SPLIT_KEY], ['train'])
+        under.spec.exec_properties[component.UNDERSAMPLER_SPLIT_KEY], json_utils.dumps(['train']))
     self.assertEqual(
-        under.spec.exec_properties[LABEL_KEY], 'label')
+        under.spec.exec_properties[component.UNDERSAMPLER_LABEL_KEY], 'label')
 
   def testConstructWithOptions(self):
     examples = standard_artifacts.Examples()
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+    params = {
+        component.UNDERSAMPLER_INPUT_KEY: channel_utils.as_channel([examples]),
+        component.UNDERSAMPLER_LABEL_KEY: 'test_label',
+        component.UNDERSAMPLER_NAME_KEY: 'test_name',
+        component.UNDERSAMPLER_SPLIT_KEY: ['train', 'eval'],
+        component.UNDERSAMPLER_COPY_KEY: False,
+        component.UNDERSAMPLER_SHARDS_KEY: 10,
+        component.UNDERSAMPLER_CLASSES_KEY: ['label']
+    }
 
-    under = component.Undersampler(
-        input_data=channel_utils.as_channel([examples]),
-        label='test_label',
-        name='test_name',
-        splits=['train', 'eval'],
-        copy_others=False,
-        shards=10,
-        keep_classes=['label'])
+    under = component.Undersampler(**params)
 
     self.assertEqual(
-        standard_artifacts.Examples.TYPE_NAME, under.outputs[OUTPUT_KEY].type_name)
+        standard_artifacts.Examples.TYPE_NAME, under.outputs[component.UNDERSAMPLER_OUTPUT_KEY].type_name)
     self.assertEqual(
-        under.spec.exec_properties[LABEL_KEY], 'test_label')
+        under.spec.exec_properties[component.UNDERSAMPLER_LABEL_KEY], 'test_label')
     self.assertEqual(
-        under.spec.exec_properties[NAME_KEY], 'test_name')
+        under.spec.exec_properties[component.UNDERSAMPLER_NAME_KEY], 'test_name')
     self.assertEqual(
-        under.spec.exec_properties[SPLIT_KEY], ['train', 'eval'])
+        under.spec.exec_properties[component.UNDERSAMPLER_SPLIT_KEY], json_utils.dumps(['train', 'eval']))
     self.assertEqual(
-        under.spec.exec_properties[COPY_KEY], False)
+        under.spec.exec_properties[component.UNDERSAMPLER_COPY_KEY], False)
     self.assertEqual(
-        under.spec.exec_properties[SHARDS_KEY], 10)
+        under.spec.exec_properties[component.UNDERSAMPLER_SHARDS_KEY], 10)
     self.assertEqual(
-        under.spec.exec_properties[CLASSES_KEY], ['label'])
+        under.spec.exec_properties[component.UNDERSAMPLER_CLASSES_KEY], json_utils.dumps(['label']))
 
 
 if __name__ == '__main__':
