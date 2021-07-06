@@ -31,7 +31,7 @@ from tfx.types import Channel
 from tfx.types.standard_artifacts import Model
 from tfx.types.standard_artifacts import ModelBlessing
 
-from component import Undersample
+from component import Undersampler
 
 _pipeline_name = 'sampling_credit_card'
 _sampling_root = os.path.dirname(__file__)
@@ -69,8 +69,8 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
       statistics=statistics_gen.outputs['statistics'],
       schema=schema_gen.outputs['schema'])
 
-  # Undersample component, with input examples and class label.
-  undersample = Undersample(
+  # Undersampler component, with input examples and class label.
+  undersample = Undersampler(
       input_data=example_gen.outputs['examples'],
       label='Class',
   )
