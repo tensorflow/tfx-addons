@@ -16,7 +16,7 @@ from tfx.utils import io_utils
 
 
 class Executor(base_executor.BaseExecutor):
-  """Executor for Undersample."""
+  """Executor for Undersampler."""
 
   def Do(
     self,
@@ -25,7 +25,7 @@ class Executor(base_executor.BaseExecutor):
     exec_properties: Dict[Text, Any],
   ) -> None:
 
-    """Undersample executor entrypoint.
+    """Undersampler executor entrypoint.
 
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
@@ -33,7 +33,7 @@ class Executor(base_executor.BaseExecutor):
       contain custom splits specified in splits_config. If custom split is
       not provided, this should contain two splits 'train' and 'eval'.
       output_dict: Output dict from key to a list of artifacts, including:
-      - undersampled_examples: Undersampled examples, only for the given
+      - undersampled_examples: Undersamplerd examples, only for the given
       splits as specified in splits. May also include copies of the
       other non-undersampled spits, as specified by keep_classes.
       exec_properties: A dict of execution properties, including:
@@ -149,7 +149,7 @@ class Executor(base_executor.BaseExecutor):
         (
           data
           | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes, pr=True))
+          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
           | "Values" >> beam.Values()
           | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )

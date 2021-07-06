@@ -13,7 +13,7 @@ from tfx.types.component_spec import ExecutionParameter
 from tfx.utils import json_utils
 
 
-class UndersampleSpec(types.ComponentSpec):
+class UndersamplerSpec(types.ComponentSpec):
   """Undersampling component spec."""
 
   PARAMETERS = {
@@ -32,7 +32,7 @@ class UndersampleSpec(types.ComponentSpec):
   }
 
 
-class Undersample(base_component.BaseComponent):
+class Undersampler(base_component.BaseComponent):
   """A TFX component to undersample examples.
 
   The Undersampling component wraps an Apache Beam pipeline to process
@@ -52,7 +52,7 @@ class Undersample(base_component.BaseComponent):
   ## Example
   ```
   # Performs transformations and feature engineering in training and serving.
-  under = Undersample(
+  under = Undersampler(
     examples=example_gen.outputs['examples'])
   ```
 
@@ -63,7 +63,7 @@ class Undersample(base_component.BaseComponent):
                 otherwise specified by copy_others.
   """
 
-  SPEC_CLASS = UndersampleSpec
+  SPEC_CLASS = UndersamplerSpec
   EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(Executor)
 
   def __init__(
@@ -78,7 +78,7 @@ class Undersample(base_component.BaseComponent):
     keep_classes: Optional[List[Text]] = None,
   ):
 
-    """Construct an UndersampleComponent.
+    """Construct an UndersamplerComponent.
     Args:
       input_data: A Channel of type `standard_artifacts.Examples`.
       output_data: A Channel of type `standard_artifacts.Examples`.
@@ -99,7 +99,7 @@ class Undersample(base_component.BaseComponent):
     if not output_data:
       output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
-    spec = UndersampleSpec(
+    spec = UndersamplerSpec(
       input_data=input_data,
       output_data=output_data,
       label=label,
