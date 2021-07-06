@@ -13,24 +13,33 @@ from tfx.types.component_spec import ExecutionParameter
 from tfx.utils import json_utils
 
 
+UNDERSAMPLER_INPUT_KEY = 'input_data'
+UNDERSAMPLER_OUTPUT_KEY = 'output_data'
+UNDERSAMPLER_LABEL_KEY = 'label'
+UNDERSAMPLER_NAME_KEY = 'name'
+UNDERSAMPLER_SPLIT_KEY = 'splits'
+UNDERSAMPLER_COPY_KEY = 'copy_others'
+UNDERSAMPLER_SHARDS_KEY = 'shards'
+UNDERSAMPLER_CLASSES_KEY = 'keep_classes'
+
+
 class UndersamplerSpec(types.ComponentSpec):
   """Undersampling component spec."""
 
   PARAMETERS = {
-    "label": ExecutionParameter(type=str),
-    "name": ExecutionParameter(type=Text, optional=True),
-    "splits": ExecutionParameter(type=str, optional=True),
-    "copy_others": ExecutionParameter(type=int, optional=True),
-    "shards": ExecutionParameter(type=int, optional=True),
-    "keep_classes": ExecutionParameter(type=str, optional=True),
+    UNDERSAMPLER_LABEL_KEY: ExecutionParameter(type=str),
+    UNDERSAMPLER_NAME_KEY: ExecutionParameter(type=Text, optional=True),
+    UNDERSAMPLER_SPLIT_KEY: ExecutionParameter(type=str, optional=True),
+    UNDERSAMPLER_COPY_KEY: ExecutionParameter(type=int, optional=True),
+    UNDERSAMPLER_SHARDS_KEY: ExecutionParameter(type=int, optional=True),
+    UNDERSAMPLER_CLASSES_KEY: ExecutionParameter(type=str, optional=True),
   }
   INPUTS = {
-    "input_data": ChannelParameter(type=standard_artifacts.Examples),
+    UNDERSAMPLER_INPUT_KEY: ChannelParameter(type=standard_artifacts.Examples),
   }
   OUTPUTS = {
-    "output_data": ChannelParameter(type=standard_artifacts.Examples),
+    UNDERSAMPLER_OUTPUT_KEY: ChannelParameter(type=standard_artifacts.Examples),
   }
-
 
 class Undersampler(base_component.BaseComponent):
   """A TFX component to undersample examples.
