@@ -4,13 +4,14 @@ import os
 import tensorflow as tf
 import random
 import apache_beam as beam
+import component
 from typing import Any, Dict, List, Text
 
 from tfx import types
+from tfx.components.util import tfxio_utils
 from tfx.dsl.components.base import base_executor
 from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
-from tfx.components.util import tfxio_utils
 from tfx.utils import json_utils
 from tfx.utils import io_utils
 
@@ -54,14 +55,14 @@ class Executor(base_executor.BaseExecutor):
     """
 
     self._log_startup(input_dict, output_dict, exec_properties)
-    label = exec_properties["label"]
-    splits = json_utils.loads(exec_properties["splits"])
-    copy_others = exec_properties["copy_others"]
-    shards = exec_properties["shards"]
-    keep_classes = json_utils.loads(exec_properties["keep_classes"])
+    label = exec_properties[component.UNDERSAMPLER_LABEL_KEY]
+    splits = json_utils.loads(exec_properties[component.UNDERSAMPLER_SPLIT_KEY])
+    copy_others = exec_properties[component.UNDERSAMPLER_COPY_KEY]
+    shards = exec_properties[component.UNDERSAMPLER_SHARDS_KEY]
+    keep_classes = json_utils.loads(exec_properties[compoennt.UNDERSAMPLER_CLASSES_KEY])
 
-    input_artifact = artifact_utils.get_single_instance(input_dict["input_data"])
-    output_artifact = artifact_utils.get_single_instance(output_dict["output_data"])
+    input_artifact = artifact_utils.get_single_instance(input_dict[component.UNDERSAMPLER_INPUT_KEY])
+    output_artifact = artifact_utils.get_single_instance(output_dict[component.UNDERSAMPLER_OUTPUT_KEY])
 
     if copy_others:
       output_artifact.split_names = input_artifact.split_names
