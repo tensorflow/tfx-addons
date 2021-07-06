@@ -59,7 +59,7 @@ class Executor(base_executor.BaseExecutor):
     splits = json_utils.loads(exec_properties[component.UNDERSAMPLER_SPLIT_KEY])
     copy_others = exec_properties[component.UNDERSAMPLER_COPY_KEY]
     shards = exec_properties[component.UNDERSAMPLER_SHARDS_KEY]
-    keep_classes = json_utils.loads(exec_properties[compoennt.UNDERSAMPLER_CLASSES_KEY])
+    keep_classes = json_utils.loads(exec_properties[component.UNDERSAMPLER_CLASSES_KEY])
 
     input_artifact = artifact_utils.get_single_instance(input_dict[component.UNDERSAMPLER_INPUT_KEY])
     output_artifact = artifact_utils.get_single_instance(output_dict[component.UNDERSAMPLER_OUTPUT_KEY])
@@ -67,7 +67,7 @@ class Executor(base_executor.BaseExecutor):
     if copy_others:
       output_artifact.split_names = input_artifact.split_names
     else:
-      output_artifact.split_names = splits
+      output_artifact.split_names = artifact_utils.encode_split_names(splits)
 
     # Fetch the input uri for each split
     split_data = {}

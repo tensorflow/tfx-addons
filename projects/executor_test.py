@@ -1,9 +1,9 @@
 import os
 import tempfile
+import component
 import executor
 import tensorflow as tf
 import filecmp
-import component
 
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
