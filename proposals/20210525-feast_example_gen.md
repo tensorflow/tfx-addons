@@ -74,6 +74,8 @@ The `query` parameter to the `FeastExampleGen` constructor only applies to the F
 
 * Testing: unit and integration tests
 
+Reading from the Feast offline store fits in nicely with the `QueryBasedExampleGen` model. On the other hand, reading from the online store does NOT fit in nicely with this model and would likely involve additional complexities. **Therefore, although we include details for reading from the online store here, this proposal is committing to add support for the offline store only- the online store will be a stretch goal for this effort.** The decision to add support for the Feast offline store first is also motivated by the fact that most users today are looking to read data from Feast for training and further processing downstream.
+
 ### Languages
 Python
 
