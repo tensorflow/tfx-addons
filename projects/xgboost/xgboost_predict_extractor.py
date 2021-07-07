@@ -29,6 +29,7 @@ from tensorflow_model_analysis import model_util
 from tensorflow_model_analysis import types
 from tensorflow_model_analysis.extractors import extractor
 from tfx_bsl.tfxio import tensor_adapter
+import xgboost as xgb
 
 _PREDICT_EXTRACTOR_STAGE_NAME = 'XGBoostPredict'
 
@@ -67,7 +68,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
 
   def __init__(self, 
     eval_shared_models: Dict[Text, types.EvalSharedModel], 
-    eval_config: types.EvalConfig):
+    eval_config: tfma.EvalConfig):
     super(_TFMAPredictionDoFn, self).__init__(
         {k: v.model_loader for k, v in eval_shared_models.items()})
     self._eval_config = eval_config
@@ -98,12 +99,15 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
         self._feature_keys = feature_keys
         self._label_key = label_config[name]
       else:
-        raise ValueError('Missing feature or label keys in loaded model.')
+        raise ValueError(f'Missing feature or label keys in loaded model {name}.')
 
   def extract_model_specs(self):
     label_specs = {}
     for config in self._eval_config.model_specs:
-      label_specs[config.name] = config.label_key
+      if config.name:
+        label_specs[config.name] = config.label_key
+      else: # if the input name to ModelSpec is None, ModelSpec doesn't save it and config.name resolves to ''.
+        label_specs[None] = config.label_key
     return label_specs
 
   def process(self, elem: types.Extracts) -> Iterable[types.Extracts]:
@@ -122,11 +126,11 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
     labels = []
     result = copy.copy(elem)
     for features_dict in result[constants.FEATURES_KEY]:
-      features_row = [features_dict[key] for key in self._feature_names]
+      features_row = [features_dict[key] for key in self._feature_keys]
       features.append(np.concatenate(features_row))
       labels.append(features_dict[self._label_key])
     result[constants.LABELS_KEY] = np.concatenate(labels)
-    features = pd.DataFrame(features)
+    features = xgb.DMatrix(pd.DataFrame(features, columns=self._feature_keys))
 
     # Generate predictions for each model.
     for model_name, loaded_model in self._loaded_models.items():
@@ -148,7 +152,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
 def _ExtractPredictions(  # pylint: disable=invalid-name
     extracts: beam.pvalue.PCollection,
     eval_shared_models: Dict[Text, types.EvalSharedModel],
-    eval_config: types.EvalConfig,
+    eval_config: tfma.EvalConfig,
 ) -> beam.pvalue.PCollection:
   """A PTransform that adds predictions and possibly other tensors to extracts.
 
@@ -165,7 +169,11 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
 
 def _custom_model_loader_fn(model_path: Text):
   """Returns a function that loads a xgboost model."""
-  return lambda: pickle.load(tf.io.gfile.GFile(model_path, 'rb'))
+  def loader(path):
+    model = xgb.Booster()
+    model.load_model(path)
+    return model
+  return lambda: loader(model_path)
 
 
 # TFX Evaluator will call the following functions.
@@ -173,7 +181,7 @@ def custom_eval_shared_model(
     eval_saved_model_path, model_name, eval_config,
     **kwargs) -> tfma.EvalSharedModel:
   """Returns a single custom EvalSharedModel."""
-  model_path = os.path.join(eval_saved_model_path, 'model.pkl')
+  model_path = os.path.join(eval_saved_model_path, 'model.json')
   return tfma.default_eval_shared_model(
       eval_saved_model_path=model_path,
       model_name=model_name,
@@ -189,12 +197,13 @@ def custom_extractors(
     tensor_adapter_config: tensor_adapter.TensorAdapterConfig,
 ) -> List[tfma.extractors.Extractor]:
   """Returns default extractors plus a custom prediction extractor."""
-  predict_extractor = _make_xgboost_predict_extractor(eval_shared_model)
+  predict_extractor = _make_xgboost_predict_extractor(eval_shared_model, eval_config)
   return tfma.default_extractors(
       eval_shared_model=eval_shared_model,
       eval_config=eval_config,
       tensor_adapter_config=tensor_adapter_config,
       custom_predict_extractor=predict_extractor)
+
 
 def get_module_file():
     return os.path.abspath(__file__)

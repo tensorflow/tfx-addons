@@ -20,6 +20,7 @@ import xgboost as xgb
 import apache_beam as beam
 from apache_beam.testing import util
 from google.protobuf import text_format
+import tensorflow as tf
 from tensorflow_metadata.proto.v0 import schema_pb2
 from tensorflow_model_analysis import config
 from tensorflow_model_analysis import constants
@@ -31,11 +32,6 @@ from tfx_bsl.tfxio import test_util
 
 import xgboost_predict_extractor
 
-class XGBTester(xgb.XGBClassifier):
-  def __init__(self):
-    self.feature_keys = None
-    self.label_keys = None
-    super().__init__()
 
 class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
@@ -82,7 +78,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
         xgboost_predict_extractor._make_xgboost_predict_extractor(
-            self._eval_shared_model))
+            self._eval_shared_model, self._eval_config))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
           pipeline
@@ -129,7 +125,8 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
             eval_shared_model={
                 'model1': eval_shared_model_1,
                 'model2': eval_shared_model_2,
-            }))
+            }, 
+            eval_config=eval_config))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
           pipeline
@@ -156,9 +153,9 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
   def test_custom_eval_shared_model(self):
     """Tests that an EvalSharedModel is created with a custom xgboost loader."""
     model_file = os.path.basename(self._eval_shared_model.model_path)
-    self.assertEqual(model_file, 'model.pkl')
+    self.assertEqual(model_file, 'model.json')
     model = self._eval_shared_model.model_loader.construct_fn()
-    self.assertIsInstance(model, xgb.XGBClassifier)
+    self.assertIsInstance(model, xgb.Booster)
 
   def test_custom_extractors(self):
     """Tests that the xgboost extractor is used when creating extracts."""
@@ -175,14 +172,14 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
         eval_export_dir: Directory to store a pickled xgboost model. This
             directory is created if it does not exist.
     """
-    x_train = pd.DataFrame({"age": [3, 0], "language": [4, 1]})
-    y_train = pd.DataFrame({"label": [0, 1]})
-    model = XGBTester()
-    model.feature_keys = ['age', 'language']
-    model.label_key = 'label'
-    model.fit(x_train, y_train)
+    train = pd.DataFrame({"age": [3, 0], "language": [4, 1]})
+    label = pd.DataFrame({"label": [0, 1]})
+    param = {'max_depth': 2, 'eta': 1, 'objective': 'binary:logistic'}
+    train = xgb.DMatrix(train, label=label)
+    model = xgb.train(param, train)
 
     os.makedirs(eval_export_dir)
-    model_path = os.path.join(eval_export_dir, 'model.pkl')
-    with open(model_path, 'wb+') as f:
-      pickle.dump(model, f)
+    model.save_model(os.path.join(eval_export_dir, "model.json"))
+
+if __name__ == '__main__':
+  tf.test.main()
