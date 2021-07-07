@@ -4,6 +4,13 @@ This is the project proposal for the tfx-addons project https://github.com/tenso
 
 # Project Proposal
 
+**Your name:** Daniel Kim
+
+**Your email:** danielk@twitter.com
+
+**Your company/organization:** Twitter
+
+**Project name:** XGBoost Evaluator Component
 # Project Description
 Add support for evaluating XGBoost model in the standard component Evaluator. 
 Add an example pipeline that trains, evaluates and pushes an XGBoost model to CAIP.
@@ -13,6 +20,8 @@ Add an example pipeline that trains, evaluates and pushes an XGBoost model to CA
 Component + Example
 
 ## Project Use-Case(s)
+
+This project can be used whenever customers wish to evaluate XGBoost models within a TFX pipeline, in order to obtain the various benefits and functionalities that TFX supports.
 
 ## Project Implementation
 
@@ -77,8 +86,8 @@ The actual implementation of the custom prediction extractor depends on whether 
 
 Pros:
 Universal among the various XGBoost interfaces (Python, JVM, C++, etc.)
-Some level of backward compatibility is guaranteed
-Still retain attributes such as feature_names, feature_types, etc. (in newer xgboost versions)
+* Some level of backward compatibility is guaranteed
+* Still retain attributes such as feature_names, feature_types, etc. (in newer xgboost versions)
 
 Another option is a pickled sklearn Pipeline (option 2 from above). 
 Pros:
