@@ -74,6 +74,7 @@ Our custom prediction extractor essentially governs conversion of data to format
 Currently, we plan to support running the Evaluator with Apache Beam through the use of a customized prediction DoFn to load, process, and run predictions on models, and a simple pipeline wrapper that calls this function on extracts.
 
 The actual implementation of the custom prediction extractor depends on whether it should work with a native XGBoost serialized model (option 1 from above).
+
 Pros:
 Universal among the various XGBoost interfaces (Python, JVM, C++, etc.)
 Some level of backward compatibility is guaranteed
@@ -81,12 +82,13 @@ Still retain attributes such as feature_names, feature_types, etc. (in newer xgb
 
 Another option is a pickled sklearn Pipeline (option 2 from above). 
 Pros:
-Another wrapping layer means more flexibility, you can add some pre-processing and post-processing to the sklearn Pipeline, try out other types of models, etc.
-Most of the code needed for sklearn-compatible Trainer and Evaluator in the penguin sklearn pipeline can be reused
+* Another wrapping layer means more flexibility, you can add some pre-processing and post-processing to the sklearn Pipeline, try out other types of models, etc.
+* Most of the code needed for sklearn-compatible Trainer and Evaluator in the penguin sklearn pipeline can be reused
+
 Cons:
-Extra dependency on sklearn
-Using Python pickle standard library or joblib, which is specific to Python
-Lack of guarantee for backward compatibility
+* Extra dependency on sklearn
+* Using Python pickle standard library or joblib, which is specific to Python
+* Lack of guarantee for backward compatibility
 
 By default, we plan to go with option 1 for simplicity and consistency.
 
@@ -103,7 +105,7 @@ This example pipeline will not be packaged, instead, users just need to clone th
 
 ## Project Dependencies
 * `xgboost>=1.4.0`
-* `sklearn>=?`
+* `sklearn>=?` (option 2)
 
 ## References
 
@@ -113,4 +115,5 @@ This example pipeline will not be packaged, instead, users just need to clone th
 ## Project Team
 
 Daniel Kim, kindalime, danielk@twitter.com
+
 Vincent Nguyen, cent5, vincentn@twitter.com
