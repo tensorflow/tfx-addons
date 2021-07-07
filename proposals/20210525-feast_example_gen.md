@@ -39,15 +39,38 @@ There is no potential impact, overlap, or synergies with other projects. Depende
 
 ## Project Implementation
 
-* At a high level, there are 3 major APIs [3]:
-1. Connect to a remote Feast instance. The connection string could be part of a general procedure to configure the feature store using a JSON/YAML file.
-2. Provide a wrapper for `get_online_features`. Feast returns an `OnlineResponse` [5], which will be converted to a tensor.
-3. Provide a wrapper for `get_historical_features`. Feast returns a `RetrievalJob` [6], which will be used to materialize the results and convert them to a tensor.
+The Feast connector will be implemented as a custom `ExampleGen` component. It will inherit from `QueryBasedExampleGen`. It will ultimately closely resemble `PrestoExampleGen` [8]. `FeastExampleGen` will emit `tf.Example` records.
 
-* Important Considerations
+```python
+from tfx.examples.custom_components.feast_example_gen.proto import feast_config_pb2
+from tfx.examples.custom_components.feast_example_gen.feast_component.component import FeastExampleGen
+
+feast_config = feast_config_pb2.FeastConnConfig(host=.., port=..)
+example_gen = FeastExampleGen(feast_config, query='SELECT event_timestamp, order_id, customer_id from gcp_project.my_ds.customer_orders', custom_config=..)
+```
+
+The connector will switch on `custom_config` keys to choose between `get_online_features()` &#8594; `OnlineResponse` and `get_historical_features` &#8594; `RetrievalJob`.
+
+The following are some `custom_config` keys:
+* Offline store
+    * `type` specifies the backend datastore.
+    * `entity_df` is a parameter to `get_historical_features()` in Feast.
+    * `feature_refs` is a parameter to `get_historical_features()` in Feast.
+
+The `entity_df` key in `custom_config` will override the `query` parameter to the `FeastExampleGen` constructor.
+
+* Online store
+    * `feature_refs` is a parameter to `get_online_features()` in Feast.
+    * `entity_rows` is a parameter to `get_online_features()` in Feast.
+
+The `query` parameter to the `FeastExampleGen` constructor only applies to the Feast offline store. It will be ignored if valid online store parameters are specified in `custom_config`.
+
+* Other Important Considerations
 1. We want to generalize the implementation as much as possible to make it straightforward to add support for other feature stores besides Feast in the future. To this end, it would be useful to generalize the notion of Feast's entity types [4].
 
-2. Today Feast only supports BigQuery queries for `get_historical_features`. We should parameterize the query so that users can use other offline data stores in the future. We should propagate the error message for bad queries.
+2. Today Feast only supports BigQuery queries for `get_historical_features`. We will offer `custom_config` options to specify other backend datastores. We should propagate the error message for bad queries.
+
+3. Feast will implement `to_tf_dataset()` methods to convert to native TensorFlow data types for both `get_online_features()` &#8594; `OnlineResponse` and `get_historical_features` &#8594; `RetrievalJob`. `FeastExampleGen` will then emit `tf.Example` records based on the specified `output_config`.
 
 * Testing: unit and integration tests
 
@@ -73,3 +96,5 @@ The code will reside in `tfx/addons/feature-store-connector`. We will also publi
 4. https://github.com/feast-dev/feast/issues/405
 5. https://rtd.feast.dev/en/latest/feast.html#feast.online_response.OnlineResponse
 6. https://rtd.feast.dev/en/latest/#feast.feature_store.FeatureStore.get_historical_features
+7. https://www.tensorflow.org/tfx/api_docs/python/tfx/components/example_gen/component/QueryBasedExampleGen
+8. https://github.com/tensorflow/tfx/tree/983794c2ec2ca567dddffab0e4827fa29bcb2230/tfx/examples/custom_components/presto_example_gen/presto_component
