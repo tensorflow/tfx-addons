@@ -14,7 +14,7 @@
 
 ## Project Description
 
-This project will be a custom function-based component that inputs an artifact in `tfRecord` format of `tf.Example`s and randomly undersamples it, reducing the data to the lowest-frequency class. It will primarily use an underlying Apache Beam pipeline that will be wrapped inside the TensorFlow component.
+This project will be a fully custom component that inputs an artifact in `tfRecord` format of `tf.Example`s and randomly undersamples it, reducing the data to the lowest-frequency class. It will primarily use an underlying Apache Beam pipeline that will be wrapped inside the TensorFlow component.
 
 ## Project Category
 
@@ -32,9 +32,9 @@ BigQuery is also a very good option, and a great fallback in case Apache Beam tu
 
 ## Project Implementation
 
-At a high level, the plan is to use Apache Beam to injest a `tfRecord` of `tf.Examples`, shuffle them, convert them into a key-value `PCollection` with keys as class values and values as data points, and then use `Sample.FixedSizePerKey()` in order to perform the actual undersampling. The algorithm will be written as an Apache Beam pipeline, which will be wrapped into a TensorFlow custom function component to use with TFX pipelines. The component would be written as inputting a `tfRecord` artifact and exporting a similar `tf.Record` artifact, making its placement in a pipeline nearly ubiquitous. If necessary, the component may also be changed to a fully-custom component, albeit one where only the executor is edited.
+At a high level, the plan is to use Apache Beam to ingest a `tfRecord` of `tf.Examples`, shuffle them, convert them into a key-value `PCollection` with keys as class values and values as data points, and then use `Sample.FixedSizePerKey()` in order to perform the actual undersampling. The algorithm will be written as an Apache Beam pipeline, which will be wrapped into a TensorFlow custom component (with custom executor and spec) to use with TFX pipelines. The component would be written as inputting a `tfRecord` artifact and exporting a similar `tf.Record` artifact, making its placement in a pipeline nearly ubiquitous. 
 
-Later additions to the project include a similar component for random oversampling and the integration through Apache Beam of one or more other, more complex undersampling or ovesampling algorithms. Our likely focus would be SMOTE for oversampling and either ENN or Tomek Links for undersampling. These would likely be implemented as custom Python functions within the Apache Beam pipeline, although the focus for now is currently the initial random undersampling component.
+Later additions to the project could include a similar component for random oversampling and the integration through Apache Beam of one or more other, more complex undersampling or ovesampling algorithms. Our likely focus would be SMOTE for oversampling and either ENN or Tomek Links for undersampling. These would likely be implemented as custom Python functions within the Apache Beam pipeline, although the focus for now is currently the initial random undersampling component.
 
 ## Project Dependencies
 
