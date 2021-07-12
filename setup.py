@@ -12,7 +12,7 @@ TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client": ["ml-pipelines-sdk>=0.26.3<1", "ml-metadata>=0.26.3<1"]
+    "mlmd_client": ["ml-pipelines-sdk>=0.26.3<1", "ml-metadata>=0.26<1"]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(
