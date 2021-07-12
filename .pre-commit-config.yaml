@@ -1,18 +1,21 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 exclude: ^projects/
-default_stages: [push, ]
+default_stages: [push,]
 repos:
 -   repo: https://github.com/PyCQA/pylint
     rev: v2.8.3
+    always_run: true
     hooks:
     -   id: pylint
 -   repo:  https://github.com/pre-commit/mirrors-yapf
     rev: v0.31.0
+    always_run: true
     hooks:
     -   id: yapf 
 -   repo: https://github.com/pycqa/isort
     rev: 5.8.0
+    always_run: true
     hooks:
     -   id: isort
         name: isort (python)
