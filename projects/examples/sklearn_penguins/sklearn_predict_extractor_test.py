@@ -17,16 +17,19 @@ import os
 import pickle
 
 import apache_beam as beam
-import sklearn_predict_extractor
 from apache_beam.testing import util
 from google.protobuf import text_format
 from sklearn import neural_network as nn
 from tensorflow_metadata.proto.v0 import schema_pb2
-from tensorflow_model_analysis import config, constants
+from tensorflow_model_analysis import config
+from tensorflow_model_analysis import constants
 from tensorflow_model_analysis.api import model_eval_lib
 from tensorflow_model_analysis.eval_saved_model import testutil
 from tensorflow_model_analysis.extractors import features_extractor
-from tfx_bsl.tfxio import tensor_adapter, test_util
+from tfx_bsl.tfxio import tensor_adapter
+from tfx_bsl.tfxio import test_util
+
+import sklearn_predict_extractor
 
 
 class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):

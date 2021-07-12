@@ -5,7 +5,7 @@
 # /proposals/ daikeshi@gmail.com casassg hanneshapke junbopark larry.price@openx.com marcromeyn michalbrys nle@twitter.com olgai@spotify.com pselden rclough sngahane
 
 # Sci-Kit Learn Example using the Penguins dataset
-/examples/sklearn_penguins/ @TheMichaelHu @1025kb
+/projects/examples/sklearn_penguins/ @TheMichaelHu @1025kb
 
 # MLMD Client Library
 /tfx_addons/mlmd_client/ @codesue @pselden @casassg

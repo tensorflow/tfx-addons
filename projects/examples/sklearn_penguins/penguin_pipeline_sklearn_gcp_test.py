@@ -16,10 +16,11 @@
 import os
 from unittest import mock
 
-import penguin_pipeline_sklearn_gcp
 import tensorflow as tf
 from tfx import v1 as tfx
 from tfx.utils import test_case_utils
+
+import penguin_pipeline_sklearn_gcp
 
 
 class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):

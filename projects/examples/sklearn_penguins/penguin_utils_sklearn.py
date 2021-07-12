@@ -26,11 +26,14 @@ import numpy as np
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from tensorflow_metadata.proto.v0 import schema_pb2
-from tfx.components.trainer.fn_args_utils import DataAccessor, FnArgs
+
+from tfx.components.trainer.fn_args_utils import DataAccessor
+from tfx.components.trainer.fn_args_utils import FnArgs
 from tfx.dsl.io import fileio
 from tfx.utils import io_utils
 from tfx_bsl.tfxio import dataset_options
+
+from tensorflow_metadata.proto.v0 import schema_pb2
 
 _FEATURE_KEYS = [
     'culmen_length_mm', 'culmen_depth_mm', 'flipper_length_mm', 'body_mass_g'
