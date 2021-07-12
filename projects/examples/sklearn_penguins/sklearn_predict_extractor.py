@@ -22,9 +22,7 @@ import apache_beam as beam
 import numpy as np
 import tensorflow as tf
 import tensorflow_model_analysis as tfma
-from tensorflow_model_analysis import constants
-from tensorflow_model_analysis import model_util
-from tensorflow_model_analysis import types
+from tensorflow_model_analysis import constants, model_util, types
 from tensorflow_model_analysis.extractors import extractor
 from tfx_bsl.tfxio import tensor_adapter
 

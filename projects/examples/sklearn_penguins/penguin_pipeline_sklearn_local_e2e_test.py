@@ -14,8 +14,8 @@
 """E2E Tests for penguin_pipeline_sklearn_local."""
 
 import os
-from typing import Text
 import unittest
+from typing import Text
 
 import tensorflow as tf
 from tfx import v1 as tfx
