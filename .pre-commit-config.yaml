@@ -11,11 +11,15 @@ repos:
     rev: v0.31.0
     hooks:
     -   id: yapf 
--   repo: local
+-   repo: https://github.com/pycqa/isort
+    rev: 5.8.0
     hooks:
-    -   id: pytest-check
-        name: pytest-check
-        entry: pytest tfx_addons
-        language: system
-        pass_filenames: false
-        always_run: true
+    -   id: isort
+        name: isort (python)
+    -   id: isort
+        name: isort (cython)
+        types: [cython]
+    -   id: isort
+        name: isort (pyi)
+        types: [pyi]
+        

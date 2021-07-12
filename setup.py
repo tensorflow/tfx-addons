@@ -1,11 +1,14 @@
-from setuptools import setup
-import tfx_addons as tfxa
+"""Package Setup script for TFX Addons."""
 import itertools
+
+from setuptools import setup
+
+import tfx_addons as tfxa
 
 NAME = "tfx-addons"
 # VERSION = .... Change the version in tfx_addons/__init__.py
 
-TESTS_REQUIRE = ["pytest", "pylint", "black", "pre-commit"]
+TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
