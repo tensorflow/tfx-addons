@@ -23,7 +23,7 @@ jobs:
     - uses: pre-commit/action@v2.0.3
       name: Run pre-commit checks (pylint/yapf/isort)
       with:
-        extra_args: --hook-stage push
+        extra_args: --hook-stage push --all-files
   pytest-ci:
     runs-on: ubuntu-latest
     timeout-minutes: 60
