@@ -9,3 +9,6 @@
 
 # MLMD Client Library
 /tfx_addons/mlmd_client/ @codesue @pselden @casassg
+
+# ExampleFilter Component
+/tfx_addons/example_filter/ @rclough
