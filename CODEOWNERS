@@ -8,4 +8,4 @@
 /projects/examples/sklearn_penguins/ @TheMichaelHu @1025kb
 
 # MLMD Client Library
-/projects/libraries/mlmd-client/ @codesue @pselden @casassg
+/tfx_addons/mlmd_client/ @codesue @pselden @casassg
