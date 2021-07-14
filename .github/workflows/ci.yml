@@ -11,7 +11,18 @@ on:
       - r*
 
 jobs:
-  build_tfx_addons:
+  pre-commit-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - uses: pre-commit/action@v2.0.3
+      name: Run pre-commit checks (pylint/yapf/isort)
+  pytest-ci:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -24,8 +35,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
-    - uses: pre-commit/action@v2.0.3
-      name: Run pre-commit checks (pylint/yapf/isort)
     - name: Cache pip
       uses: actions/cache@v2
       with:
