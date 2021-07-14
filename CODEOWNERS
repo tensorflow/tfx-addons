@@ -12,3 +12,6 @@
 
 # ExampleFilter Component
 /tfx_addons/example_filter/ @rclough
+
+# Schema Curation Component
+/tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97
