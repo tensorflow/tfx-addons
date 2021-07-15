@@ -31,14 +31,14 @@ from tfx.types import Channel
 from tfx.types.standard_artifacts import Model
 from tfx.types.standard_artifacts import ModelBlessing
 
-from component import Undersampler
+from projects.sampler.component import Sampler
 
 _pipeline_name = 'sampling_credit_card'
 _sampling_root = os.path.dirname(__file__)
 _data_root = os.path.join(_sampling_root, 'data')
 # Python module file to inject customized logic into the TFX components. The
 # Transform and Trainer both require user-defined functions to run successfully.
-_module_file = os.path.join(_sampling_root, 'sampling_utils.py')
+_module_file = os.path.join(_sampling_root, 'sampler_utils.py')
 _serving_model_dir = os.path.join(_sampling_root, 'serving_model', _pipeline_name)
 _tfx_root = os.path.join(os.environ['HOME'], 'tfx')
 _pipeline_root = os.path.join(_tfx_root, 'pipelines', _pipeline_name)
@@ -58,7 +58,7 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
                      module_file: Text, serving_model_dir: Text,
                      metadata_path: Text,
                      beam_pipeline_args: List[Text]) -> pipeline.Pipeline:
-  """Implements the chicago taxi pipeline with TFX."""
+  """Implements an example pipeline with the sampling component witin TFX."""
 
   example_gen = CsvExampleGen(input_base=data_root)
   statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
@@ -69,14 +69,15 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
       statistics=statistics_gen.outputs['statistics'],
       schema=schema_gen.outputs['schema'])
 
-  # Undersampler component, with input examples and class label.
-  undersample = Undersampler(
+  # Sampler component, with input examples and class label.
+  sample = Sampler(
       input_data=example_gen.outputs['examples'],
       label='Class',
+      undersample=False
   )
 
   transform = Transform(
-      examples=undersample.outputs['output_data'],
+      examples=sample.outputs['output_data'],
       schema=schema_gen.outputs['schema'],
       module_file=module_file)
   latest_model_resolver = resolver.Resolver(
@@ -138,7 +139,7 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
           statistics_gen,
           schema_gen,
           example_validator,
-          undersample,
+          sample,
           transform,
           latest_model_resolver,
           trainer,
@@ -146,14 +147,14 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
           evaluator,
           pusher,
       ],
-      enable_cache=True,
+      enable_cache=False,
       metadata_connection_config=metadata.sqlite_metadata_connection_config(
           metadata_path),
       beam_pipeline_args=beam_pipeline_args)
 
 
 # To run this pipeline from the python CLI:
-#   $python taxi_pipeline_beam.py
+#   $python sampler_pipeline_local.py
 if __name__ == '__main__':
   absl.logging.set_verbosity(absl.logging.INFO)
 
