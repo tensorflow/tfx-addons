@@ -11,7 +11,7 @@ Clone the tfx-addons repo and navigate to the penguin directory.
 
 <pre class="devsite-terminal devsite-click-to-copy">
 git clone https://github.com/tensorflow/tfx-addons.git
-cd tfx-addons/projects/examples/sklearn_penguins
+cd tfx-addons/examples/sklearn_penguins
 </pre>
 
 Next, create a Python virtual environment for this example, activate the
