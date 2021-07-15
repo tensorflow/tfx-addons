@@ -1,6 +1,5 @@
 import os
 import tempfile
-import component
 import executor
 import tensorflow as tf
 import filecmp
@@ -16,6 +15,15 @@ from tfx.types import standard_artifacts
 from tfx.utils import json_utils
 from tfx.utils import io_utils
 from tfx.components.util import tfxio_utils
+
+SAMPLER_INPUT_KEY = 'input_data'
+SAMPLER_OUTPUT_KEY = 'output_data'
+SAMPLER_LABEL_KEY = 'label'
+SAMPLER_NAME_KEY = 'name'
+SAMPLER_SPLIT_KEY = 'splits'
+SAMPLER_COPY_KEY = 'copy_others'
+SAMPLER_SHARDS_KEY = 'shards'
+SAMPLER_CLASSES_KEY = 'keep_classes'
 
 
 class ExecutorTest(absltest.TestCase):
@@ -62,14 +70,14 @@ class ExecutorTest(absltest.TestCase):
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
     input_dict = {
-        component.UNDERSAMPLER_INPUT_KEY: [examples],
+        SAMPLER_INPUT_KEY: [examples],
     }
 
     # Create output dict.
     output = standard_artifacts.Examples()
     output.uri = output_data_dir
     output_dict = {
-      component.UNDERSAMPLER_OUTPUT_KEY: [output],
+      SAMPLER_OUTPUT_KEY: [output],
     }
 
     # Run executor.
@@ -80,12 +88,12 @@ class ExecutorTest(absltest.TestCase):
 
   def testDo(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      SAMPLER_LABEL_KEY: 'company',
+      SAMPLER_NAME_KEY: 'undersampling',
+      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      SAMPLER_COPY_KEY: True,
+      SAMPLER_SHARDS_KEY: 1,
+      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
     }
 
     output = self._run_exec(exec_properties)
@@ -97,12 +105,12 @@ class ExecutorTest(absltest.TestCase):
 
   def testKeepClasses(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps(['None']),
+      SAMPLER_LABEL_KEY: 'company',
+      SAMPLER_NAME_KEY: 'undersampling',
+      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      SAMPLER_COPY_KEY: True,
+      SAMPLER_SHARDS_KEY: 1,
+      SAMPLER_CLASSES_KEY: json_utils.dumps(['None']),
     }
 
     output = self._run_exec(exec_properties)
@@ -112,12 +120,12 @@ class ExecutorTest(absltest.TestCase):
 
   def testShards(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 20,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      SAMPLER_LABEL_KEY: 'company',
+      SAMPLER_NAME_KEY: 'undersampling',
+      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      SAMPLER_COPY_KEY: True,
+      SAMPLER_SHARDS_KEY: 20,
+      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
     }
 
     output = self._run_exec(exec_properties)
@@ -129,12 +137,12 @@ class ExecutorTest(absltest.TestCase):
 
   def testSplits(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      SAMPLER_LABEL_KEY: 'company',
+      SAMPLER_NAME_KEY: 'undersampling',
+      SAMPLER_SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
+      SAMPLER_COPY_KEY: True,
+      SAMPLER_SHARDS_KEY: 1,
+      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
     }
 
     output = self._run_exec(exec_properties)
@@ -145,12 +153,12 @@ class ExecutorTest(absltest.TestCase):
 
   def testCopy(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: False,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      SAMPLER_LABEL_KEY: 'company',
+      SAMPLER_NAME_KEY: 'undersampling',
+      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      SAMPLER_COPY_KEY: False,
+      SAMPLER_SHARDS_KEY: 1,
+      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
     }
 
     output = self._run_exec(exec_properties)
