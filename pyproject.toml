@@ -8,4 +8,4 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 addopts = "--verbose"
 python_files = "*_test.py"
-norecursedirs = ["projects", "env", "proposals"]
+norecursedirs = ["examples", "env", "proposals"]
