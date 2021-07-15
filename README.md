@@ -34,21 +34,20 @@ Other Resources
 ## Organization and Governance
 This is the repo for individual SIG projects and contributions.  It also contains overall SIG documents and resources, which are managed by the TensorFlow team.  Individual contribution projects will begin as proposals to the SIG, and once approved a folder will be created for the project, and project leaders assigned permissions to manage the folder.  **Projects will be led, maintained, and be the responsibility of community project leaders. Google and the TensorFlow team will not provide user support or maintenance for contributed addons. The TFX team will support community maintainers in SIG operations and contribution infrastructure.**
 
-Categories of projects are grouped under folders at the top level of the central SIG repo, including folders for components and examples. Individual projects will be assigned a new folder under the proper category folder, where all project materials will live. For all community-contributed projects the source of truth will be those project folders. Project leaders will be identified using OWNERS files at the top level of their project folder. New project leaders will be recruited for abandoned projects, or if new leaders are not found then projects will be deprecated and archived. Statistics will be generated and reported per-project.
+Individual projects will be assigned a new folder, where all project materials will live. For all community-contributed projects the source of truth will be those project folders. Project leaders will be identified in CODEOWNERS. New project leaders will be recruited for abandoned projects, or if new leaders are not found then projects will be deprecated and archived. Statistics will be generated and reported per-project.
 
 SIG TFX-Addons is a community-led open source project. As such, the project depends on public contributions, bug fixes, and documentation. This project adheres to the [TensorFlow Code of Conduct](https://github.com/tensorflow/tensorflow/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
 ## Project Approvals
 1. Project proposals will be submitted to the SIG and published for open review and comment by SIG members for 2 weeks.
-2. Core team members will vote either in person or offline on whether to approve or reject project proposals.
+2. Following review and approval by the Google TFX team, core team members will vote either in person or offline on whether to approve or reject project proposals.
 3. All projects must meet the following criteria:
    - Team members must be named in the proposal
    - All team members must have completed a [Contributor License Agreement](https://cla.developers.google.com/)
    - The project must not violate the [TensorFlow Code of Conduct](https://github.com/tensorflow/tensorflow/blob/master/CODE_OF_CONDUCT.md), [Google AI Principles](https://ai.google/principles/) or [Responsible AI Practices](https://ai.google/responsibilities/responsible-ai-practices/).
 4. Projects must code to supported open interfaces only, and not reach into core TFX to make changes or rely on private classes, methods, properties, or interfaces.
 5. **Google retains the right to reject any proposal.**
-6. Projects must first be approved by the Google team.  Projects are then sent for approval to the core community team.  Projects will be approved with a minimum of three `+1` votes, but 
-can be sent for changes and re-review with a single `-1` vote.
+6. Projects must first be approved by the Google team.  Projects are then sent for approval to the core community team.  Projects will be approved with a minimum of three `+1` votes, but can be sent for changes and re-review with a single `-1` vote.
 
 ## Contacts
 - Project Lead:
