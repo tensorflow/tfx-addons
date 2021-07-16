@@ -36,7 +36,7 @@ class ExecutorTest(absltest.TestCase):
           | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
           | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
           | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
-          | 'MapToLabel' >> beam.Map(lambda x: (x['company'], x)) # change
+          | 'MapToLabel' >> beam.Map(lambda x: (x['label'], x)) # change
           | 'CountPerKey' >> beam.combiners.Count.PerKey()
           | 'FilterNull' >> beam.Filter(lambda x: x[0])
           | 'Values' >> beam.Values()
@@ -81,7 +81,7 @@ class ExecutorTest(absltest.TestCase):
 
   def testDo(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
+      component.UNDERSAMPLER_LABEL_KEY: 'label',
       component.UNDERSAMPLER_NAME_KEY: 'undersampling',
       component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
       component.UNDERSAMPLER_COPY_KEY: True,
@@ -98,7 +98,7 @@ class ExecutorTest(absltest.TestCase):
 
   def testKeepClasses(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
+      component.UNDERSAMPLER_LABEL_KEY: 'label',
       component.UNDERSAMPLER_NAME_KEY: 'undersampling',
       component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
       component.UNDERSAMPLER_COPY_KEY: True,
@@ -113,7 +113,7 @@ class ExecutorTest(absltest.TestCase):
 
   def testShards(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
+      component.UNDERSAMPLER_LABEL_KEY: 'label',
       component.UNDERSAMPLER_NAME_KEY: 'undersampling',
       component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
       component.UNDERSAMPLER_COPY_KEY: True,
@@ -130,7 +130,7 @@ class ExecutorTest(absltest.TestCase):
 
   def testSplits(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
+      component.UNDERSAMPLER_LABEL_KEY: 'label',
       component.UNDERSAMPLER_NAME_KEY: 'undersampling',
       component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
       component.UNDERSAMPLER_COPY_KEY: True,
@@ -146,7 +146,7 @@ class ExecutorTest(absltest.TestCase):
 
   def testCopy(self):
     exec_properties = {
-      component.UNDERSAMPLER_LABEL_KEY: 'company',
+      component.UNDERSAMPLER_LABEL_KEY: 'label',
       component.UNDERSAMPLER_NAME_KEY: 'undersampling',
       component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
       component.UNDERSAMPLER_COPY_KEY: False,
@@ -173,20 +173,19 @@ class ExecutorTest(absltest.TestCase):
     if null_vals and str(item[0]) in null_vals and keep:
       keep = False
     keep ^= keep_null  
-    if keep:
-      return item
-
+    return keep
+    
   def testFilter(self):
-    assert(self.filter_null([5, 5]) == [5, 5]) # return
-    assert(self.filter_null([0, 0]) == [0, 0]) # return
+    assert(self.filter_null([5, 5])) # return
+    assert(self.filter_null([0, 0])) # return
     assert(not self.filter_null(["", ""])) # no return
     assert(not self.filter_null(["", 5])) # no return
     assert(not self.filter_null([5, 5], keep_null=True)) # no return
     assert(not self.filter_null([0, 0], keep_null=True)) # no return
-    assert(self.filter_null(["", ""], keep_null=True) == ["", ""]) # return
+    assert(self.filter_null(["", ""], keep_null=True) ) # return
     assert(not self.filter_null([5, 5], null_vals=["5"])) # no return
-    assert(self.filter_null([5, 5], keep_null=True, null_vals=["5"]) == [5, 5]) # return
-    assert(self.filter_null(["", ""], keep_null=True, null_vals=["5"]) == ["", ""]) # return
+    assert(self.filter_null([5, 5], keep_null=True, null_vals=["5"])) # return
+    assert(self.filter_null(["", ""], keep_null=True, null_vals=["5"])) # return
 
   def testPipeline(self):
     random.seed(0)
