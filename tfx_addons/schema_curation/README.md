@@ -8,8 +8,8 @@ This is a TFX-component that allows its users to apply a user code to a schema p
 ## Usage
 ### Examples demonstrating how to use Schema curation component
 
-To run locally: [taxi_example_local.py](https://github.com/tensorflow/tfx-addons/schema_curation/blob/main/example/taxi_example_local.py)
-TO run in colab: [taxi_example_colab.ipynb](https://github.com/tensorflow/tfx-addons/schema_curation/blob/main/example/taxi_example_colab.ipynb)
+To run locally: [taxi_example_local.py](https://github.com/rcrowe-google/schemacomponent/blob/main/example/taxi_example_local.py)
+TO run in colab: [taxi_example_colab.ipynb](https://github.com/rcrowe-google/schemacomponent/blob/main/example/taxi_example_colab.ipynb)
 
 ## Documentation
 
@@ -43,7 +43,7 @@ def schema_fn(schema):
 
 ### Directory Structure
 ```
-schema_curation
+schemacomponent
 ├── component
 │   ├── component.py
 │   ├── component_test.py
