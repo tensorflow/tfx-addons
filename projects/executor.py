@@ -124,9 +124,14 @@ class Executor(base_beam_executor.BaseBeamExecutor):
           class_label = val[0].decode()
       return (class_label, parsed)
 
+<<<<<<< HEAD:projects/executor.py
     def random_sample(key, value, side=0):
       random_sample_data = random.sample(value, side) if undersample else random.choices(value, k=side)
       for item in random_sample_data:
+=======
+    def sample_data(key, val, side=0):
+      for item in random.sample(val, side):
+>>>>>>> 47a664b... Fix sampling bug:projects/sampling/executor.py
         yield item
 
     def filter_null(item, keep_null=False, null_vals=None):
@@ -166,18 +171,21 @@ class Executor(base_beam_executor.BaseBeamExecutor):
 
       # Finds the minimum frequency of all classes in the input label.
       # Output is a singleton PCollection with the minimum # of examples.
+<<<<<<< HEAD:projects/executor.py
 
       sample_fn = find_minimum if undersample else find_maximum
 
       val = beam.pvalue.AsSingleton(
         (
+=======
+      val = (
+>>>>>>> 47a664b... Fix sampling bug:projects/sampling/executor.py
           data
           | "CountPerKey" >> beam.combiners.Count.PerKey()
           | "FilterNullCount" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
           | "Values" >> beam.Values()
           | "GetSample" >> beam.CombineGlobally(sample_fn)
         )
-      )
 
       # Actually performs the undersampling functionality.
       # Output format is a K-V PCollection: {class_label: TFRecord in string format}
@@ -188,9 +196,13 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         | "Sample" >> beam.FlatMapTuple(random_sample, side=val)
 =======
         | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+<<<<<<< HEAD:projects/executor.py
         | "DataValues" >> beam.Values()
         | "Undersample" >> beam.FlatMapTuple(sample, side=val)
 >>>>>>> 3907012... Fix bug with null filter logic:projects/sampling/executor.py
+=======
+        | "Undersample" >> beam.FlatMapTuple(sample_data, side=beam.pvalue.AsSingleton(val))
+>>>>>>> 47a664b... Fix sampling bug:projects/sampling/executor.py
       )
 
       # Take out all the null values from the beginning and put them back in the pipeline
