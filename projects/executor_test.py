@@ -3,6 +3,7 @@ import tempfile
 import executor
 import tensorflow as tf
 import filecmp
+import random
 
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
@@ -60,7 +61,7 @@ class ExecutorTest(absltest.TestCase):
     self.assertTrue(comp.diff_files == [])
 
   def _run_exec(self, exec_properties):
-    source_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+    source_data_dir = os.path.join(os.path.dirname(__file__), 'data')
     output_data_dir = os.path.join(
       os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
     fileio.makedirs(output_data_dir)
@@ -164,6 +165,91 @@ class ExecutorTest(absltest.TestCase):
     output = self._run_exec(exec_properties)
 
     self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
+
+  # Pipeline tests below!
+
+  def sample(self, key, value, side=0):
+    for item in random.sample(value, side):
+      yield item
+
+  def filter_null(self, item, keep_null=False, null_vals=None):
+    if item[0] == 0:
+      keep = True
+    else:
+      keep = not (not item[0])
+
+    if null_vals and str(item[0]) in null_vals and keep:
+      keep = False
+    keep ^= keep_null  
+    if keep:
+      return item
+
+  def testFilter(self):
+    assert(self.filter_null([5, 5]) == [5, 5]) # return
+    assert(self.filter_null([0, 0]) == [0, 0]) # return
+    assert(not self.filter_null(["", ""])) # no return
+    assert(not self.filter_null(["", 5])) # no return
+    assert(not self.filter_null([5, 5], keep_null=True)) # no return
+    assert(not self.filter_null([0, 0], keep_null=True)) # no return
+    assert(self.filter_null(["", ""], keep_null=True) == ["", ""]) # return
+    assert(not self.filter_null([5, 5], null_vals=["5"])) # no return
+    assert(self.filter_null([5, 5], keep_null=True, null_vals=["5"]) == [5, 5]) # return
+    assert(self.filter_null(["", ""], keep_null=True, null_vals=["5"]) == ["", ""]) # return
+
+  def testPipeline(self):
+    random.seed(0)
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    EXPECTED = [1, 1, 2, 2, 3, 3, 0]
+
+    with beam.Pipeline() as p:
+      data = (
+        p
+        | "DatasetToPCollection" >> beam.Create(dataset)
+      )
+
+      val = beam.pvalue.AsSingleton(
+        (
+          data
+          | "CountPerKey" >> beam.combiners.Count.PerKey()
+          | "FilterNullCount" >> beam.Filter(lambda x: self.filter_null(x))
+          | "Values" >> beam.Values()
+          | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
+        )
+      )
+
+      res = (
+        data
+        | "GroupBylabel" >> beam.GroupByKey()
+        | "FilterNull" >> beam.Filter(lambda x: self.filter_null(x))
+        | "Undersample" >> beam.FlatMapTuple(self.sample, side=val)
+      )
+
+      null = (
+        data
+        | "ExtractNull">> beam.Filter(lambda x: self.filter_null(x, keep_null=True))
+        | "NullValues" >> beam.Values()
+      )
+      merged = (res, null) | "Merge PCollections" >> beam.Flatten()
+      assert_that(merged, equal_to(EXPECTED))
+
+  def testMinimum(self):
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+
+    with beam.Pipeline() as p:
+      data = (
+        p
+        | "DatasetToPCollection" >> beam.Create(dataset)
+      )
+
+      val = (
+          data
+          | "CountPerKey" >> beam.combiners.Count.PerKey()
+          | "FilterNull" >> beam.Filter(lambda x: self.filter_null(x))
+          | "Values" >> beam.Values()
+          | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
+        )
+
+      assert_that(val, equal_to([2]))
 
 if __name__ == '__main__':
   tf.test.main()
