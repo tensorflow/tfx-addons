@@ -129,15 +129,24 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       for item in random_sample_data:
         yield item
 
-    def filter_null(item, keep_null=False, null_vals=None, pr=False):
-      if pr:
-        print(item)
-      keep = (not item[0]) or item[0] == 0  # Note that 0 is included in this filter!
-      if null_vals:
-        keep = keep or str(item[0]) in null_vals
-      keep ^= not keep_null  # null is True if we want to keep nulls
+    def filter_null(item, keep_null=False, null_vals=None):
+      if item[0] == 0:
+        keep = True
+      else:
+        keep = not (not item[0])
+        
+      if null_vals and str(item[0]) in null_vals and keep:
+        keep = False
+      keep ^= keep_null  
       if keep:
+<<<<<<< HEAD:projects/executor.py
         return item[1]
+=======
+        return item
+    
+    files = [os.path.join(uri, name) for name in os.listdir(uri)]
+    dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
+>>>>>>> 3907012... Fix bug with null filter logic:projects/sampling/executor.py
 
     def find_minimum(elements):
       return min(elements or [0])
@@ -164,7 +173,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         (
           data
           | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+          | "FilterNullCount" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
           | "Values" >> beam.Values()
           | "GetSample" >> beam.CombineGlobally(sample_fn)
         )
@@ -175,7 +184,13 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       res = (
         data
         | "GroupBylabel" >> beam.GroupByKey()
+<<<<<<< HEAD:projects/executor.py
         | "Sample" >> beam.FlatMapTuple(random_sample, side=val)
+=======
+        | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+        | "DataValues" >> beam.Values()
+        | "Undersample" >> beam.FlatMapTuple(sample, side=val)
+>>>>>>> 3907012... Fix bug with null filter logic:projects/sampling/executor.py
       )
 
       # Take out all the null values from the beginning and put them back in the pipeline
