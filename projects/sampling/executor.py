@@ -118,8 +118,8 @@ class Executor(base_executor.BaseExecutor):
           class_label = val[0].decode()
       return (class_label, parsed)
 
-    def sample(key, value, side=0):
-      for item in random.sample(value, side):
+    def sample_data(key, val, side=0):
+      for item in random.sample(val, side):
         yield item
 
     def filter_null(item, keep_null=False, null_vals=None):
@@ -148,15 +148,13 @@ class Executor(base_executor.BaseExecutor):
 
       # Finds the minimum frequency of all classes in the input label.
       # Output is a singleton PCollection with the minimum # of examples.
-      val = beam.pvalue.AsSingleton(
-        (
+      val = (
           data
           | "CountPerKey" >> beam.combiners.Count.PerKey()
           | "FilterNullCount" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
           | "Values" >> beam.Values()
           | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
-      )
 
       # Actually performs the undersampling functionality.
       # Output format is a K-V PCollection: {class_label: TFRecord in string format}
@@ -164,8 +162,7 @@ class Executor(base_executor.BaseExecutor):
         data
         | "GroupBylabel" >> beam.GroupByKey()
         | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
-        | "DataValues" >> beam.Values()
-        | "Undersample" >> beam.FlatMapTuple(sample, side=val)
+        | "Undersample" >> beam.FlatMapTuple(sample_data, side=beam.pvalue.AsSingleton(val))
       )
 
       # Take out all the null values from the beginning and put them back in the pipeline
