@@ -122,16 +122,18 @@ class Executor(base_executor.BaseExecutor):
       for item in random.sample(value, side):
         yield item
 
-    def filter_null(item, keep_null=False, null_vals=None, pr=False):
-      if pr:
-        print(item)
-      keep = (not item[0]) or item[0] == 0  # Note that 0 is included in this filter!
-      if null_vals:
-        keep = keep or str(item[0]) in null_vals
-      keep ^= not keep_null  # null is True if we want to keep nulls
+    def filter_null(item, keep_null=False, null_vals=None):
+      if item[0] == 0:
+        keep = True
+      else:
+        keep = not (not item[0])
+        
+      if null_vals and str(item[0]) in null_vals and keep:
+        keep = False
+      keep ^= keep_null  
       if keep:
-        return item[1]
-  
+        return item
+    
     files = [os.path.join(uri, name) for name in os.listdir(uri)]
     dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
 
@@ -150,7 +152,7 @@ class Executor(base_executor.BaseExecutor):
         (
           data
           | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+          | "FilterNullCount" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
           | "Values" >> beam.Values()
           | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
         )
@@ -161,6 +163,8 @@ class Executor(base_executor.BaseExecutor):
       res = (
         data
         | "GroupBylabel" >> beam.GroupByKey()
+        | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+        | "DataValues" >> beam.Values()
         | "Undersample" >> beam.FlatMapTuple(sample, side=val)
       )
 
