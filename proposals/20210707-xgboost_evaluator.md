@@ -31,7 +31,7 @@ To make the Evaluator works with XGBoost models, we can customize the Evaluator 
 
 ### From Trainer to Evaluator: save and load XGBoost model
 
-Option 1 (recommended): working with XGBoost library directly
+**Option 1 (chosen)**: working with XGBoost library directly
 
 The XGBoost library provides a few different ways to save a model (an `xgb.Booster` or `xgb.sklearn.XGBModel` object). Backward compatibility is guaranteed in most cases. Currently, the 2 main supported formats are:
 * XGBoost internal binary format. Note that Auxiliary attributes of the Python Booster object (such as feature_names) will not be loaded when using binary format.
@@ -84,7 +84,7 @@ Currently, we plan to support running the Evaluator with Apache Beam through the
 
 The actual implementation of the custom prediction extractor depends on whether it receives a native XGBoost serialized model (option 1 from above), or a pickled sklearn Pipeline (option 2 from above). Here are pros and cons of each option.
 
-Option 1:
+**Option 1 (chosen)**:
 
 * Pros:
   * Universal among the various XGBoost interfaces (Python, JVM, C++, etc.)
@@ -118,6 +118,11 @@ Example pipeline will have its end to end local unit test.
 The model can be pushed to CAIP. The current CAIP runtime version 2.5 runs XGBoost 1.4.0. Training, serialization, and deserialization XGBoost models using different versions of the library is allowed. In other words, the XGBoost library guarantees some level of backward compatibility.
 
 This example pipeline will not be packaged, instead, users just need to clone the source code to run the example.
+
+### Project directories
+
+* `tfx_addons/xgboost_evaluator` (evaluator code and tests)
+* `examples/xgboost_penguins`  (example pipelines and tests)
 
 ## Project Dependencies
 * `xgboost>=1.4.0`
