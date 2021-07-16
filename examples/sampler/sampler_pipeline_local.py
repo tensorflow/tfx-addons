@@ -73,7 +73,11 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
   sample = Sampler(
       input_data=example_gen.outputs['examples'],
       label='Class',
+<<<<<<< HEAD:examples/sampler/sampler_pipeline_local.py
       undersample=False
+=======
+      shards=10,
+>>>>>>> 4e9a8d7... Add local notebook example:projects/examples/sampling/sampling_pipeline_local.py
   )
 
   transform = Transform(
