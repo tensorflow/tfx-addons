@@ -1,11 +1,17 @@
-name: GitHub CI
+name: TFX Addons package CI
 
 on:
   push:
+    paths-ignore:
+      - 'proposals/**'
+      - 'examples/**'
     branches:
       - main
       - r*
   pull_request:
+    paths-ignore:
+      - 'proposals/**'
+      - 'examples/**'
     branches:
       - main
       - r*
