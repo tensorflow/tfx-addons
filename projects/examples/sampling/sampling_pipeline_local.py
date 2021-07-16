@@ -73,6 +73,7 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
   undersample = Undersampler(
       input_data=example_gen.outputs['examples'],
       label='Class',
+      shards=10,
   )
 
   transform = Transform(
