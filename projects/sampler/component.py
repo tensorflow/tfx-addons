@@ -4,7 +4,7 @@ from typing import Optional, Text, List
 from sampler.executor import Executor
 
 from tfx import types
-from tfx.dsl.components.base import base_component
+from tfx.dsl.components.base import base_beam_component
 from tfx.dsl.components.base import executor_spec
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
@@ -31,7 +31,7 @@ class SamplerSpec(types.ComponentSpec):
     'output_data': ChannelParameter(type=standard_artifacts.Examples),
   }
 
-class Sampler(base_component.BaseComponent):
+class Sampler(base_beam_component.BaseBeamComponent):
   """A TFX component to sample examples.
 
   The sampling component wraps an Apache Beam pipeline to process
