@@ -79,7 +79,7 @@ class Executor(base_executor.BaseExecutor):
       if split in splits:  # Undersampling split
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         os.mkdir(output_dir)
-        self.undersample(uri, label, shards, keep_classes, os.path.join(output_dir, f"Split-{split}"),)
+        _undersample(uri, label, shards, keep_classes, os.path.join(output_dir, f"Split-{split}"))
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -89,98 +89,108 @@ class Executor(base_executor.BaseExecutor):
           output_uri = os.path.join(output_dir, filename)
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
-  def undersample(self, uri, label, shards, keep_classes, output_dir):
-    """Function that actually undersamples the given split.
 
-    Args:
-      uri: The input uri for the specific split of the input example artifact.
-      label: The name of the column containing class names to undersample by.
-      shards: The number of files that each undersampled split should
-      contain. Default 0 is Beam's tfrecordio function's default.
-      keep_classes: A list determining which classes that we should
-      not undersample. Defaults to None.
-      output_dir: The output directory for the split of the output artifact.
+def _generate_elements(x, label):
+  class_label = None
+  parsed = tf.train.Example.FromString(x.numpy())
+  if parsed.features.feature[label].int64_list.value:
+    val = parsed.features.feature[label].int64_list.value
+    if len(val) > 0:
+      class_label = val[0]
+  else:
+    val = parsed.features.feature[label].bytes_list.value
+    if len(val) > 0:
+      class_label = val[0].decode()
+  return (class_label, parsed)
 
-    Returns:
-      None
-    """
+def _sample_data(key, val, side=0):
+  for item in random.sample(val, side):
+    yield item
 
-    def generate_elements(x):
-      class_label = None
-      parsed = tf.train.Example.FromString(x.numpy())
-      if parsed.features.feature[label].int64_list.value:
-        val = parsed.features.feature[label].int64_list.value
-        if len(val) > 0:
-          class_label = val[0]
-      else:
-        val = parsed.features.feature[label].bytes_list.value
-        if len(val) > 0:
-          class_label = val[0].decode()
-      return (class_label, parsed)
-
-    def sample_data(key, val, side=0):
-      for item in random.sample(val, side):
-        yield item
-
-    def filter_null(item, keep_null=False, null_vals=None):
-      if item[0] == 0:
-        keep = True
-      else:
-        keep = not (not item[0])
-        
-      if null_vals and str(item[0]) in null_vals and keep:
-        keep = False
-      keep ^= keep_null  
-      if keep:
-        return item
+def _filter_null(item, keep_null=False, null_vals=None):
+  if item[0] == 0:
+    keep = True
+  else:
+    keep = not (not item[0])
     
-    files = [os.path.join(uri, name) for name in os.listdir(uri)]
-    dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
+  if null_vals and str(item[0]) in null_vals and keep:
+    keep = False
+  keep ^= keep_null  
+  if keep:
+    return item
 
-    with beam.Pipeline() as p:
-      # Take the input TFRecordDataset and extract the class label that we want.
-      # Output format is a K-V PCollection: {class_label: TFRecord in string format}
-      data = (
-        p
-        | "DatasetToPCollection" >> beam.Create(dataset)
-        | "MapToLabel" >> beam.Map(generate_elements)
-      )
+def _undersample(uri, label, shards, keep_classes, output_dir):
+  """Function that actually undersamples the given split.
 
-      # Finds the minimum frequency of all classes in the input label.
-      # Output is a singleton PCollection with the minimum # of examples.
-      val = (
-          data
-          | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNullCount" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
-          | "Values" >> beam.Values()
-          | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
-        )
+  Args:
+    uri: The input uri for the specific split of the input example artifact.
+    label: The name of the column containing class names to undersample by.
+    shards: The number of files that each undersampled split should
+    contain. Default 0 is Beam's tfrecordio function's default.
+    keep_classes: A list determining which classes that we should
+    not undersample. Defaults to None.
+    output_dir: The output directory for the split of the output artifact.
 
-      # Actually performs the undersampling functionality.
-      # Output format is a K-V PCollection: {class_label: TFRecord in string format}
-      res = (
-        data
-        | "GroupBylabel" >> beam.GroupByKey()
-        | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
-        | "Undersample" >> beam.FlatMapTuple(sample_data, side=beam.pvalue.AsSingleton(val))
-      )
+  Returns:
+    None
+  """
 
-      # Take out all the null values from the beginning and put them back in the pipeline
-      null = (
-        data
-        | "ExtractNull">> beam.Filter(lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
-        | "NullValues" >> beam.Values()
-      )
-      merged = (res, null) | "Merge PCollections" >> beam.Flatten()
+  with beam.Pipeline() as p:
+    data = _read_tfexamples(p, uri, label)
+    merged = _sample_examples(p, data, keep_classes)
+    _write_tfexamples(p, merged, shards, output_dir)
 
-      # Write the final set of TFRecords to the output artifact's files.
-      _ = (
-        merged
-        | "Serialize" >> beam.Map(lambda x: x.SerializeToString())
-        | "WriteToTFRecord" >> beam.io.tfrecordio.WriteToTFRecord(
-          output_dir,
-          file_name_suffix=".gz",
-          num_shards=shards,
-          compression_type=beam.io.filesystem.CompressionTypes.GZIP,
-        )
-      )
+def _read_tfexamples(p, uri, label):
+  files = [os.path.join(uri, name) for name in os.listdir(uri)]
+  dataset = tf.data.TFRecordDataset(files, compression_type="GZIP")
+  
+  # Take the input TFRecordDataset and extract the class label that we want.
+  # Output format is a K-V PCollection: {class_label: TFRecord in string format}
+  data = (
+    p
+    | "DatasetToPCollection" >> beam.Create(dataset)
+    | "MapToLabel" >> beam.Map(_generate_elements, label)
+  )
+  return data
+
+def _sample_examples(p, data, keep_classes):
+    # Finds the minimum frequency of all classes in the input label.
+    # Output is a singleton PCollection with the minimum # of examples.
+  val = (
+      data
+      | "CountPerKey" >> beam.combiners.Count.PerKey()
+      | "FilterNullCount" >> beam.Filter(lambda x: _filter_null(x, null_vals=keep_classes))
+      | "Values" >> beam.Values()
+      | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
+    )
+
+  # Actually performs the undersampling functionality.
+  # Output format is a K-V PCollection: {class_label: TFRecord in string format}
+  res = (
+    data
+    | "GroupBylabel" >> beam.GroupByKey()
+    | "FilterNull" >> beam.Filter(lambda x: _filter_null(x, null_vals=keep_classes))
+    | "Undersample" >> beam.FlatMapTuple(_sample_data, side=beam.pvalue.AsSingleton(val))
+  )
+
+  # Take out all the null values from the beginning and put them back in the pipeline
+  null = (
+    data
+    | "ExtractNull">> beam.Filter(lambda x: _filter_null(x, keep_null=True, null_vals=keep_classes))
+    | "NullValues" >> beam.Values()
+  )
+  merged = (res, null) | "Merge PCollections" >> beam.Flatten()
+  return merged
+
+def _write_tfexamples(p, examples, shards, output_dir):
+  # Write the final set of TFRecords to the output artifact's files.
+  _ = (
+    examples
+    | "Serialize" >> beam.Map(lambda x: x.SerializeToString())
+    | "WriteToTFRecord" >> beam.io.tfrecordio.WriteToTFRecord(
+      output_dir,
+      file_name_suffix=".gz",
+      num_shards=shards,
+      compression_type=beam.io.filesystem.CompressionTypes.GZIP,
+    )
+  )
