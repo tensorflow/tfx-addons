@@ -212,88 +212,42 @@ class ExecutorTest(absltest.TestCase):
     self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 
   # Pipeline tests below!
-
-  def sample(self, key, value, side=0):
-    for item in random.sample(value, side):
-      yield item
-
-  def filter_null(self, item, keep_null=False, null_vals=None):
-    if item[0] == 0:
-      keep = True
-    else:
-      keep = not (not item[0])
-
-    if null_vals and str(item[0]) in null_vals and keep:
-      keep = False
-    keep ^= keep_null  
-    return keep
     
   def testFilter(self):
-    assert(self.filter_null([5, 5])) # return
-    assert(self.filter_null([0, 0])) # return
-    assert(not self.filter_null(["", ""])) # no return
-    assert(not self.filter_null(["", 5])) # no return
-    assert(not self.filter_null([5, 5], keep_null=True)) # no return
-    assert(not self.filter_null([0, 0], keep_null=True)) # no return
-    assert(self.filter_null(["", ""], keep_null=True) ) # return
-    assert(not self.filter_null([5, 5], null_vals=["5"])) # no return
-    assert(self.filter_null([5, 5], keep_null=True, null_vals=["5"])) # return
-    assert(self.filter_null(["", ""], keep_null=True, null_vals=["5"])) # return
+    assert(executor._filter_null([5, 5])) # return
+    assert(executor._filter_null([0, 0])) # return
+    assert(not executor._filter_null(["", ""])) # no return
+    assert(not executor._filter_null(["", 5])) # no return
+    assert(not executor._filter_null([5, 5], keep_null=True)) # no return
+    assert(not executor._filter_null([0, 0], keep_null=True)) # no return
+    assert(executor._filter_null(["", ""], keep_null=True) ) # return
+    assert(not executor._filter_null([5, 5], null_vals=["5"])) # no return
+    assert(executor._filter_null([5, 5], keep_null=True, null_vals=["5"])) # return
+    assert(executor._filter_null(["", ""], keep_null=True, null_vals=["5"])) # return
 
   def testPipeline(self):
     random.seed(0)
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
     EXPECTED = [1, 1, 2, 2, 3, 3, 0]
-
     with beam.Pipeline() as p:
-      data = (
-        p
-        | "DatasetToPCollection" >> beam.Create(dataset)
-      )
-
-      val = beam.pvalue.AsSingleton(
-        (
-          data
-          | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNullCount" >> beam.Filter(lambda x: self.filter_null(x))
-          | "Values" >> beam.Values()
-          | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
-        )
-      )
-
-      res = (
-        data
-        | "GroupBylabel" >> beam.GroupByKey()
-        | "FilterNull" >> beam.Filter(lambda x: self.filter_null(x))
-        | "Undersample" >> beam.FlatMapTuple(self.sample, side=val)
-      )
-
-      null = (
-        data
-        | "ExtractNull">> beam.Filter(lambda x: self.filter_null(x, keep_null=True))
-        | "NullValues" >> beam.Values()
-      )
-      merged = (res, null) | "Merge PCollections" >> beam.Flatten()
+      data = p | beam.Create(dataset)
+      merged = executor._sample_examples(p, data, None)
       assert_that(merged, equal_to(EXPECTED))
 
   def testMinimum(self):
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
-
+    
     with beam.Pipeline() as p:
-      data = (
-        p
-        | "DatasetToPCollection" >> beam.Create(dataset)
-      )
-
       val = (
-          data
-          | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNull" >> beam.Filter(lambda x: self.filter_null(x))
-          | "Values" >> beam.Values()
-          | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
-        )
-
+        p
+        | beam.Create(dataset)
+        | "CountPerKey" >> beam.combiners.Count.PerKey()
+        | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
+        | "Values" >> beam.Values()
+        | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
+      )
       assert_that(val, equal_to([2]))
+
 
 if __name__ == '__main__':
   tf.test.main()
