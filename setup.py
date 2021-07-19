@@ -1,18 +1,21 @@
 """Package Setup script for TFX Addons."""
 import itertools
 
-from setuptools import setup
+from setuptools import find_namespace_packages, setup
 
 import tfx_addons as tfxa
 
 NAME = "tfx-addons"
 # VERSION = .... Change the version in tfx_addons/__init__.py
 
-TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort"]
+TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client": ["ml-pipelines-sdk>=0.26.3<1", "ml-metadata>=0.26<1"]
+    "mlmd_client": ["ml-pipelines-sdk>=0.26.3<1", "ml-metadata>=0.26<1"],
+    "schema_curation": [
+        "tfx>=0.26.3<1",
+    ]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(
@@ -32,11 +35,12 @@ setup(
     },
     extras_require=EXTRAS_REQUIRE,
     tests_require=TESTS_REQUIRE,
-    packages=[
+    packages=find_namespace_packages(include=[
         # Add here new library package
         "tfx_addons",
-        "tfx_addons.mlmd_client",
-    ],
+        # "tfx_addons.mlmd_client",
+        # "tfx_addons.schema_curation.*",
+    ]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
