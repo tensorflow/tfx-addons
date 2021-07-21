@@ -1,4 +1,4 @@
-"""Python source which includes pipeline functions for the Penguins dataset.
+"""Python source which includes pipeline functions for the Credit ard fraud.
 The utilities in this file are used to build a model with native Keras or with
 Flax.
 """
@@ -12,10 +12,6 @@ import tensorflow_transform as tft
 from tensorflow_transform.tf_metadata import schema_utils
 from tfx.components.trainer.fn_args_utils import DataAccessor
 from tfx_bsl.tfxio import dataset_options
-
-from tfx import v1 as tfx
-
-from tfx_bsl.public import tfxio
 
 _FEATURE_KEYS = [
     "V1","V2","V3","V4","V5","V6","V7","V8","V9","V10","V11","V12","V13","V14","V15","V16","V17","V18","V19","V20","V21","V22","V23","V24","V25","V26","V27","V28","Amount"
@@ -77,7 +73,7 @@ def preprocessing_fn(inputs):
 
 
 def _build_estimator(config, hidden_units=None, warm_start_from=None):
-  """Build an estimator for predicting the tipping behavior of taxi riders.
+  """Build an estimator for classifier fraud/not fraud
   Args:
     config: tf.estimator.RunConfig defining the runtime environment for the
       estimator (including model_dir).
@@ -234,7 +230,7 @@ def trainer_fn(trainer_fn_args, schema):
       eval_input_fn,
       steps=trainer_fn_args.eval_steps,
       exporters=[exporter],
-      name='chicago-taxi-eval')
+      name='credit-fraud-eval')
 
   # Keep multiple checkpoint files for distributed training, note that
   # keep_max_checkpoint should be greater or equal to the number of replicas to
