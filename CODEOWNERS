@@ -24,3 +24,6 @@
 
 # Schema Curation Component
 /tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97
+
+# XGBoost Evaluator Component
+/tfx_addons/xgboost_evaluator @kindalime @cent5
