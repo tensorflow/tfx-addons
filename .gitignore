@@ -155,4 +155,9 @@ bazel-*
 **/*_pb2.py
 # LINT.ThenChange(.dockerignore)
 
+<<<<<<< HEAD
 >>>>>>> b95bfbd... some modifications to the sampler component
+=======
+# Custom
+creditcard.csv
+>>>>>>> e236ad2... Zip test data and remove extraneous served models
