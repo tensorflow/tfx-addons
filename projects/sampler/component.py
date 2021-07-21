@@ -2,6 +2,7 @@
 
 from typing import Optional, Text, List
 from sampler.executor import Executor
+from sampler.spec import SamplerSpec
 
 from tfx import types
 from tfx.dsl.components.base import base_beam_component
@@ -11,25 +12,6 @@ from tfx.types import standard_artifacts
 from tfx.types.component_spec import ChannelParameter
 from tfx.types.component_spec import ExecutionParameter
 from tfx.utils import json_utils
-
-class SamplerSpec(types.ComponentSpec):
-  """Sampling component spec."""
-
-  PARAMETERS = {
-    'label': ExecutionParameter(type=str),
-    'name': ExecutionParameter(type=Text, optional=True),
-    'splits': ExecutionParameter(type=str, optional=True),
-    'copy_others': ExecutionParameter(type=int, optional=True),
-    'shards': ExecutionParameter(type=int, optional=True),
-    'keep_classes': ExecutionParameter(type=str, optional=True),
-    'undersample': ExecutionParameter(type=int, optional=True)
-  }
-  INPUTS = {
-    'input_data': ChannelParameter(type=standard_artifacts.Examples),
-  }
-  OUTPUTS = {
-    'output_data': ChannelParameter(type=standard_artifacts.Examples),
-  }
 
 class Sampler(base_beam_component.BaseBeamComponent):
   """A TFX component to sample examples.
@@ -78,7 +60,8 @@ class Sampler(base_beam_component.BaseBeamComponent):
     undersample: bool = True
   ):
 
-    """Construct an SamplerComponent.
+    """Construct a SamplerComponent.
+
     Args:
       input_data: A Channel of type `standard_artifacts.Examples`.
       output_data: A Channel of type `standard_artifacts.Examples`.
@@ -108,7 +91,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
       copy_others=int(copy_others),
       shards=shards,
       keep_classes=json_utils.dumps(keep_classes),
-     undersample=int(undersample)
+      undersample=int(undersample),
     )
 
     super().__init__(spec=spec)
