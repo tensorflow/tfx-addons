@@ -1,7 +1,4 @@
-TFX XGBoost Evaluator - Draft Project Proposal
-
-This is the project proposal for the tfx-addons project https://github.com/tensorflow/tfx-addons/issues/13.
-
+#### SIG TFX-Addons
 # Project Proposal
 
 **Your name:** Daniel Kim
