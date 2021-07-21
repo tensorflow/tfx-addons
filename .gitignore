@@ -148,3 +148,5 @@ bazel-*
 **/*_pb2.py
 # LINT.ThenChange(.dockerignore)
 
+# Custom
+creditcard.csv
