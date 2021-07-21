@@ -4,8 +4,7 @@ import tensorflow as tf
 import filecmp
 import random
 
-import spec
-import executor
+from sampler import executor, spec
 
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
