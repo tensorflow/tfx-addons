@@ -1,8 +1,7 @@
 import tensorflow as tf
 from absl.testing import absltest
 
-import spec
-import component
+from sampler import spec, component
 
 from tfx.types import artifact_utils
 from tfx.types import channel_utils
