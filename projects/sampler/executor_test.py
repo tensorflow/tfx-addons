@@ -176,18 +176,32 @@ class ExecutorTest(absltest.TestCase):
     assert(executor._filter_null([5, 5], keep_null=True, null_vals=["5"])) # return
     assert(executor._filter_null(["", ""], keep_null=True, null_vals=["5"])) # return
 
-  def testPipeline(self):
+  def testPipelineMin(self):
     random.seed(0)
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
     EXPECTED = [1, 1, 2, 2, 3, 3, 0]
+
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
       merged = executor._sample_examples(p, data, None, True)
       assert_that(merged, equal_to(EXPECTED))
 
+  def testPipelineMax(self):
+    random.seed(0)
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    EXPECTED = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0]
+
+    with beam.Pipeline() as p:
+      data = p | beam.Create(dataset)
+      merged = executor._sample_examples(p, data, None, False)
+      assert_that(merged, equal_to(EXPECTED))
+
   def testMinimum(self):
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
-    
+
+    def find_minimum(elements):
+      return min(elements or [0])
+
     with beam.Pipeline() as p:
       val = (
         p
@@ -195,10 +209,26 @@ class ExecutorTest(absltest.TestCase):
         | "CountPerKey" >> beam.combiners.Count.PerKey()
         | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
         | "Values" >> beam.Values()
-        | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
+        | "GetSample" >> beam.CombineGlobally(find_minimum)
       )
       assert_that(val, equal_to([2]))
 
+  def testMaximum(self):
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+
+    def find_maximum(elements):
+      return max(elements or [0])
+
+    with beam.Pipeline() as p:
+      val = (
+        p
+        | beam.Create(dataset)
+        | "CountPerKey" >> beam.combiners.Count.PerKey()
+        | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
+        | "Values" >> beam.Values()
+        | "GetSample" >> beam.CombineGlobally(find_maximum)
+      )
+      assert_that(val, equal_to([4]))
 
 if __name__ == '__main__':
   tf.test.main()
