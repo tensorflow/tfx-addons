@@ -3,7 +3,7 @@ import itertools
 import os
 import re
 
-from setuptools import setup
+from setuptools import find_namespace_packages, setup
 
 
 def _get_version():
@@ -31,7 +31,10 @@ TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client":
-    ["ml-pipelines-sdk>=0.26.3<1.0.0", "ml-metadata>=0.26<1.0.0"]
+    ["ml-pipelines-sdk>=0.26.3<1.0.0", "ml-metadata>=0.26<1.0.0"],
+    "schema_curation": [
+        "tfx>=0.26.3<1.0.0",
+    ]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
@@ -50,11 +53,13 @@ setup(
     },
     extras_require=EXTRAS_REQUIRE,
     tests_require=TESTS_REQUIRE,
-    packages=[
+    packages=find_namespace_packages(include=[
         # Add here new library package
         "tfx_addons",
         # "tfx_addons.mlmd_client",
-    ],
+
+        # "tfx_addons.schema_curation.*",
+    ]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
