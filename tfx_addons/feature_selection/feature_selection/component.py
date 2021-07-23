@@ -17,9 +17,10 @@ from typing import List
 
 import tfx.v1 as tfx
 from sklearn.feature_selection import (SelectFdr, SelectFpr, SelectFwe,
-                                       SelectKBest, SelectPercentile, chi2)
+                                       SelectKBest, SelectPercentile)
 from tfx.dsl.component.experimental.decorators import component
-from tfx.types import standard_artifacts
+from tfx.dsl.components import Parameter, OutputArtifact
+from tfx.types import artifact
 
 _selection_modes = {
     'percentile': SelectPercentile,
@@ -31,32 +32,28 @@ _selection_modes = {
 """Custom Artifact type"""
 
 
-class FeatureScores(tfx.types.artifact.Artifact):
+class FeatureSelection(artifact.Artifact):
   """Output artifact containing feature scores from the Feature Selection component"""
   TYPE_NAME = 'Feature Scores'
   PROPERTIES = {
-      'span': standard_artifacts.SPAN_PROPERTY,
-      'split_names': standard_artifacts.SPLIT_NAMES_PROPERTY,
+      'scores': {},
+      'p_values': {}
   }
 
 
-class FeaturePValues(tfx.types.artifact.Artifact):
-  """Output artifact containing p-values scores from the Feature Selection component"""
-  TYPE_NAME = 'Feature P-Values'
-  PROPERTIES = {
-      'span': standard_artifacts.SPAN_PROPERTY,
-      'split_names': standard_artifacts.SPLIT_NAMES_PROPERTY,
-  }
 
-
-# Main component logic
+"""
+Feature selection component using sklearn
+"""
 @component
 def FeatureSelection(input_data: List,
                      target_column: List,
+                     feature_selection: OutputArtifact[FeatureSelection],
                      selector_func,
                      score_func,
-                     num_param: int,
-                     column_names=[]):
+                     column_names=[],
+                     num_param: Parameter[int] = 10,
+                     ) -> None:
   """Feature Selection component
 
     Args:
@@ -77,7 +74,8 @@ def FeatureSelection(input_data: List,
   selector_p_values = selector.pvalues_
 
   # convert scores and p-values to dictionaries with column names as keys for better comprehensibility
-  scores = dict(zip(column_names, selector_scores))
-  pvalues = dict(zip(column_names, selector_p_values))
+  # add the dictionaries to the artifact
+  feature_selection.scores = dict(zip(column_names, selector_scores))
+  feature_selection.pvalues = dict(zip(column_names, selector_p_values))
 
   return selected_data
