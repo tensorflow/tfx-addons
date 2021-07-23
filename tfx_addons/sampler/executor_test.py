@@ -1,9 +1,10 @@
 import os
 import tempfile
-import executor
 import tensorflow as tf
 import filecmp
 import random
+
+from sampler import executor, spec
 
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
@@ -16,16 +17,6 @@ from tfx.types import standard_artifacts
 from tfx.utils import json_utils
 from tfx.utils import io_utils
 from tfx.components.util import tfxio_utils
-
-SAMPLER_INPUT_KEY = 'input_data'
-SAMPLER_OUTPUT_KEY = 'output_data'
-SAMPLER_LABEL_KEY = 'label'
-SAMPLER_NAME_KEY = 'name'
-SAMPLER_SPLIT_KEY = 'splits'
-SAMPLER_COPY_KEY = 'copy_others'
-SAMPLER_SHARDS_KEY = 'shards'
-SAMPLER_CLASSES_KEY = 'keep_classes'
-
 
 class ExecutorTest(absltest.TestCase):
   def _validate_output(self, output, splits, num=1):
@@ -44,7 +35,7 @@ class ExecutorTest(absltest.TestCase):
           | 'TFXIORead[%s]' % split >> tfxio.BeamSource()
           | 'DictConversion' >> beam.Map(lambda x: x.to_pydict())
           | 'ConversionCleanup' >> beam.FlatMap(generate_elements)
-          | 'MapToLabel' >> beam.Map(lambda x: (x['label'], x)) # change
+          | 'MapToLabel' >> beam.Map(lambda x: (x['label'], x))
           | 'CountPerKey' >> beam.combiners.Count.PerKey()
           | 'FilterNull' >> beam.Filter(lambda x: x[0])
           | 'Values' >> beam.Values()
@@ -71,14 +62,14 @@ class ExecutorTest(absltest.TestCase):
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
 
     input_dict = {
-        SAMPLER_INPUT_KEY: [examples],
+        spec.SAMPLER_INPUT_KEY: [examples],
     }
 
     # Create output dict.
     output = standard_artifacts.Examples()
     output.uri = output_data_dir
     output_dict = {
-      SAMPLER_OUTPUT_KEY: [output],
+      spec.SAMPLER_OUTPUT_KEY: [output],
     }
 
     # Run executor.
@@ -89,21 +80,13 @@ class ExecutorTest(absltest.TestCase):
 
   def testDo(self):
     exec_properties = {
-<<<<<<< HEAD:projects/executor_test.py
-      SAMPLER_LABEL_KEY: 'company',
-      SAMPLER_NAME_KEY: 'undersampling',
-      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      SAMPLER_COPY_KEY: True,
-      SAMPLER_SHARDS_KEY: 1,
-      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-=======
-      component.UNDERSAMPLER_LABEL_KEY: 'label',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
->>>>>>> 7df658a... Fix bugs and mistakes with tests:projects/sampling/executor_test.py
+      spec.SAMPLER_LABEL_KEY: 'label',
+      spec.SAMPLER_NAME_KEY: 'undersampling',
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_COPY_KEY: True,
+      spec.SAMPLER_SHARDS_KEY: 1,
+      spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      spec.SAMPLER_SAMPLE_KEY: True,
     }
 
     output = self._run_exec(exec_properties)
@@ -115,21 +98,13 @@ class ExecutorTest(absltest.TestCase):
 
   def testKeepClasses(self):
     exec_properties = {
-<<<<<<< HEAD:projects/executor_test.py
-      SAMPLER_LABEL_KEY: 'company',
-      SAMPLER_NAME_KEY: 'undersampling',
-      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      SAMPLER_COPY_KEY: True,
-      SAMPLER_SHARDS_KEY: 1,
-      SAMPLER_CLASSES_KEY: json_utils.dumps(['None']),
-=======
-      component.UNDERSAMPLER_LABEL_KEY: 'label',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps(['None']),
->>>>>>> 7df658a... Fix bugs and mistakes with tests:projects/sampling/executor_test.py
+      spec.SAMPLER_LABEL_KEY: 'label',
+      spec.SAMPLER_NAME_KEY: 'undersampling',
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_COPY_KEY: True,
+      spec.SAMPLER_SHARDS_KEY: 1,
+      spec.SAMPLER_CLASSES_KEY: json_utils.dumps(['None']),
+      spec.SAMPLER_SAMPLE_KEY: True,
     }
 
     output = self._run_exec(exec_properties)
@@ -139,21 +114,13 @@ class ExecutorTest(absltest.TestCase):
 
   def testShards(self):
     exec_properties = {
-<<<<<<< HEAD:projects/executor_test.py
-      SAMPLER_LABEL_KEY: 'company',
-      SAMPLER_NAME_KEY: 'undersampling',
-      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      SAMPLER_COPY_KEY: True,
-      SAMPLER_SHARDS_KEY: 20,
-      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-=======
-      component.UNDERSAMPLER_LABEL_KEY: 'label',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 20,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
->>>>>>> 7df658a... Fix bugs and mistakes with tests:projects/sampling/executor_test.py
+      spec.SAMPLER_LABEL_KEY: 'label',
+      spec.SAMPLER_NAME_KEY: 'undersampling',
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_COPY_KEY: True,
+      spec.SAMPLER_SHARDS_KEY: 20,
+      spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      spec.SAMPLER_SAMPLE_KEY: True,
     }
 
     output = self._run_exec(exec_properties)
@@ -165,21 +132,13 @@ class ExecutorTest(absltest.TestCase):
 
   def testSplits(self):
     exec_properties = {
-<<<<<<< HEAD:projects/executor_test.py
-      SAMPLER_LABEL_KEY: 'company',
-      SAMPLER_NAME_KEY: 'undersampling',
-      SAMPLER_SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
-      SAMPLER_COPY_KEY: True,
-      SAMPLER_SHARDS_KEY: 1,
-      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-=======
-      component.UNDERSAMPLER_LABEL_KEY: 'label',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: True,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
->>>>>>> 7df658a... Fix bugs and mistakes with tests:projects/sampling/executor_test.py
+      spec.SAMPLER_LABEL_KEY: 'label',
+      spec.SAMPLER_NAME_KEY: 'undersampling',
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train', 'eval']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_COPY_KEY: True,
+      spec.SAMPLER_SHARDS_KEY: 1,
+      spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      spec.SAMPLER_SAMPLE_KEY: True,
     }
 
     output = self._run_exec(exec_properties)
@@ -190,21 +149,13 @@ class ExecutorTest(absltest.TestCase):
 
   def testCopy(self):
     exec_properties = {
-<<<<<<< HEAD:projects/executor_test.py
-      SAMPLER_LABEL_KEY: 'company',
-      SAMPLER_NAME_KEY: 'undersampling',
-      SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      SAMPLER_COPY_KEY: False,
-      SAMPLER_SHARDS_KEY: 1,
-      SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-=======
-      component.UNDERSAMPLER_LABEL_KEY: 'label',
-      component.UNDERSAMPLER_NAME_KEY: 'undersampling',
-      component.UNDERSAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
-      component.UNDERSAMPLER_COPY_KEY: False,
-      component.UNDERSAMPLER_SHARDS_KEY: 1,
-      component.UNDERSAMPLER_CLASSES_KEY: json_utils.dumps([]),
->>>>>>> 7df658a... Fix bugs and mistakes with tests:projects/sampling/executor_test.py
+      spec.SAMPLER_LABEL_KEY: 'label',
+      spec.SAMPLER_NAME_KEY: 'undersampling',
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_COPY_KEY: False,
+      spec.SAMPLER_SHARDS_KEY: 1,
+      spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
+      spec.SAMPLER_SAMPLE_KEY: True,
     }
 
     output = self._run_exec(exec_properties)
@@ -225,18 +176,32 @@ class ExecutorTest(absltest.TestCase):
     assert(executor._filter_null([5, 5], keep_null=True, null_vals=["5"])) # return
     assert(executor._filter_null(["", ""], keep_null=True, null_vals=["5"])) # return
 
-  def testPipeline(self):
+  def testPipelineMin(self):
     random.seed(0)
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
     EXPECTED = [1, 1, 2, 2, 3, 3, 0]
+
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor._sample_examples(p, data, None)
+      merged = executor._sample_examples(p, data, None, True)
+      assert_that(merged, equal_to(EXPECTED))
+
+  def testPipelineMax(self):
+    random.seed(0)
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    EXPECTED = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0]
+
+    with beam.Pipeline() as p:
+      data = p | beam.Create(dataset)
+      merged = executor._sample_examples(p, data, None, False)
       assert_that(merged, equal_to(EXPECTED))
 
   def testMinimum(self):
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
-    
+
+    def find_minimum(elements):
+      return min(elements or [0])
+
     with beam.Pipeline() as p:
       val = (
         p
@@ -244,10 +209,26 @@ class ExecutorTest(absltest.TestCase):
         | "CountPerKey" >> beam.combiners.Count.PerKey()
         | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
         | "Values" >> beam.Values()
-        | "FindMinimum" >> beam.CombineGlobally(lambda elements: min(elements or [-1]))
+        | "GetSample" >> beam.CombineGlobally(find_minimum)
       )
       assert_that(val, equal_to([2]))
 
+  def testMaximum(self):
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+
+    def find_maximum(elements):
+      return max(elements or [0])
+
+    with beam.Pipeline() as p:
+      val = (
+        p
+        | beam.Create(dataset)
+        | "CountPerKey" >> beam.combiners.Count.PerKey()
+        | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
+        | "Values" >> beam.Values()
+        | "GetSample" >> beam.CombineGlobally(find_maximum)
+      )
+      assert_that(val, equal_to([4]))
 
 if __name__ == '__main__':
   tf.test.main()

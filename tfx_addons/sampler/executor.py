@@ -35,7 +35,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
   ) -> None:
 
     """Sampler executor entrypoint.
-
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
       - examples: A list of type `standard_artifacts.Examples` which should
@@ -57,7 +56,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       contain. Default 0 is Beam's tfrecordio function's default.
       - keep_classes: A list determining which classes that we should
       not sample. Defaults to None.
-
     Returns:
       None
     """
@@ -88,13 +86,9 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     for split, uri in split_data.items():
       if split in splits:  # Undersampling split
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
-<<<<<<< HEAD
-        self.sample(uri, label, shards, keep_classes, os.path.join(output_dir, f"Split-{split}"), undersample)
-=======
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
           _sample(p, uri, label, shards, keep_classes, split_dir, undersample)
->>>>>>> 78fe3e2... Refactor executor with new changes and fix some merge errors
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -103,110 +97,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
           output_uri = os.path.join(output_dir, filename)
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
-  def sample(self, uri, label, shards, keep_classes, output_dir, undersample):
-    """Function that actually samples the given split.
 
-<<<<<<< HEAD
-    Args:
-      uri: The input uri for the specific split of the input example artifact.
-      label: The name of the column containing class names to sample by.
-      shards: The number of files that each sampled split should
-      contain. Default 0 is Beam's tfrecordio function's default.
-      keep_classes: A list determining which classes that we should
-      not sample. Defaults to None.
-      output_dir: The output directory for the split of the output artifact.
-
-    Returns:
-      None
-    """
-
-    def generate_elements(x):
-      class_label = None
-      parsed = tf.train.Example.FromString(x.numpy())
-      if parsed.features.feature[label].int64_list.value:
-        val = parsed.features.feature[label].int64_list.value
-        if len(val) > 0:
-          class_label = val[0]
-      else:
-        val = parsed.features.feature[label].bytes_list.value
-        if len(val) > 0:
-          class_label = val[0].decode()
-      return (class_label, parsed)
-
-    def random_sample(key, value, side=0):
-      random_sample_data = random.sample(value, side) if undersample else random.choices(value, k=side)
-      for item in random_sample_data:
-        yield item
-
-    def filter_null(item, keep_null=False, null_vals=None, pr=False):
-      if pr:
-        print(item)
-      keep = (not item[0]) or item[0] == 0  # Note that 0 is included in this filter!
-      if null_vals:
-        keep = keep or str(item[0]) in null_vals
-      keep ^= not keep_null  # null is True if we want to keep nulls
-      if keep:
-        return item[1]
-
-    def find_minimum(elements):
-      return min(elements or [0])
-    def find_maximum(elements):
-      return max(elements or [0])
-
-    dataset = tf.data.TFRecordDataset(tf.data.Dataset.list_files(f'{uri}/*'), compression_type="GZIP")
-
-    with self._CreatePipeline(output_dir) as p:
-      # Take the input TFRecordDataset and extract the class label that we want.
-      # Output format is a K-V PCollection: {class_label: TFRecord in string format}
-      data = (
-        p
-        | "DatasetToPCollection" >> beam.Create(dataset)
-        | "MapToLabel" >> beam.Map(generate_elements)
-      )
-
-      # Finds the minimum frequency of all classes in the input label.
-      # Output is a singleton PCollection with the minimum # of examples.
-
-      sample_fn = find_minimum if undersample else find_maximum
-
-      val = beam.pvalue.AsSingleton(
-        (
-          data
-          | "CountPerKey" >> beam.combiners.Count.PerKey()
-          | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
-          | "Values" >> beam.Values()
-          | "GetSample" >> beam.CombineGlobally(sample_fn)
-        )
-      )
-
-      # Actually performs the undersampling functionality.
-      # Output format is a K-V PCollection: {class_label: TFRecord in string format}
-      res = (
-        data
-        | "GroupBylabel" >> beam.GroupByKey()
-        | "Sample" >> beam.FlatMapTuple(random_sample, side=val)
-      )
-
-      # Take out all the null values from the beginning and put them back in the pipeline
-      null = (
-        data
-        | "ExtractNull">> beam.Filter(lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
-        | "NullValues" >> beam.Values()
-      )
-      merged = (res, null) | "Merge PCollections" >> beam.Flatten()
-
-      # Write the final set of TFRecords to the output artifact's files.
-      _ = (
-        merged
-        | "Serialize" >> beam.Map(lambda x: x.SerializeToString())
-        | "WriteToTFRecord" >> beam.io.tfrecordio.WriteToTFRecord(
-          output_dir,
-          file_name_suffix=".gz",
-          num_shards=shards,
-          compression_type=beam.io.filesystem.CompressionTypes.GZIP,
-        )
-      )
-=======
 def _generate_elements(x, label):
   class_label = None
   parsed = tf.train.Example.FromString(x.numpy())
@@ -239,7 +130,6 @@ def _filter_null(item, keep_null=False, null_vals=None):
 
 def _sample(p, uri, label, shards, keep_classes, output_dir, undersample):
   """Function that actually undersamples the given split.
-
   Args:
     uri: The input uri for the specific split of the input example artifact.
     label: The name of the column containing class names to undersample by.
@@ -248,7 +138,6 @@ def _sample(p, uri, label, shards, keep_classes, output_dir, undersample):
     keep_classes: A list determining which classes that we should
     not undersample. Defaults to None.
     output_dir: The output directory for the split of the output artifact.
-
   Returns:
     None
   """
@@ -317,4 +206,3 @@ def _write_tfexamples(p, examples, shards, output_dir):
       compression_type=beam.io.filesystem.CompressionTypes.GZIP,
     )
   )
->>>>>>> 78fe3e2... Refactor executor with new changes and fix some merge errors
