@@ -1,5 +1,7 @@
 # Lint as: python3
 # Copyright 2019 Google LLC. All Rights Reserved.
+# TODO: This license is not consistent with license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +20,10 @@ import os
 from typing import Text
 
 import absl
-from tfx.components import CsvExampleGen
-from tfx.components import StatisticsGen
-from tfx.examples.custom_components.hello_world.hello_component import component
-from tfx.orchestration import metadata
-from tfx.orchestration import pipeline
+from tfx.components import CsvExampleGen, StatisticsGen
+from tfx.examples.custom_components.hello_world.hello_component import \
+    component
+from tfx.orchestration import metadata, pipeline
 from tfx.orchestration.beam.beam_dag_runner import BeamDagRunner
 
 _pipeline_name = 'taxi_hello_pipeline'

@@ -1,5 +1,7 @@
 # Lint as: python3
 # Copyright 2019 Google LLC. All Rights Reserved.
+# TODO: This license is not consistent with license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,15 +19,12 @@
 import json
 
 import tensorflow as tf
-
-from tfx.examples.custom_components.hello_world.hello_component import component
-from tfx.types import artifact
-from tfx.types import channel_utils
-from tfx.types import standard_artifacts
+from tfx.examples.custom_components.hello_world.hello_component import \
+    component
+from tfx.types import artifact, channel_utils, standard_artifacts
 
 
 class HelloComponentTest(tf.test.TestCase):
-
   def setUp(self):
     super(HelloComponentTest, self).setUp()
     self.name = 'HelloWorld'

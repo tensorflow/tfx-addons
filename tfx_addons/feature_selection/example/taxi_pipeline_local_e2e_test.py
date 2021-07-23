@@ -1,5 +1,7 @@
 # Lint as: python3
 # Copyright 2019 Google LLC. All Rights Reserved.
+# TODO: This license is not consistent with license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +21,8 @@ from typing import Text
 
 import tensorflow as tf
 from tfx.dsl.io import fileio
-from tfx.examples.custom_components.hello_world.example import taxi_pipeline_hello
+from tfx.examples.custom_components.hello_world.example import \
+    taxi_pipeline_hello
 from tfx.orchestration import metadata
 from tfx.orchestration.beam.beam_dag_runner import BeamDagRunner
 
