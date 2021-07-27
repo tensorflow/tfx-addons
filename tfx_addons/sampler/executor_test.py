@@ -1,3 +1,5 @@
+"""Executor test for the sampling component's executor."""
+
 import os
 import tempfile
 import tensorflow as tf
@@ -25,9 +27,11 @@ class ExecutorTest(absltest.TestCase):
         yield {key: data[key][i][0] if data[key][i] and len(data[key][i]) > 0
           else "" for key in data.keys()}
 
-    tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(examples=[output], telemetry_descriptors=[])
+    tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(
+      examples=[output], telemetry_descriptors=[])
     for split in splits:
-      tfxio = tfxio_factory(io_utils.all_files_pattern(artifact_utils.get_split_uri([output], split)))
+      tfxio = tfxio_factory(io_utils.all_files_pattern(
+        artifact_utils.get_split_uri([output], split)))
 
       with beam.Pipeline() as p:
         data = (
@@ -53,8 +57,8 @@ class ExecutorTest(absltest.TestCase):
 
   def _run_exec(self, exec_properties):
     source_data_dir = os.path.join(os.path.dirname(__file__), 'data')
-    output_data_dir = os.path.join(
-      os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR', tempfile.mkdtemp()), self._testMethodName)
+    output_data_dir = os.path.join(os.environ.get('TEST_UNDECLARED_OUTPUTS_DIR',
+      tempfile.mkdtemp()), self._testMethodName)
     fileio.makedirs(output_data_dir)
 
     examples = standard_artifacts.Examples()
@@ -82,7 +86,8 @@ class ExecutorTest(absltest.TestCase):
     exec_properties = {
       spec.SAMPLER_LABEL_KEY: 'label',
       spec.SAMPLER_NAME_KEY: 'undersampling',
-      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']),
+      # List needs to be serialized before being passed into Do function.
       spec.SAMPLER_COPY_KEY: True,
       spec.SAMPLER_SHARDS_KEY: 1,
       spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
@@ -100,7 +105,8 @@ class ExecutorTest(absltest.TestCase):
     exec_properties = {
       spec.SAMPLER_LABEL_KEY: 'label',
       spec.SAMPLER_NAME_KEY: 'undersampling',
-      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']), # List needs to be serialized before being passed into Do function.
+      spec.SAMPLER_SPLIT_KEY: json_utils.dumps(['train']),
+      # List needs to be serialized before being passed into Do function.
       spec.SAMPLER_COPY_KEY: True,
       spec.SAMPLER_SHARDS_KEY: 1,
       spec.SAMPLER_CLASSES_KEY: json_utils.dumps(['None']),
@@ -163,41 +169,44 @@ class ExecutorTest(absltest.TestCase):
     self.assertFalse(fileio.exists(os.path.join(output.uri, 'Split-eval')))
 
   # Pipeline tests below!
-    
+
   def testFilter(self):
-    assert(executor._filter_null([5, 5])) # return
-    assert(executor._filter_null([0, 0])) # return
-    assert(not executor._filter_null(["", ""])) # no return
-    assert(not executor._filter_null(["", 5])) # no return
-    assert(not executor._filter_null([5, 5], keep_null=True)) # no return
-    assert(not executor._filter_null([0, 0], keep_null=True)) # no return
-    assert(executor._filter_null(["", ""], keep_null=True) ) # return
-    assert(not executor._filter_null([5, 5], null_vals=["5"])) # no return
-    assert(executor._filter_null([5, 5], keep_null=True, null_vals=["5"])) # return
-    assert(executor._filter_null(["", ""], keep_null=True, null_vals=["5"])) # return
+    assert executor.filter_null([5, 5]) # return
+    assert executor.filter_null([0, 0]) # return
+    assert not executor.filter_null(["", ""]) # no return
+    assert not executor.filter_null(["", 5]) # no return
+    assert not executor.filter_null([5, 5], keep_null=True) # no return
+    assert not executor.filter_null([0, 0], keep_null=True) # no return
+    assert executor.filter_null(["", ""], keep_null=True) # return
+    assert not executor.filter_null([5, 5], null_vals=["5"]) # no return
+    assert executor.filter_null([5, 5], keep_null=True, null_vals=["5"]) # return
+    assert executor.filter_null(["", ""], keep_null=True, null_vals=["5"]) # return
 
   def testPipelineMin(self):
     random.seed(0)
-    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
-    EXPECTED = [1, 1, 2, 2, 3, 3, 0]
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2),
+      ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    expected = [1, 1, 2, 2, 3, 3, 0]
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor._sample_examples(p, data, None, True)
-      assert_that(merged, equal_to(EXPECTED))
+      merged = executor.sample_examples(p, data, None, True)
+      assert_that(merged, equal_to(expected))
 
   def testPipelineMax(self):
     random.seed(0)
-    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
-    EXPECTED = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0]
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2),
+      ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    expected = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0]
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor._sample_examples(p, data, None, False)
-      assert_that(merged, equal_to(EXPECTED))
+      merged = executor.sample_examples(p, data, None, False)
+      assert_that(merged, equal_to(expected))
 
   def testMinimum(self):
-    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2),
+      ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
 
     def find_minimum(elements):
       return min(elements or [0])
@@ -207,14 +216,15 @@ class ExecutorTest(absltest.TestCase):
         p
         | beam.Create(dataset)
         | "CountPerKey" >> beam.combiners.Count.PerKey()
-        | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
+        | "FilterNullCount" >> beam.Filter(lambda x: executor.filter_null(x, null_vals=None))
         | "Values" >> beam.Values()
         | "GetSample" >> beam.CombineGlobally(find_minimum)
       )
       assert_that(val, equal_to([2]))
 
   def testMaximum(self):
-    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
+    dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2),
+      ("2", 2), ("2", 2), ("3", 3), ("3", 3), ("", 0)]
 
     def find_maximum(elements):
       return max(elements or [0])
@@ -224,7 +234,7 @@ class ExecutorTest(absltest.TestCase):
         p
         | beam.Create(dataset)
         | "CountPerKey" >> beam.combiners.Count.PerKey()
-        | "FilterNullCount" >> beam.Filter(lambda x: executor._filter_null(x, null_vals=None))
+        | "FilterNullCount" >> beam.Filter(lambda x: executor.filter_null(x, null_vals=None))
         | "Values" >> beam.Values()
         | "GetSample" >> beam.CombineGlobally(find_maximum)
       )

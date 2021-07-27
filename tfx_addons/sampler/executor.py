@@ -88,7 +88,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
-          _sample(p, uri, label, shards, keep_classes, split_dir, undersample)
+          sample(p, uri, label, shards, keep_classes, split_dir, undersample)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -98,7 +98,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
 
-def _generate_elements(x, label):
+def generate_elements(x, label):
   class_label = None
   parsed = tf.train.Example.FromString(x.numpy())
   if parsed.features.feature[label].int64_list.value:
@@ -111,12 +111,12 @@ def _generate_elements(x, label):
       class_label = val[0].decode()
   return (class_label, parsed)
 
-def _sample_data(key, val, undersample=True, side=0):
+def sample_data(key, val, undersample=True, side=0):
   random_sample_data = random.sample(val, side) if undersample else random.choices(val, k=side)
   for item in random_sample_data:
     yield item
 
-def _filter_null(item, keep_null=False, null_vals=None):
+def filter_null(item, keep_null=False, null_vals=None):
   if item[0] == 0:
     keep = True
   else:
@@ -128,7 +128,7 @@ def _filter_null(item, keep_null=False, null_vals=None):
   if keep:
     return item
 
-def _sample(p, uri, label, shards, keep_classes, output_dir, undersample):
+def sample(p, uri, label, shards, keep_classes, output_dir, undersample):
   """Function that actually undersamples the given split.
   Args:
     uri: The input uri for the specific split of the input example artifact.
@@ -142,11 +142,11 @@ def _sample(p, uri, label, shards, keep_classes, output_dir, undersample):
     None
   """
 
-  data = _read_tfexamples(p, uri, label)
-  merged = _sample_examples(p, data, keep_classes, undersample)
-  _write_tfexamples(p, merged, shards, output_dir)
+  data = read_tfexamples(p, uri, label)
+  merged = sample_examples(p, data, keep_classes, undersample)
+  write_tfexamples(p, merged, shards, output_dir)
 
-def _read_tfexamples(p, uri, label):
+def read_tfexamples(p, uri, label):
   dataset = tf.data.TFRecordDataset(tf.data.Dataset.list_files(f'{uri}/*'), compression_type="GZIP")
   
   # Take the input TFRecordDataset and extract the class label that we want.
@@ -154,11 +154,11 @@ def _read_tfexamples(p, uri, label):
   data = (
     p
     | "DatasetToPCollection" >> beam.Create(dataset)
-    | "MapToLabel" >> beam.Map(_generate_elements, label)
+    | "MapToLabel" >> beam.Map(generate_elements, label)
   )
   return data
 
-def _sample_examples(p, data, keep_classes, undersample):
+def sample_examples(p, data, keep_classes, undersample):
     # Finds the minimum frequency of all classes in the input label.
     # Output is a singleton PCollection with the minimum # of examples.
 
@@ -171,7 +171,7 @@ def _sample_examples(p, data, keep_classes, undersample):
   val = (
       data
       | "CountPerKey" >> beam.combiners.Count.PerKey()
-      | "FilterNullCount" >> beam.Filter(lambda x: _filter_null(x, null_vals=keep_classes))
+      | "FilterNullCount" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
       | "Values" >> beam.Values()
       | "GetSample" >> beam.CombineGlobally(sample_fn)
     )
@@ -181,20 +181,20 @@ def _sample_examples(p, data, keep_classes, undersample):
   res = (
     data
     | "GroupBylabel" >> beam.GroupByKey()
-    | "FilterNull" >> beam.Filter(lambda x: _filter_null(x, null_vals=keep_classes))
-    | "Undersample" >> beam.FlatMapTuple(_sample_data, undersample, side=beam.pvalue.AsSingleton(val))
+    | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+    | "Undersample" >> beam.FlatMapTuple(sample_data, undersample, side=beam.pvalue.AsSingleton(val))
   )
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (
     data
-    | "ExtractNull">> beam.Filter(lambda x: _filter_null(x, keep_null=True, null_vals=keep_classes))
+    | "ExtractNull">> beam.Filter(lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
     | "NullValues" >> beam.Values()
   )
   merged = (res, null) | "Merge PCollections" >> beam.Flatten()
   return merged
 
-def _write_tfexamples(p, examples, shards, output_dir):
+def write_tfexamples(p, examples, shards, output_dir):
   # Write the final set of TFRecords to the output artifact's files.
   _ = (
     examples
