@@ -35,9 +35,7 @@ EXTRAS_REQUIRE = {
     "schema_curation": [
         "tfx>=0.26.3<1.0.0",
     ],
-    "sampler": [
-        "tensorflow>=2"
-    ]
+    "sampler": ["tensorflow>=2"]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
