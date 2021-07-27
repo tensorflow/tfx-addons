@@ -1,3 +1,17 @@
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """Sampling pipeline example using TFX."""
 
 from __future__ import absolute_import, division, print_function
@@ -7,21 +21,20 @@ from typing import List, Text
 
 import absl
 import tensorflow_model_analysis as tfma
-from tfx_addons.sampler.component import Sampler
 from tfx.components import (CsvExampleGen, Evaluator, ExampleValidator, Pusher,
                             SchemaGen, StatisticsGen, Trainer, Transform)
 from tfx.components.trainer.executor import Executor
 from tfx.dsl.components.base import executor_spec
 from tfx.dsl.components.common import resolver
-
 from tfx.dsl.experimental import (latest_artifacts_resolver,
                                   latest_blessed_model_resolver)
 from tfx.orchestration import metadata, pipeline
-
 from tfx.orchestration.local.local_dag_runner import LocalDagRunner
 from tfx.proto import pusher_pb2, trainer_pb2
 from tfx.types import Channel
 from tfx.types.standard_artifacts import Model, ModelBlessing
+
+from tfx_addons.sampler.component import Sampler
 
 _pipeline_name = 'sampling_credit_card'
 _sampling_root = os.path.dirname(__file__)
@@ -30,7 +43,7 @@ _data_root = os.path.join(_sampling_root, 'data')
 # Transform and Trainer both require user-defined functions to run successfully.
 _module_file = os.path.join(_sampling_root, 'sampler_utils.py')
 _serving_model_dir = os.path.join(_sampling_root, 'serving_model',
-    _pipeline_name)
+                                  _pipeline_name)
 _tfx_root = os.path.join(os.environ['HOME'], 'tfx')
 _pipeline_root = os.path.join(_tfx_root, 'pipelines', _pipeline_name)
 _metadata_path = os.path.join(_tfx_root, 'metadata', _pipeline_name,
@@ -54,22 +67,21 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
   example_gen = CsvExampleGen(input_base=data_root)
   statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
   schema_gen = SchemaGen(statistics=statistics_gen.outputs['statistics'],
-      infer_feature_shape=False)
+                         infer_feature_shape=False)
   example_validator = ExampleValidator(
       statistics=statistics_gen.outputs['statistics'],
       schema=schema_gen.outputs['schema'])
 
   # Sampler component, with input examples and class label.
   sample = Sampler(input_data=example_gen.outputs['examples'],
-      splits=['train'],
-      label='Class',
-      shards=10,
-      undersample=False
-  )
+                   splits=['train'],
+                   label='Class',
+                   shards=10,
+                   undersample=False)
 
   transform = Transform(examples=sample.outputs['output_data'],
-      schema=schema_gen.outputs['schema'],
-      module_file=module_file)
+                        schema=schema_gen.outputs['schema'],
+                        module_file=module_file)
   latest_model_resolver = resolver.Resolver(
       strategy_class=latest_artifacts_resolver.LatestArtifactsResolver,
       latest_model=Channel(type=Model)).with_id('latest_model_resolver')
@@ -99,20 +111,20 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
       metrics_specs=[
           tfma.MetricsSpec(
               thresholds={
-                'accuracy':
-                tfma.config.MetricThreshold(
-                    value_threshold=tfma.GenericValueThreshold(
-                        lower_bound={'value': 0.6}),
-                    change_threshold=tfma.GenericChangeThreshold(
-                        direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-                        absolute={'value': -1e-10}))
+                  'accuracy':
+                  tfma.config.MetricThreshold(
+                      value_threshold=tfma.GenericValueThreshold(
+                          lower_bound={'value': 0.6}),
+                      change_threshold=tfma.GenericChangeThreshold(
+                          direction=tfma.MetricDirection.HIGHER_IS_BETTER,
+                          absolute={'value': -1e-10}))
               })
       ])
 
   evaluator = Evaluator(examples=example_gen.outputs['examples'],
-                      model=trainer.outputs['model'],
-                      baseline_model=model_resolver.outputs['model'],
-                      eval_config=eval_config)
+                        model=trainer.outputs['model'],
+                        baseline_model=model_resolver.outputs['model'],
+                        eval_config=eval_config)
   pusher = Pusher(model=trainer.outputs['model'],
                   model_blessing=evaluator.outputs['blessing'],
                   push_destination=pusher_pb2.PushDestination(
@@ -147,10 +159,10 @@ if __name__ == '__main__':
   absl.logging.set_verbosity(absl.logging.INFO)
 
   LocalDagRunner().run(
-    _create_pipeline(pipeline_name=_pipeline_name,
-                     pipeline_root=_pipeline_root,
-                     data_root=_data_root,
-                     module_file=_module_file,
-                     serving_model_dir=_serving_model_dir,
-                     metadata_path=_metadata_path,
-                     beam_pipeline_args=_beam_pipeline_args))
+      _create_pipeline(pipeline_name=_pipeline_name,
+                       pipeline_root=_pipeline_root,
+                       data_root=_data_root,
+                       module_file=_module_file,
+                       serving_model_dir=_serving_model_dir,
+                       metadata_path=_metadata_path,
+                       beam_pipeline_args=_beam_pipeline_args))

@@ -1,15 +1,29 @@
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """Sampling component definition."""
 
-from typing import Optional, Text, List
+from typing import List, Optional, Text
+
+from tfx import types
+from tfx.dsl.components.base import base_beam_component, executor_spec
+from tfx.types import channel_utils, standard_artifacts
+from tfx.utils import json_utils
+
 from tfx_addons.sampler.executor import Executor
 from tfx_addons.sampler.spec import SamplerSpec
 
-from tfx import types
-from tfx.dsl.components.base import base_beam_component
-from tfx.dsl.components.base import executor_spec
-from tfx.types import channel_utils
-from tfx.types import standard_artifacts
-from tfx.utils import json_utils
 
 class Sampler(base_beam_component.BaseBeamComponent):
   """A TFX component to sample examples.
@@ -45,19 +59,16 @@ class Sampler(base_beam_component.BaseBeamComponent):
   SPEC_CLASS = SamplerSpec
   EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(Executor)
 
-  def __init__(
-    self,
-    label: str,
-    input_data: types.Channel = None,
-    output_data: types.Channel = None,
-    name: Optional[Text] = None,
-    splits: Optional[List[Text]] = None,
-    copy_others: Optional[bool] = True,
-    shards: Optional[int] = 0,
-    keep_classes: Optional[List[Text]] = None,
-    undersample: bool = True
-  ):
-
+  def __init__(self,
+               label: str,
+               input_data: types.Channel = None,
+               output_data: types.Channel = None,
+               name: Optional[Text] = None,
+               splits: Optional[List[Text]] = None,
+               copy_others: Optional[bool] = True,
+               shards: Optional[int] = 0,
+               keep_classes: Optional[List[Text]] = None,
+               undersample: bool = True):
     """Construct a SamplerComponent.
 
     Args:
@@ -81,15 +92,15 @@ class Sampler(base_beam_component.BaseBeamComponent):
       output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
     spec = SamplerSpec(
-      input_data=input_data,
-      output_data=output_data,
-      label=label,
-      name=name,
-      splits=json_utils.dumps(splits),
-      copy_others=int(copy_others),
-      shards=shards,
-      keep_classes=json_utils.dumps(keep_classes),
-      undersample=int(undersample),
+        input_data=input_data,
+        output_data=output_data,
+        label=label,
+        name=name,
+        splits=json_utils.dumps(splits),
+        copy_others=int(copy_others),
+        shards=shards,
+        keep_classes=json_utils.dumps(keep_classes),
+        undersample=int(undersample),
     )
 
     super().__init__(spec=spec)
