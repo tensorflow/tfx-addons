@@ -18,13 +18,14 @@ from tfx.utils import io_utils
 class Executor(base_beam_executor.BaseBeamExecutor):
   """Executor for Sampler."""
 
-  def _CreatePipeline(self, unused_transform_output_path: Text) -> beam.Pipeline:
+  def _CreatePipeline(self, unused_transform_output: Text) -> beam.Pipeline:
     """Creates beam pipeline.
     Args:
-      unused_transform_output_path: unused.
+      unused_transform_output: unused.
     Returns:
       Beam pipeline.
     """
+
     return self._make_beam_pipeline()
 
   def Do(
@@ -69,8 +70,10 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     shards = exec_properties[spec.SAMPLER_SHARDS_KEY]
     keep_classes = json_utils.loads(exec_properties[spec.SAMPLER_CLASSES_KEY])
 
-    input_artifact = artifact_utils.get_single_instance(input_dict[spec.SAMPLER_INPUT_KEY])
-    output_artifact = artifact_utils.get_single_instance(output_dict[spec.SAMPLER_OUTPUT_KEY])
+    input_artifact = artifact_utils.get_single_instance(
+      input_dict[spec.SAMPLER_INPUT_KEY])
+    output_artifact = artifact_utils.get_single_instance(
+      output_dict[spec.SAMPLER_OUTPUT_KEY])
 
     if copy_others:
       output_artifact.split_names = input_artifact.split_names
@@ -99,6 +102,10 @@ class Executor(base_beam_executor.BaseBeamExecutor):
 
 
 def generate_elements(x, label):
+  """Funciton that fetches the class label from a tf.Example and returns one
+  item in a K-V PCollection with the key as the label and the value as the
+  string-parsed tf.Example."""
+
   class_label = None
   parsed = tf.train.Example.FromString(x.numpy())
   if parsed.features.feature[label].int64_list.value:
@@ -111,25 +118,37 @@ def generate_elements(x, label):
       class_label = val[0].decode()
   return (class_label, parsed)
 
-def sample_data(key, val, undersample=True, side=0):
-  random_sample_data = random.sample(val, side) if undersample else random.choices(val, k=side)
+def sample_data(_, val, undersample=True, side=0):
+  if undersample:
+    random_sample_data = random.sample(val, side)
+  else:
+    random_sample_data = random.choices(val, k=side)
+
   for item in random_sample_data:
     yield item
 
 def filter_null(item, keep_null=False, null_vals=None):
+  """Function that filters all of the null labels (and any optional labels
+  from the dataset at large. Returns either the null-labeled values or the
+  non-null-labeled values, depending on the value of keep_null."""
+
   if item[0] == 0:
     keep = True
   else:
-    keep = not (not item[0])
-    
+    keep = bool(item[0])
+
   if null_vals and str(item[0]) in null_vals and keep:
     keep = False
-  keep ^= keep_null  
+  keep ^= keep_null
+
   if keep:
     return item
+  else:
+    return None
 
 def sample(p, uri, label, shards, keep_classes, output_dir, undersample):
-  """Function that actually undersamples the given split.
+  """Function that actually samples the given split.
+
   Args:
     uri: The input uri for the specific split of the input example artifact.
     label: The name of the column containing class names to undersample by.
@@ -143,12 +162,16 @@ def sample(p, uri, label, shards, keep_classes, output_dir, undersample):
   """
 
   data = read_tfexamples(p, uri, label)
-  merged = sample_examples(p, data, keep_classes, undersample)
-  write_tfexamples(p, merged, shards, output_dir)
+  merged = sample_examples(data, keep_classes, undersample)
+  write_tfexamples(merged, shards, output_dir)
 
 def read_tfexamples(p, uri, label):
-  dataset = tf.data.TFRecordDataset(tf.data.Dataset.list_files(f'{uri}/*'), compression_type="GZIP")
-  
+  """Function that reads tf.Examples from tfRecord files and converts them
+  to a K-V PCollection usable by Beam."""
+
+  dataset = tf.data.TFRecordDataset(
+    tf.data.Dataset.list_files(f'{uri}/*'), compression_type="GZIP")
+
   # Take the input TFRecordDataset and extract the class label that we want.
   # Output format is a K-V PCollection: {class_label: TFRecord in string format}
   data = (
@@ -158,9 +181,11 @@ def read_tfexamples(p, uri, label):
   )
   return data
 
-def sample_examples(p, data, keep_classes, undersample):
-    # Finds the minimum frequency of all classes in the input label.
-    # Output is a singleton PCollection with the minimum # of examples.
+def sample_examples(data, keep_classes, undersample):
+  """Function that performs the sampling given a label-mapped dataset."""
+
+  # Finds the minimum frequency of all classes in the input label.
+  # Output is a singleton PCollection with the minimum # of examples.
 
   def find_minimum(elements):
     return min(elements or [0])
@@ -182,7 +207,8 @@ def sample_examples(p, data, keep_classes, undersample):
     data
     | "GroupBylabel" >> beam.GroupByKey()
     | "FilterNull" >> beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
-    | "Undersample" >> beam.FlatMapTuple(sample_data, undersample, side=beam.pvalue.AsSingleton(val))
+    | "Undersample" >> beam.FlatMapTuple(
+        sample_data, undersample, side=beam.pvalue.AsSingleton(val))
   )
 
   # Take out all the null values from the beginning and put them back in the pipeline
@@ -194,7 +220,7 @@ def sample_examples(p, data, keep_classes, undersample):
   merged = (res, null) | "Merge PCollections" >> beam.Flatten()
   return merged
 
-def write_tfexamples(p, examples, shards, output_dir):
+def write_tfexamples(examples, shards, output_dir):
   # Write the final set of TFRecords to the output artifact's files.
   _ = (
     examples

@@ -9,8 +9,6 @@ from tfx.dsl.components.base import base_beam_component
 from tfx.dsl.components.base import executor_spec
 from tfx.types import channel_utils
 from tfx.types import standard_artifacts
-from tfx.types.component_spec import ChannelParameter
-from tfx.types.component_spec import ExecutionParameter
 from tfx.utils import json_utils
 
 class Sampler(base_beam_component.BaseBeamComponent):
@@ -53,7 +51,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
     input_data: types.Channel = None,
     output_data: types.Channel = None,
     name: Optional[Text] = None,
-    splits: Optional[List[Text]] = ["train"],
+    splits: Optional[List[Text]] = None,
     copy_others: Optional[bool] = True,
     shards: Optional[int] = 0,
     keep_classes: Optional[List[Text]] = None,

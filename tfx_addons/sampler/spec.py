@@ -1,15 +1,11 @@
 """Sampling component definition."""
 
-from typing import Optional, Text, List
+from typing import Text
 
 from tfx import types
-from tfx.dsl.components.base import base_beam_component
-from tfx.dsl.components.base import executor_spec
-from tfx.types import channel_utils
 from tfx.types import standard_artifacts
 from tfx.types.component_spec import ChannelParameter
 from tfx.types.component_spec import ExecutionParameter
-from tfx.utils import json_utils
 
 SAMPLER_INPUT_KEY = 'input_data'
 SAMPLER_OUTPUT_KEY = 'output_data'
