@@ -34,6 +34,9 @@ EXTRAS_REQUIRE = {
     ["ml-pipelines-sdk>=0.26.3<1.0.0", "ml-metadata>=0.26<1.0.0"],
     "schema_curation": [
         "tfx>=0.26.3<1.0.0",
+    ],
+    "sampler": [
+        "tensorflow>=2"
     ]
 }
 EXTRAS_REQUIRE["all"] = list(
