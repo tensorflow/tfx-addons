@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-env
-tfx_addons.egg-info
-__pycache__
-.vscode
-.pytest_cache
-=======
 # LINT.IfChange
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -155,9 +148,5 @@ bazel-*
 **/*_pb2.py
 # LINT.ThenChange(.dockerignore)
 
-<<<<<<< HEAD
->>>>>>> b95bfbd... some modifications to the sampler component
-=======
 # Custom
 creditcard.csv
->>>>>>> e236ad2... Zip test data and remove extraneous served models
