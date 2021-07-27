@@ -3,7 +3,7 @@
 import tensorflow as tf
 from absl.testing import absltest
 
-from sampler import spec, component
+from tfx_addons.sampler import spec, component
 
 from tfx.types import artifact_utils
 from tfx.types import channel_utils

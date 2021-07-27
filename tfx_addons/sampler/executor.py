@@ -6,7 +6,7 @@ import random
 import apache_beam as beam
 from typing import Any, Dict, List, Text
 
-from sampler import spec
+from tfx_addons.sampler import spec
 
 from tfx import types
 from tfx.dsl.components.base import base_beam_executor

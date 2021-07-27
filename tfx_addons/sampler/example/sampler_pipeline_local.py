@@ -7,7 +7,7 @@ from typing import List, Text
 
 import absl
 import tensorflow_model_analysis as tfma
-from sampler.component import Sampler
+from tfx_addons.sampler.component import Sampler
 from tfx.components import (CsvExampleGen, Evaluator, ExampleValidator, Pusher,
                             SchemaGen, StatisticsGen, Trainer, Transform)
 from tfx.components.trainer.executor import Executor

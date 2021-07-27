@@ -1,8 +1,8 @@
 """Sampling component definition."""
 
 from typing import Optional, Text, List
-from sampler.executor import Executor
-from sampler.spec import SamplerSpec
+from tfx_addons.sampler.executor import Executor
+from tfx_addons.sampler.spec import SamplerSpec
 
 from tfx import types
 from tfx.dsl.components.base import base_beam_component

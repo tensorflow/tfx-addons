@@ -6,7 +6,7 @@ import tensorflow as tf
 import filecmp
 import random
 
-from sampler import executor, spec
+from tfx_addons.sampler import executor, spec
 
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
