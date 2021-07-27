@@ -14,7 +14,9 @@ from tfx.components.trainer.fn_args_utils import DataAccessor
 from tfx_bsl.tfxio import dataset_options
 
 _FEATURE_KEYS = [
-    "V1","V2","V3","V4","V5","V6","V7","V8","V9","V10","V11","V12","V13","V14","V15","V16","V17","V18","V19","V20","V21","V22","V23","V24","V25","V26","V27","V28","Amount"
+  "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12",
+  "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22",
+  "V23", "V24", "V25", "V26", "V27", "V28", "Amount"
 ]
 _LABEL_KEY = 'Class'
 
@@ -48,11 +50,10 @@ def _fill_in_missing(x):
     return x
 
   default_value = '' if x.dtype == tf.string else 0
-  return tf.squeeze(
-      tf.sparse.to_dense(
-          tf.SparseTensor(x.indices, x.values, [x.dense_shape[0], 1]),
-          default_value),
-      axis=1)
+  return tf.squeeze(tf.sparse.to_dense(
+      tf.SparseTensor(x.indices, x.values, [x.dense_shape[0], 1]),
+      default_value),
+    axis=1)
 
 
 def preprocessing_fn(inputs):
@@ -140,13 +141,11 @@ def _eval_input_receiver_fn(tf_transform_output, schema):
 
   # Add a parse_example operator to the tensorflow graph, which will parse
   # raw, untransformed, tf examples.
-  features = tf.io.parse_example(
-      serialized=serialized_tf_example, features=raw_feature_spec)
+  features = tf.io.parse_example(serialized_tf_example, raw_feature_spec)
 
   # Now that we have our raw examples, process them through the tf-transform
   # function computed during the preprocessing step.
-  transformed_features = tf_transform_output.transform_raw_features(
-      features)
+  transformed_features = tf_transform_output.transform_raw_features(features)
 
   # The key name MUST be 'examples'.
   receiver_tensors = {'examples': serialized_tf_example}
@@ -226,17 +225,16 @@ def trainer_fn(trainer_fn_args, schema):
       tf_transform_output, schema)
 
   exporter = tf.estimator.FinalExporter('chicago-taxi', serving_receiver_fn)
-  eval_spec = tf.estimator.EvalSpec(
-      eval_input_fn,
-      steps=trainer_fn_args.eval_steps,
-      exporters=[exporter],
-      name='credit-fraud-eval')
+  eval_spec = tf.estimator.EvalSpec(eval_input_fn,
+                                   steps=trainer_fn_args.eval_steps,
+                                   exporters=[exporter],
+                                   name='credit-fraud-eval')
 
   # Keep multiple checkpoint files for distributed training, note that
   # keep_max_checkpoint should be greater or equal to the number of replicas to
   # avoid race condition.
-  run_config = tf.estimator.RunConfig(
-      save_checkpoints_steps=999, keep_checkpoint_max=5)
+  run_config = tf.estimator.RunConfig(save_checkpoints_steps=999,
+    keep_checkpoint_max=5)
 
   run_config = run_config.replace(model_dir=trainer_fn_args.serving_model_dir)
   warm_start_from = trainer_fn_args.base_model
