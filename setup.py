@@ -30,10 +30,9 @@ TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client":
-    ["ml-pipelines-sdk>=0.26.3<1.0.0", "ml-metadata>=0.26<1.0.0"],
+    "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
     "schema_curation": [
-        "tfx>=0.26.3<1.0.0",
+        "tfx>=1.0.0<2",
     ],
     "sampler": ["tensorflow>=2"]
 }
