@@ -20,22 +20,14 @@ from tfx.types import artifact, standard_artifacts
 
 from module_file import _FEATURE_KEYS, _NUM_PARAM, _INPUT_DATA, _TARGET_DATA, SelectorFunc, ScoreFunc
 
-# _selection_modes = {
-#   'percentile': SelectPercentile,
-#   'k_best': SelectKBest,
-#   'fpr': SelectFpr,
-#   'fdr': SelectFdr,
-#   'fwe': SelectFwe
-# }
-
 """Custom Artifact type"""
 
 class FeatureSelectionArtifact(artifact.Artifact):
   """Output artifact containing feature scores from the Feature Selection component"""
-  TYPE_NAME = 'Feature Scores'
+  TYPE_NAME = 'Feature Scores and P-Values'
   PROPERTIES = {
-    'scores': {},
-    'p_values': {}
+      'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+      'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE)
   }
 
 
@@ -43,33 +35,29 @@ class FeatureSelectionArtifact(artifact.Artifact):
 Feature selection component using sklearn
 """
 
-
 @component
 def FeatureSelection(feature_selection: tfx.dsl.components.OutputArtifact[FeatureSelectionArtifact]):
   """Feature Selection component
     Args:
     input_data: Input features in the form of list[list] where each inner list contains one record
-      target_column: The target column which is inferred from `input_data`
-      selector_func: feature selector type
-      score_func: score function for feature selection. Example: chi2 etc.
-      num_params: Parameter of the corresponding `selector_func`
-      column_names: to generate artifact dictionaries containing scores
+    target_column: The target column which is inferred from `input_data`
+    selector_func: feature selector type
+    score_func: score function for feature selection. Example: chi2 etc.
+    num_params: Parameter of the corresponding `selector_func`
+    column_names: to generate artifact dictionaries containing scores
     """
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=_NUM_PARAM)
-  # selected_data = selector.fit_transform(_INPUT_DATA, _TARGET_DATA)
+  selected_data = selector.fit_transform(_INPUT_DATA, _TARGET_DATA)
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
   selector_p_values = selector.pvalues_
-  print("!!!!!!!", selector_scores)
 
   # merge scores and pvalues with feature keys to create a dictionary
   selector_scores_dict = dict(zip(_FEATURE_KEYS, selector_scores))
   selector_pvalues_dict = dict(zip(_FEATURE_KEYS, selector_p_values))
-  print("!!!!!!!", selector_scores_dict)
-  print("!!!!!!!", selector_pvalues_dict)
 
   feature_selection.set_json_value_custom_property("scores", selector_scores_dict)
   feature_selection.set_json_value_custom_property("pvalues", selector_pvalues_dict)
