@@ -1,10 +1,25 @@
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectKBest as SelectorFunc
 from sklearn.feature_selection import chi2 as ScoreFunc
-from sklearn.datasets import load_iris
 
 iris_data = load_iris()
-_FEATURE_KEYS = load_iris.feature_names
+_FEATURE_KEYS = iris_data.feature_names
 _INPUT_DATA = iris_data.data
 _TARGET_DATA = iris_data.target
 
-_NUM_PARAM = 10
+_NUM_PARAM = 2
