@@ -18,8 +18,7 @@ from sklearn.feature_selection import SelectKBest as SelectorFunc
 from sklearn.feature_selection import chi2 as ScoreFunc
 
 iris_data = load_iris()
-_FEATURE_KEYS = iris_data.feature_names
-_INPUT_DATA = iris_data.data
-_TARGET_DATA = iris_data.target
-
-_NUM_PARAM = 2
+FEATURE_KEYS = iris_data.feature_names
+INPUT_DATA = iris_data.data
+TARGET_DATA = iris_data.target
+NUM_PARAM = 2

@@ -16,9 +16,9 @@
 from typing import List
 import tfx.v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
-from tfx.types import artifact, standard_artifacts
+from tfx.types import artifact
 
-from module_file import _FEATURE_KEYS, _NUM_PARAM, _INPUT_DATA, _TARGET_DATA, SelectorFunc, ScoreFunc
+from module_file import *
 
 """Custom Artifact type"""
 
@@ -42,19 +42,19 @@ def FeatureSelection(feature_selection: tfx.dsl.components.OutputArtifact[Featur
   """Feature Selection component"""
 
   # Select features based on scores
-  selector = SelectorFunc(ScoreFunc, k=_NUM_PARAM)
-  selected_data = selector.fit_transform(_INPUT_DATA, _TARGET_DATA).tolist()
+  selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
+  selected_data = selector.fit_transform(INPUT_DATA, TARGET_DATA).tolist()
 
   # generate a list of selected features by matching _FEATURE_KEYS to selected indices
-  selected_features = [val for (idx, val) in enumerate(_FEATURE_KEYS) if idx in selector.get_support(indices=True)]
+  selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
   selector_p_values = selector.pvalues_
 
   # merge scores and pvalues with feature keys to create a dictionary
-  selector_scores_dict = dict(zip(_FEATURE_KEYS, selector_scores))
-  selector_pvalues_dict = dict(zip(_FEATURE_KEYS, selector_p_values))
+  selector_scores_dict = dict(zip(FEATURE_KEYS, selector_scores))
+  selector_pvalues_dict = dict(zip(FEATURE_KEYS, selector_p_values))
 
   # populate artifact with the required properties
   feature_selection.scores = selector_scores_dict
