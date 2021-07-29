@@ -28,7 +28,7 @@ SAMPLER_NAME_KEY = 'name'
 SAMPLER_SPLIT_KEY = 'splits'
 SAMPLER_COPY_KEY = 'copy_others'
 SAMPLER_SHARDS_KEY = 'shards'
-SAMPLER_CLASSES_KEY = 'keep_classes'
+SAMPLER_CLASSES_KEY = 'null_classes'
 SAMPLER_SAMPLE_KEY = 'sampling_strategy'
 
 

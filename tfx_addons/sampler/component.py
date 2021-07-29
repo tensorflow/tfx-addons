@@ -34,6 +34,11 @@ class Sampler(base_beam_component.BaseBeamComponent):
   samples the split by a given label's classes, and stores the new
   set of sampled examples into its own example artifact in
   tf.Record format.
+  
+  The sampling logic uses Python's random module:
+  undersampling uses random.sample, and oversampling uses
+  random.choices. Support for more complex sampling algorithms may
+  be added at a later date.
 
   By default, the component will ignore all examples with a null value
   (more precisely, a value that evaluates to False) for the given label,
@@ -67,7 +72,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
                splits: Optional[List[Text]] = None,
                copy_others: Optional[bool] = True,
                shards: Optional[int] = 0,
-               keep_classes: Optional[List[Text]] = None,
+               null_classes: Optional[List[Text]] = None,
                sampling_strategy: SamplingStrategy = SamplingStategy.UNDERSAMPLE):
     """Construct a SamplerComponent.
 
@@ -84,7 +89,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
       sampled, or just exclude them from the output artifact.
       shards: The number of files that each sampled split should
       contain. Default 0 is Beam's tfrecordio function's default.
-      keep_classes: A list determining which classes that we should s
+      null_classes: A list determining which classes that we should s
       not sample.
     """
 
@@ -99,7 +104,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
         splits=json_utils.dumps(splits),
         copy_others=int(copy_others),
         shards=shards,
-        keep_classes=json_utils.dumps(keep_classes),
+        null_classes=json_utils.dumps(null_classes),
         sampling_strategy=sampling_strategy,
     )
 

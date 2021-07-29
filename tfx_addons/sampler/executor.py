@@ -56,7 +56,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       output_dict: Output dict from key to a list of artifacts, including:
       - sampled_examples: sampled examples, only for the given
       splits as specified in splits. May also include copies of the
-      other non-sampled spits, as specified by keep_classes.
+      other non-sampled spits, as specified by null_classes.
       exec_properties: A dict of execution properties, including:
       - name: Optional unique name. Necessary if multiple components are
       declared in the same pipeline.
@@ -67,7 +67,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       to True.
       - shards: The number of files that each sampled split should
       contain. Default 0 is Beam's tfrecordio function's default.
-      - keep_classes: A list determining which classes that we should
+      - null_classes: A list determining which classes that we should
       not sample. Defaults to None.
     Returns:
       None
@@ -80,7 +80,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     splits = json_utils.loads(exec_properties[spec.SAMPLER_SPLIT_KEY])
     copy_others = exec_properties[spec.SAMPLER_COPY_KEY]
     shards = exec_properties[spec.SAMPLER_SHARDS_KEY]
-    keep_classes = json_utils.loads(exec_properties[spec.SAMPLER_CLASSES_KEY])
+    null_classes = json_utils.loads(exec_properties[spec.SAMPLER_CLASSES_KEY])
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict[spec.SAMPLER_INPUT_KEY])
@@ -103,7 +103,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
-          sample(p, uri, label, shards, keep_classes, split_dir, sampling_strategy)
+          sample(p, uri, label, shards, null_classes, split_dir, sampling_strategy)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -161,7 +161,7 @@ def filter_null(item, keep_null=False, null_vals=None):
     return None
 
 
-def sample(p, uri, label, shards, keep_classes, output_dir, sampling_strategy):
+def sample(p, uri, label, shards, null_classes, output_dir, sampling_strategy):
   """Function that actually samples the given split.
 
   Args:
@@ -169,7 +169,7 @@ def sample(p, uri, label, shards, keep_classes, output_dir, sampling_strategy):
     label: The name of the column containing class names to sample by.
     shards: The number of files that each sampled split should
     contain. Default 0 is Beam's tfrecordio function's default.
-    keep_classes: A list determining which classes that we should
+    null_classes: A list determining which classes that we should
     not sample. Defaults to None.
     output_dir: The output directory for the split of the output artifact.
   Returns:
@@ -177,7 +177,7 @@ def sample(p, uri, label, shards, keep_classes, output_dir, sampling_strategy):
   """
 
   data = read_tfexamples(p, uri, label)
-  merged = sample_examples(data, keep_classes, sampling_strategy)
+  merged = sample_examples(data, null_classes, sampling_strategy)
   write_tfexamples(merged, shards, output_dir)
 
 
@@ -196,7 +196,7 @@ def read_tfexamples(p, uri, label):
   return data
 
 
-def sample_examples(data, keep_classes, sampling_strategy):
+def sample_examples(data, null_classes, sampling_strategy):
   """Function that performs the sampling given a label-mapped dataset."""
 
   # Finds the minimum frequency of all classes in the input label.
@@ -216,7 +216,7 @@ def sample_examples(data, keep_classes, sampling_strategy):
   val = (data
          | "CountPerKey" >> beam.combiners.Count.PerKey()
          | "FilterNullCount" >>
-         beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+         beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
          | "Values" >> beam.Values()
          | "GetSample" >> beam.CombineGlobally(sample_fn))
 
@@ -225,14 +225,14 @@ def sample_examples(data, keep_classes, sampling_strategy):
   res = (data
          | "GroupBylabel" >> beam.GroupByKey()
          | "FilterNull" >>
-         beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
+         beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
          | "Sample" >> beam.FlatMapTuple(
              sample_data, sampling_strategy=sampling_strategy, side=beam.pvalue.AsSingleton(val)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data
           | "ExtractNull" >> beam.Filter(
-              lambda x: filter_null(x, keep_null=True, null_vals=keep_classes))
+              lambda x: filter_null(x, keep_null=True, null_vals=null_classes))
           | "NullValues" >> beam.Values())
   merged = (res, null) | "Merge PCollections" >> beam.Flatten()
   return merged
