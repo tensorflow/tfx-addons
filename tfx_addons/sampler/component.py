@@ -73,7 +73,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
                copy_others: Optional[bool] = True,
                shards: Optional[int] = 0,
                null_classes: Optional[List[Text]] = None,
-               sampling_strategy: SamplingStrategy = SamplingStategy.UNDERSAMPLE):
+               sampling_strategy: SamplingStrategy = SamplingStrategy.UNDERSAMPLE):
     """Construct a SamplerComponent.
 
     Args:
