@@ -1,45 +1,44 @@
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
 """Tests for the custom xgboost Evaluator module."""
 
 import os
 import pickle
-import pandas as pd
-import xgboost as xgb
+
 import apache_beam as beam
+import pandas as pd
+import tensorflow as tf
+import xgboost as xgb
+import xgboost_predict_extractor
 from apache_beam.testing import util
 from google.protobuf import text_format
-import tensorflow as tf
 from tensorflow_metadata.proto.v0 import schema_pb2
-from tensorflow_model_analysis import config
-from tensorflow_model_analysis import constants
+from tensorflow_model_analysis import config, constants
 from tensorflow_model_analysis.api import model_eval_lib
 from tensorflow_model_analysis.eval_saved_model import testutil
 from tensorflow_model_analysis.extractors import features_extractor
-from tfx_bsl.tfxio import tensor_adapter
-from tfx_bsl.tfxio import test_util
-
-import xgboost_predict_extractor
+from tfx_bsl.tfxio import tensor_adapter, test_util
 
 
 class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
-
   def setUp(self):
     super(XGBoostPredictExtractorTest, self).setUp()
     self._eval_export_dir = os.path.join(self._getTempDir(), 'eval_export')
     self._create_xgboost_model(self._eval_export_dir)
-    self._eval_config = config.EvalConfig(model_specs=[config.ModelSpec(name=None, label_key="label")])
+    self._eval_config = config.EvalConfig(
+        model_specs=[config.ModelSpec(name=None, label_key="label")])
     self._eval_shared_model = (
         xgboost_predict_extractor.custom_eval_shared_model(
             eval_saved_model_path=self._eval_export_dir,
@@ -87,8 +86,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'BatchExamples' >> self._tfx_io.BeamSource()
           | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
-          | prediction_extractor.stage_name >> prediction_extractor.ptransform
-      )
+          | prediction_extractor.stage_name >> prediction_extractor.ptransform)
 
       def check_result(actual):
         try:
@@ -125,7 +123,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
             eval_shared_model={
                 'model1': eval_shared_model_1,
                 'model2': eval_shared_model_2,
-            }, 
+            },
             eval_config=eval_config))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
@@ -135,8 +133,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'BatchExamples' >> self._tfx_io.BeamSource()
           | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
-          | prediction_extractor.stage_name >> prediction_extractor.ptransform
-      )
+          | prediction_extractor.stage_name >> prediction_extractor.ptransform)
 
       def check_result(actual):
         try:
@@ -160,10 +157,11 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
   def test_custom_extractors(self):
     """Tests that the xgboost extractor is used when creating extracts."""
     extractors = xgboost_predict_extractor.custom_extractors(
-        self._eval_shared_model, self._eval_config, self._tensor_adapter_config)
+        self._eval_shared_model, self._eval_config,
+        self._tensor_adapter_config)
     self.assertLen(extractors, 6)
-    self.assertIn(
-        'XGBoostPredict', [extractor.stage_name for extractor in extractors])
+    self.assertIn('XGBoostPredict',
+                  [extractor.stage_name for extractor in extractors])
 
   def _create_xgboost_model(self, eval_export_dir):
     """Creates and pickles a toy xgboost model.
@@ -180,6 +178,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
     os.makedirs(eval_export_dir)
     model.save_model(os.path.join(eval_export_dir, "model.json"))
+
 
 if __name__ == '__main__':
   tf.test.main()
