@@ -28,6 +28,7 @@ class ComponentTest(absltest.TestCase):
     examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
     params = {
         spec.SAMPLER_INPUT_KEY: channel_utils.as_channel([examples]),
+        spec.SAMPLER_SPLIT_KEY: ['train'],
         spec.SAMPLER_LABEL_KEY: 'label'
     }
 
