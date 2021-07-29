@@ -76,8 +76,7 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
   sample = Sampler(input_data=example_gen.outputs['examples'],
                    splits=['train'],
                    label='Class',
-                   shards=10,
-                   undersample=False)
+                   shards=10)
 
   transform = Transform(examples=sample.outputs['output_data'],
                         schema=schema_gen.outputs['schema'],
