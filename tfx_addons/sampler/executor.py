@@ -103,7 +103,8 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
-          sample(p, uri, label, shards, null_classes, split_dir, sampling_strategy)
+          sample(p, uri, label, shards, null_classes, split_dir,
+                 sampling_strategy)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -131,7 +132,10 @@ def generate_elements(x, label):
   return (class_label, parsed)
 
 
-def sample_data(_, val, sampling_strategy=spec.SamplingStrategy.UNDERSAMPLE, side=0):
+def sample_data(_,
+                val,
+                sampling_strategy=spec.SamplingStrategy.UNDERSAMPLE,
+                side=0):
   if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
     random_sample_data = random.sample(val, side)
   elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
@@ -226,8 +230,9 @@ def sample_examples(data, null_classes, sampling_strategy):
          | "GroupBylabel" >> beam.GroupByKey()
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
-         | "Sample" >> beam.FlatMapTuple(
-             sample_data, sampling_strategy=sampling_strategy, side=beam.pvalue.AsSingleton(val)))
+         | "Sample" >> beam.FlatMapTuple(sample_data,
+                                         sampling_strategy=sampling_strategy,
+                                         side=beam.pvalue.AsSingleton(val)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data

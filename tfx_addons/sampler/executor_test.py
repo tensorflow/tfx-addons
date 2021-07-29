@@ -229,7 +229,8 @@ class ExecutorTest(absltest.TestCase):
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor.sample_examples(data, None, spec.SamplingStrategy.UNDERSAMPLE)
+      merged = executor.sample_examples(data, None,
+                                        spec.SamplingStrategy.UNDERSAMPLE)
       assert_that(merged, equal_to(expected))
 
   def testPipelineMax(self):
@@ -240,7 +241,8 @@ class ExecutorTest(absltest.TestCase):
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor.sample_examples(data, None, spec.SamplingStrategy.OVERSAMPLE)
+      merged = executor.sample_examples(data, None,
+                                        spec.SamplingStrategy.OVERSAMPLE)
       assert_that(merged, equal_to(expected))
 
   def testMinimum(self):

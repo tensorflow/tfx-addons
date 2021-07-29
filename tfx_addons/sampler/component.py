@@ -64,16 +64,17 @@ class Sampler(base_beam_component.BaseBeamComponent):
   SPEC_CLASS = SamplerSpec
   EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(Executor)
 
-  def __init__(self,
-               label: str,
-               input_data: types.Channel = None,
-               output_data: types.Channel = None,
-               name: Optional[Text] = None,
-               splits: Optional[List[Text]] = None,
-               copy_others: Optional[bool] = True,
-               shards: Optional[int] = 0,
-               null_classes: Optional[List[Text]] = None,
-               sampling_strategy: SamplingStrategy = SamplingStrategy.UNDERSAMPLE):
+  def __init__(
+      self,
+      label: str,
+      input_data: types.Channel = None,
+      output_data: types.Channel = None,
+      name: Optional[Text] = None,
+      splits: Optional[List[Text]] = None,
+      copy_others: Optional[bool] = True,
+      shards: Optional[int] = 0,
+      null_classes: Optional[List[Text]] = None,
+      sampling_strategy: SamplingStrategy = SamplingStrategy.UNDERSAMPLE):
     """Construct a SamplerComponent.
 
     Args:
