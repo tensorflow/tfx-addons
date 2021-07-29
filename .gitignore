@@ -150,3 +150,4 @@ bazel-*
 
 # Custom
 creditcard.csv
+serving_model
