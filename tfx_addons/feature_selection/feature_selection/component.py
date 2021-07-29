@@ -13,15 +13,15 @@
 # limitations under the License.
 # ==============================================================================
 
-from typing import List
+import importlib
 import tfx.v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact
+from tfx.v1.dsl.components import OutputArtifact, Parameter
+# TODO: Why does import from tfx.v1.dsl.components not work?
 
-from module_file import *
 
 """Custom Artifact type"""
-
 class FeatureSelectionArtifact(artifact.Artifact):
   """Output artifact containing feature scores from the Feature Selection component"""
   TYPE_NAME = 'Feature Selection'
@@ -34,12 +34,17 @@ class FeatureSelectionArtifact(artifact.Artifact):
 
 
 """
-Feature selection component using sklearn
+Feature selection component
 """
-
 @component
-def FeatureSelection(feature_selection: tfx.dsl.components.OutputArtifact[FeatureSelectionArtifact]):
+def FeatureSelection(module_file: Parameter[str],
+    feature_selection: OutputArtifact[FeatureSelectionArtifact]):
   """Feature Selection component"""
+
+  # importing the required functions and variables from
+  modules = importlib.import_module(module_file)
+  mod_names = ["NUM_PARAM", "INPUT_DATA", "TARGET_DATA", "FEATURE_KEYS", "SelectorFunc", "ScoreFunc"]
+  NUM_PARAM, INPUT_DATA, TARGET_DATA, FEATURE_KEYS, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
