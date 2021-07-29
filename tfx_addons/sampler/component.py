@@ -22,7 +22,7 @@ from tfx.types import channel_utils, standard_artifacts
 from tfx.utils import json_utils
 
 from tfx_addons.sampler.executor import Executor
-from tfx_addons.sampler.spec import SamplerSpec
+from tfx_addons.sampler.spec import SamplerSpec, SamplingStrategy
 
 
 class Sampler(base_beam_component.BaseBeamComponent):
@@ -68,7 +68,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
                copy_others: Optional[bool] = True,
                shards: Optional[int] = 0,
                keep_classes: Optional[List[Text]] = None,
-               undersample: bool = True):
+               sampling_strategy: SamplingStrategy = SamplingStategy.UNDERSAMPLE):
     """Construct a SamplerComponent.
 
     Args:
@@ -100,7 +100,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
         copy_others=int(copy_others),
         shards=shards,
         keep_classes=json_utils.dumps(keep_classes),
-        undersample=int(undersample),
+        sampling_strategy=sampling_strategy,
     )
 
     super().__init__(spec=spec)

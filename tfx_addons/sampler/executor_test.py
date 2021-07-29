@@ -138,7 +138,7 @@ class ExecutorTest(absltest.TestCase):
         spec.SAMPLER_CLASSES_KEY:
         json_utils.dumps(['None']),
         spec.SAMPLER_SAMPLE_KEY:
-        True,
+        spec.SamplingStrategy.UNDERSAMPLE,
     }
 
     output = self._run_exec(exec_properties)
@@ -156,7 +156,7 @@ class ExecutorTest(absltest.TestCase):
         spec.SAMPLER_COPY_KEY: True,
         spec.SAMPLER_SHARDS_KEY: 20,
         spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-        spec.SAMPLER_SAMPLE_KEY: True,
+        spec.SAMPLER_SAMPLE_KEY: spec.SamplingStrategy.UNDERSAMPLE,
     }
 
     output = self._run_exec(exec_properties)
@@ -179,7 +179,7 @@ class ExecutorTest(absltest.TestCase):
         spec.SAMPLER_COPY_KEY: True,
         spec.SAMPLER_SHARDS_KEY: 1,
         spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-        spec.SAMPLER_SAMPLE_KEY: True,
+        spec.SAMPLER_SAMPLE_KEY: spec.SamplingStrategy.UNDERSAMPLE,
     }
 
     output = self._run_exec(exec_properties)
@@ -198,7 +198,7 @@ class ExecutorTest(absltest.TestCase):
         spec.SAMPLER_COPY_KEY: False,
         spec.SAMPLER_SHARDS_KEY: 1,
         spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
-        spec.SAMPLER_SAMPLE_KEY: True,
+        spec.SAMPLER_SAMPLE_KEY: spec.SamplingStrategy.UNDERSAMPLE,
     }
 
     output = self._run_exec(exec_properties)
@@ -229,7 +229,7 @@ class ExecutorTest(absltest.TestCase):
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor.sample_examples(data, None, True)
+      merged = executor.sample_examples(data, None, spec.SamplingStrategy.UNDERSAMPLE)
       assert_that(merged, equal_to(expected))
 
   def testPipelineMax(self):
@@ -240,7 +240,7 @@ class ExecutorTest(absltest.TestCase):
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor.sample_examples(data, None, False)
+      merged = executor.sample_examples(data, None, spec.SamplingStrategy.OVERSAMPLE)
       assert_that(merged, equal_to(expected))
 
   def testMinimum(self):

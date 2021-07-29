@@ -76,7 +76,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     self._log_startup(input_dict, output_dict, exec_properties)
 
     label = exec_properties[spec.SAMPLER_LABEL_KEY]
-    undersample = exec_properties[spec.SAMPLER_SAMPLE_KEY]
+    sampling_strategy = exec_properties[spec.SAMPLER_SAMPLE_KEY]
     splits = json_utils.loads(exec_properties[spec.SAMPLER_SPLIT_KEY])
     copy_others = exec_properties[spec.SAMPLER_COPY_KEY]
     shards = exec_properties[spec.SAMPLER_SHARDS_KEY]
@@ -103,7 +103,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
-          sample(p, uri, label, shards, keep_classes, split_dir, undersample)
+          sample(p, uri, label, shards, keep_classes, split_dir, sampling_strategy)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -131,10 +131,10 @@ def generate_elements(x, label):
   return (class_label, parsed)
 
 
-def sample_data(_, val, undersample=True, side=0):
-  if undersample:
+def sample_data(_, val, sampling_strategy=spec.SamplingStrategy.UNDERSAMPLE, side=0):
+  if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
     random_sample_data = random.sample(val, side)
-  else:
+  elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
     random_sample_data = random.choices(val, k=side)
 
   for item in random_sample_data:
@@ -161,23 +161,23 @@ def filter_null(item, keep_null=False, null_vals=None):
     return None
 
 
-def sample(p, uri, label, shards, keep_classes, output_dir, undersample):
+def sample(p, uri, label, shards, keep_classes, output_dir, sampling_strategy):
   """Function that actually samples the given split.
 
   Args:
     uri: The input uri for the specific split of the input example artifact.
-    label: The name of the column containing class names to undersample by.
-    shards: The number of files that each undersampled split should
+    label: The name of the column containing class names to sample by.
+    shards: The number of files that each sampled split should
     contain. Default 0 is Beam's tfrecordio function's default.
     keep_classes: A list determining which classes that we should
-    not undersample. Defaults to None.
+    not sample. Defaults to None.
     output_dir: The output directory for the split of the output artifact.
   Returns:
     None
   """
 
   data = read_tfexamples(p, uri, label)
-  merged = sample_examples(data, keep_classes, undersample)
+  merged = sample_examples(data, keep_classes, sampling_strategy)
   write_tfexamples(merged, shards, output_dir)
 
 
@@ -196,7 +196,7 @@ def read_tfexamples(p, uri, label):
   return data
 
 
-def sample_examples(data, keep_classes, undersample):
+def sample_examples(data, keep_classes, sampling_strategy):
   """Function that performs the sampling given a label-mapped dataset."""
 
   # Finds the minimum frequency of all classes in the input label.
@@ -208,7 +208,10 @@ def sample_examples(data, keep_classes, undersample):
   def find_maximum(elements):
     return max(elements or [0])
 
-  sample_fn = find_minimum if undersample else find_maximum
+  if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
+    sample_fn = find_minimum
+  else:
+    sample_fn = find_maximum
 
   val = (data
          | "CountPerKey" >> beam.combiners.Count.PerKey()
@@ -223,8 +226,8 @@ def sample_examples(data, keep_classes, undersample):
          | "GroupBylabel" >> beam.GroupByKey()
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=keep_classes))
-         | "Undersample" >> beam.FlatMapTuple(
-             sample_data, undersample, side=beam.pvalue.AsSingleton(val)))
+         | "Sample" >> beam.FlatMapTuple(
+             sample_data, sampling_strategy=sampling_strategy, side=beam.pvalue.AsSingleton(val)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data

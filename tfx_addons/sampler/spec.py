@@ -14,6 +14,7 @@
 # ==============================================================================
 """Sampling component definition."""
 
+import enum
 from typing import Text
 
 from tfx import types
@@ -28,7 +29,13 @@ SAMPLER_SPLIT_KEY = 'splits'
 SAMPLER_COPY_KEY = 'copy_others'
 SAMPLER_SHARDS_KEY = 'shards'
 SAMPLER_CLASSES_KEY = 'keep_classes'
-SAMPLER_SAMPLE_KEY = 'undersample'
+SAMPLER_SAMPLE_KEY = 'sampling_strategy'
+
+
+class SamplingStrategy(enum.IntEnum):
+  """Determines which kind of sampling to perform."""
+  UNDERSAMPLE = 1
+  OVERSAMPLE = 2
 
 
 class SamplerSpec(types.ComponentSpec):
