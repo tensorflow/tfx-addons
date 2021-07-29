@@ -15,7 +15,6 @@
 """Tests for the custom xgboost Evaluator module."""
 
 import os
-import pickle
 
 import apache_beam as beam
 import pandas as pd
@@ -34,7 +33,10 @@ from tfx_bsl.tfxio import tensor_adapter, test_util
 
 class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
   def setUp(self):
-    super(XGBoostPredictExtractorTest, self).setUp()
+    """Function that sets up a schema, some examples, and some metadata
+    for use in the tests."""
+
+    super().setUp()
     self._eval_export_dir = os.path.join(self._getTempDir(), 'eval_export')
     self._create_xgboost_model(self._eval_export_dir)
     self._eval_config = config.EvalConfig(
@@ -76,7 +78,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     """Tests that predictions are made from extracts for a single model."""
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
-        xgboost_predict_extractor._make_xgboost_predict_extractor(
+        xgboost_predict_extractor.make_xgboost_predict_extractor(
             self._eval_shared_model, self._eval_config))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
@@ -119,7 +121,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
-        xgboost_predict_extractor._make_xgboost_predict_extractor(
+        xgboost_predict_extractor.make_xgboost_predict_extractor(
             eval_shared_model={
                 'model1': eval_shared_model_1,
                 'model2': eval_shared_model_2,

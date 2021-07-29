@@ -15,15 +15,12 @@
 """Predict extractor for xgboost models."""
 
 import copy
-import logging
 import os
-import pickle
 from typing import Dict, Iterable, List, Text
 
 import apache_beam as beam
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 import tensorflow_model_analysis as tfma
 import xgboost as xgb
 from tensorflow_model_analysis import constants, model_util, types
@@ -33,7 +30,7 @@ from tfx_bsl.tfxio import tensor_adapter
 _PREDICT_EXTRACTOR_STAGE_NAME = 'XGBoostPredict'
 
 
-def _make_xgboost_predict_extractor(
+def make_xgboost_predict_extractor(
     eval_shared_model: tfma.EvalSharedModel,
     eval_config: tfma.EvalConfig,
 ) -> extractor.Extractor:
@@ -66,14 +63,16 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
   """A DoFn that loads the models and predicts."""
   def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel],
                eval_config: tfma.EvalConfig):
-    super(_TFMAPredictionDoFn, self).__init__(
+    super().__init__(
         {k: v.model_loader
          for k, v in eval_shared_models.items()})
     self._eval_config = eval_config
 
   def setup(self):
+    """Function that accesses and saves the chosen feature keys and label key."""
+
     # models are loaded and stored into self._loaded_models below
-    super(_TFMAPredictionDoFn, self).setup()
+    super().setup()
     self._feature_keys = None
     self._label_key = None
 
@@ -197,8 +196,8 @@ def custom_extractors(
     tensor_adapter_config: tensor_adapter.TensorAdapterConfig,
 ) -> List[tfma.extractors.Extractor]:
   """Returns default extractors plus a custom prediction extractor."""
-  predict_extractor = _make_xgboost_predict_extractor(eval_shared_model,
-                                                      eval_config)
+  predict_extractor = make_xgboost_predict_extractor(eval_shared_model,
+                                                     eval_config)
   return tfma.default_extractors(eval_shared_model=eval_shared_model,
                                  eval_config=eval_config,
                                  tensor_adapter_config=tensor_adapter_config,
