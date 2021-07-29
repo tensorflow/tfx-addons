@@ -14,11 +14,10 @@
 # ==============================================================================
 
 import importlib
-import tfx.v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact
 from tfx.v1.dsl.components import OutputArtifact, Parameter
-# TODO: Why does import from tfx.v1.dsl.components not work?
+# TODO: Why does import from tfx.dsl.components not work?
 
 
 """Custom Artifact type"""
@@ -39,7 +38,19 @@ Feature selection component
 @component
 def FeatureSelection(module_file: Parameter[str],
     feature_selection: OutputArtifact[FeatureSelectionArtifact]):
-  """Feature Selection component"""
+  """Feature Selection component
+      Args:
+        NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
+          example: value of 'k' in SelectKBest
+        INPUT_DATA: Two dimensional array containing the data vectors
+          shape: (number of data points, number of input features)
+        OUTPUT_DATA: Two dimensional array containing the target vector
+          shape: (number of data points,)
+        FEATURE_KEYS: List containing feature names corresponding to each data point in INPUT_DATA
+        SelectorFunc: Selector function for univariate feature selection
+          example: SelectKBest, SelectPercentile from sklearn.feature_selection
+        ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
+  """
 
   # importing the required functions and variables from
   modules = importlib.import_module(module_file)
