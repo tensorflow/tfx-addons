@@ -34,7 +34,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
   samples the split by a given label's classes, and stores the new
   set of sampled examples into its own example artifact in
   tf.Record format.
-  
+
   The sampling logic uses Python's random module:
   undersampling uses random.sample, and oversampling uses
   random.choices. Support for more complex sampling algorithms may

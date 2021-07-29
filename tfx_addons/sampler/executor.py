@@ -136,6 +136,10 @@ def sample_data(_,
                 val,
                 sampling_strategy=spec.SamplingStrategy.UNDERSAMPLE,
                 side=0):
+  """Function called in a Beam pipeline that performs sampling using Python's
+  random module on an input key:value pair, where the key is the class label
+  and the values are the data points to sample. Note that the key is discarded."""
+
   if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
     random_sample_data = random.sample(val, side)
   elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
