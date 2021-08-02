@@ -195,6 +195,7 @@ def filter_null(item, keep_null=False, null_vals=None):
 
   return item if keep else None
 
+
 def read_tfexamples(p, uri, label):
   """Function that reads tf.Examples from tfRecord files and converts them
   to a K-V PCollection usable by Beam."""
