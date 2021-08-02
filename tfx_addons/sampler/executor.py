@@ -121,7 +121,7 @@ def generate_elements(example, label):
   """Function that fetches the class label from a tf.Example and returns one
   item in a K-V PCollection with the key as the label and the value as the
   string-parsed tf.Example.
-  
+
   Args:
     example: a tf.Example in serialized format, taken directly from a
       TFRecordDataset.
@@ -165,23 +165,25 @@ def sample_data(_,
 
 
 def filter_null(item, keep_null=False, null_vals=None):
-  """Function that returns or doesn't return the inputted item if its first value
-  is either a False value or is in the inputted null_vals list.
+  """Function that returns or doesn't return the inputted item if its first
+  value is either a False value or is in the inputted null_vals list.
 
-  This function first determines if the item's first value is equivalent to False
-  using bool(), with one exception; 0 is considered as "True". If the first value
-  is in null_vals, the first value is automatically considered a "null value" and
-  is therefore considered to be False. If the value is False, then None is
-  returned; if the value is True, then the original item is returned. The keep_null
-  value reverses this, so True values return None, and False values return the item.
-  
+  This function first determines if the item's first value is equivalent to
+  False using bool(), with one exception; 0 is considered as "True". If the
+  first value is in null_vals, the first value is automatically considered a
+  "null value" and is therefore considered to be False. If the value is False,
+  then None is returned; if the value is True, then the original item is
+  returned. The keep_null value reverses this, so True values return None,
+  and False values return the item.
+
   Args:
     item: List whose first value determines whether it is returned or not.
-    keep_null: Determines whether we keep False/"null" values or True/not "null" values.
+    keep_null: Determines whether we keep False/"null" values or True/not
+      "null" values.
     null_vals: List containing values that should be considered as False/"null".
   Returns:
-    None or the inputted item, depending on if the item is False/in null_vals, and
-      then depending on the value of keep_null.
+    None or the inputted item, depending on if the item is False/in null_vals,
+      and then depending on the value of keep_null.
   """
 
   if item[0] == 0:
