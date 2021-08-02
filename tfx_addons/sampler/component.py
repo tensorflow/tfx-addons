@@ -56,9 +56,8 @@ class Sampler(base_beam_component.BaseBeamComponent):
 
   Component `outputs` contains:
    - `sampled_examples`: Channel of type `standard_artifacts.Examples` for
-                materialized sampled examples, based on the
-                input splits, which includes copied splits unless
-                otherwise specified by copy_others.
+      materialized sampled examples, based on the input splits, which includes
+      copied splits unless otherwise specified by copy_others.
   """
 
   SPEC_CLASS = SamplerSpec
@@ -80,18 +79,16 @@ class Sampler(base_beam_component.BaseBeamComponent):
     Args:
       input_data: A Channel of type `standard_artifacts.Examples`.
       output_data: A Channel of type `standard_artifacts.Examples`.
-      By default, only the train split is sampled; all others are copied.
+        By default, only the train split is sampled; all others are copied.
       name: Optional unique name. Necessary if multiple components are
-      declared in the same pipeline.
-      label: The name of the column containing class names to
-      sample by.
+        declared in the same pipeline.
+      label: The name of the column containing class names to sample by.
       splits: A list containing splits to sample.
       copy_others: Determines whether we copy over the splits that aren't
-      sampled, or just exclude them from the output artifact.
+        sampled, or just exclude them from the output artifact.
       shards: The number of files that each sampled split should
-      contain. Default 0 is Beam's tfrecordio function's default.
-      null_classes: A list determining which classes that we should s
-      not sample.
+        contain. Default 0 is Beam's tfrecordio function's default.
+      null_classes: A list determining which classes that we should not sample.
     """
 
     if not output_data:

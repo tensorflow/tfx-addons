@@ -50,27 +50,27 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     """Sampler executor entrypoint.
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
-      - examples: A list of type `standard_artifacts.Examples` which should
-      contain custom splits specified in splits_config. If custom split is
-      not provided, this should contain two splits 'train' and 'eval'.
+        - examples: A list of type `standard_artifacts.Examples` which should
+          contain custom splits specified in splits_config. If custom split is
+          not provided, this should contain two splits 'train' and 'eval'.
       output_dict: Output dict from key to a list of artifacts, including:
-      - sampled_examples: sampled examples, only for the given
-      splits as specified in splits. May also include copies of the
-      other non-sampled spits, as specified by null_classes.
+        - sampled_examples: sampled examples, only for the given
+          splits as specified in splits. May also include copies of the
+          other non-sampled spits, as specified by null_classes.
       exec_properties: A dict of execution properties, including:
-      - name: Optional unique name. Necessary if multiple components are
-      declared in the same pipeline.
-      - label: The name of the column containing class names to sample by.
-      - splits: A list containing splits to sample. Defaults to ['train'].
-      - copy_others: Determines whether we copy over the splits that aren't
-      sampled, or just exclude them from the output artifact. Defualts
-      to True.
-      - shards: The number of files that each sampled split should
-      contain. Default 0 is Beam's tfrecordio function's default.
-      - null_classes: A list determining which classes that we should
-      not sample. Defaults to None.
-      - sampling_strategy: An enum of type SamplingStrategy, determining if
-      the executor should over or undersample.
+        - name: Optional unique name. Necessary if multiple components are
+          declared in the same pipeline.
+        - label: The name of the column containing class names to sample by.
+        - splits: A list containing splits to sample. Defaults to ['train'].
+        - copy_others: Determines whether we copy over the splits that aren't
+          sampled, or just exclude them from the output artifact. Defaults
+          to True.
+        - shards: The number of files that each sampled split should
+          contain. Default 0 is Beam's tfrecordio function's default.
+        - null_classes: A list determining which classes that we should
+          not sample. Defaults to None.
+        - sampling_strategy: An enum of type SamplingStrategy, determining if
+          the executor should over or undersample.
     Returns:
       None
     """
@@ -124,12 +124,12 @@ def generate_elements(example, label):
   
   Args:
     example: a tf.Example in serialized format, taken directly from a
-    TFRecordDataset.
+      TFRecordDataset.
     label: string containing the name of the categorical variable that we are
-    extracting from the example.
+      extracting from the example.
   Returns:
     Tuple with two items. First item is a class label; second item is the input
-    tf.Example, deserialized and parsed from string format.
+      tf.Example, deserialized and parsed from string format.
   """
 
   class_label = None
@@ -181,7 +181,7 @@ def filter_null(item, keep_null=False, null_vals=None):
     null_vals: List containing values that should be considered as False/"null".
   Returns:
     None or the inputted item, depending on if the item is False/in null_vals, and
-    then depending on the value of keep_null.
+      then depending on the value of keep_null.
   """
 
   if item[0] == 0:
