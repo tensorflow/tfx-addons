@@ -35,11 +35,13 @@ class ExecutorTest(absltest.TestCase):
   def _validate_output(self, output, splits, num=1):
     def generate_elements(data):
       for i in range(len(data[list(data.keys())[0]])):
-        yield {
-            key:
-            data[key][i][0] if data[key][i] and len(data[key][i]) > 0 else ""
-            for key in data.keys()
-        }
+        gen = dict()
+        for key in data.keys():
+          if data[key][i] and len(data[key][i]) > 0:
+            gen[key] = data[key][i][0]
+          else:
+            gen[key] = ""
+        yield gen
 
     tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(
         examples=[output], telemetry_descriptors=[])

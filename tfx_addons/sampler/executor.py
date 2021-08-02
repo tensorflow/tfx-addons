@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Executor for TensorFlow Transform."""
+"""Executor for Sampler component."""
 
 import os
 import random
@@ -69,6 +69,8 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       contain. Default 0 is Beam's tfrecordio function's default.
       - null_classes: A list determining which classes that we should
       not sample. Defaults to None.
+      - sampling_strategy: An enum of type SamplingStrategy, determining if
+      the executor should over or undersample.
     Returns:
       None
     """
@@ -103,8 +105,9 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
-          sample(p, uri, label, shards, null_classes, split_dir,
-                 sampling_strategy)
+          data = read_tfexamples(p, uri, label)
+          merged = sample_examples(data, null_classes, sampling_strategy)
+          write_tfexamples(merged, shards, split_dir)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
         output_dir = artifact_utils.get_split_uri([output_artifact], split)
@@ -114,13 +117,23 @@ class Executor(base_beam_executor.BaseBeamExecutor):
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
 
-def generate_elements(x, label):
-  """Funciton that fetches the class label from a tf.Example and returns one
+def generate_elements(example, label):
+  """Function that fetches the class label from a tf.Example and returns one
   item in a K-V PCollection with the key as the label and the value as the
-  string-parsed tf.Example."""
+  string-parsed tf.Example.
+  
+  Args:
+    example: a tf.Example in serialized format, taken directly from a
+    TFRecordDataset.
+    label: string containing the name of the categorical variable that we are
+    extracting from the example.
+  Returns:
+    Tuple with two items. First item is a class label; second item is the input
+    tf.Example, deserialized and parsed from string format.
+  """
 
   class_label = None
-  parsed = tf.train.Example.FromString(x.numpy())
+  parsed = tf.train.Example.FromString(example.numpy())
   if parsed.features.feature[label].int64_list.value:
     val = parsed.features.feature[label].int64_list.value
     if len(val) > 0:
@@ -144,15 +157,32 @@ def sample_data(_,
     random_sample_data = random.sample(val, side)
   elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
     random_sample_data = random.choices(val, k=side)
+  else:
+    raise ValueError("Invalid value for sampling_strategy variable!")
 
   for item in random_sample_data:
     yield item
 
 
 def filter_null(item, keep_null=False, null_vals=None):
-  """Function that filters all of the null labels (and any optional labels
-  from the dataset at large. Returns either the null-labeled values or the
-  non-null-labeled values, depending on the value of keep_null."""
+  """Function that returns or doesn't return the inputted item if its first value
+  is either a False value or is in the inputted null_vals list.
+
+  This function first determines if the item's first value is equivalent to False
+  using bool(), with one exception; 0 is considered as "True". If the first value
+  is in null_vals, the first value is automatically considered a "null value" and
+  is therefore considered to be False. If the value is False, then None is
+  returned; if the value is True, then the original item is returned. The keep_null
+  value reverses this, so True values return None, and False values return the item.
+  
+  Args:
+    item: List whose first value determines whether it is returned or not.
+    keep_null: Determines whether we keep False/"null" values or True/not "null" values.
+    null_vals: List containing values that should be considered as False/"null".
+  Returns:
+    None or the inputted item, depending on if the item is False/in null_vals, and
+    then depending on the value of keep_null.
+  """
 
   if item[0] == 0:
     keep = True
@@ -163,31 +193,7 @@ def filter_null(item, keep_null=False, null_vals=None):
     keep = False
   keep ^= keep_null
 
-  if keep:
-    return item
-  else:
-    return None
-
-
-def sample(p, uri, label, shards, null_classes, output_dir, sampling_strategy):
-  """Function that actually samples the given split.
-
-  Args:
-    uri: The input uri for the specific split of the input example artifact.
-    label: The name of the column containing class names to sample by.
-    shards: The number of files that each sampled split should
-    contain. Default 0 is Beam's tfrecordio function's default.
-    null_classes: A list determining which classes that we should
-    not sample. Defaults to None.
-    output_dir: The output directory for the split of the output artifact.
-  Returns:
-    None
-  """
-
-  data = read_tfexamples(p, uri, label)
-  merged = sample_examples(data, null_classes, sampling_strategy)
-  write_tfexamples(merged, shards, output_dir)
-
+  return item if keep else None
 
 def read_tfexamples(p, uri, label):
   """Function that reads tf.Examples from tfRecord files and converts them
@@ -218,8 +224,10 @@ def sample_examples(data, null_classes, sampling_strategy):
 
   if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
     sample_fn = find_minimum
-  else:
+  elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
     sample_fn = find_maximum
+  else:
+    raise ValueError("Invalid value for sampling_strategy variable!")
 
   val = (data
          | "CountPerKey" >> beam.combiners.Count.PerKey()
@@ -243,8 +251,7 @@ def sample_examples(data, null_classes, sampling_strategy):
           | "ExtractNull" >> beam.Filter(
               lambda x: filter_null(x, keep_null=True, null_vals=null_classes))
           | "NullValues" >> beam.Values())
-  merged = (res, null) | "Merge PCollections" >> beam.Flatten()
-  return merged
+  return (res, null) | "Merge PCollections" >> beam.Flatten()
 
 
 def write_tfexamples(examples, shards, output_dir):
