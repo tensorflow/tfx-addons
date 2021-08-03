@@ -1,18 +1,17 @@
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# =============================================================================
-
+# ==============================================================================
 """E2E Tests for penguin_pipeline_xgboost_local."""
 
 import os
@@ -20,12 +19,12 @@ from typing import Text
 
 import tensorflow as tf
 from tfx import v1 as tfx
-import penguin_pipeline_local
 from tfx.orchestration import metadata
+
+from . import penguin_pipeline_local
 
 
 class PenguinPipelineLocalEndToEndTest(tf.test.TestCase):
-
   def setUp(self):
     super().setUp()
     self._test_dir = os.path.join(
@@ -35,8 +34,7 @@ class PenguinPipelineLocalEndToEndTest(tf.test.TestCase):
 
     self._pipeline_name = 'xgboost_test'
     self._data_root = os.path.join(self._penguin_root, 'data')
-    self._trainer_module_file = os.path.join(
-        self._penguin_root, 'utils.py')
+    self._module_file = os.path.join(self._penguin_root, 'utils.py')
     self._serving_model_dir = os.path.join(self._test_dir, 'serving_model')
     self._pipeline_root = os.path.join(self._test_dir, 'tfx', 'pipelines',
                                        self._pipeline_name)
@@ -47,8 +45,8 @@ class PenguinPipelineLocalEndToEndTest(tf.test.TestCase):
     """Check the component is executed exactly once."""
     component_path = os.path.join(self._pipeline_root, component)
     self.assertTrue(tfx.dsl.io.fileio.exists(component_path))
-    execution_path = os.path.join(
-        component_path, '.system', 'executor_execution')
+    execution_path = os.path.join(component_path, '.system',
+                                  'executor_execution')
     execution = tfx.dsl.io.fileio.listdir(execution_path)
     self.assertLen(execution, 1)
 
@@ -59,13 +57,13 @@ class PenguinPipelineLocalEndToEndTest(tf.test.TestCase):
     self.assertExecutedOnce('StatisticsGen')
     self.assertExecutedOnce('Trainer')
 
-  def testPenguinPipelineXgboostLocal(self):
+  def testPenguinPipelineLocal(self):
     tfx.orchestration.LocalDagRunner().run(
-        penguin_pipeline_local._create_pipeline(
+        penguin_pipeline_local.create_pipeline(
             pipeline_name=self._pipeline_name,
             pipeline_root=self._pipeline_root,
             data_root=self._data_root,
-            trainer_module_file=self._trainer_module_file,
+            module_file=self._module_file,
             metadata_path=self._metadata_path,
             beam_pipeline_args=[]))
 

@@ -1,18 +1,17 @@
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# =============================================================================
-
+# ==============================================================================
 """Python module file with Penguin pipeline functions and necessary utils.
 
 Include entry point run_fn() to be called by TFX Trainer.
@@ -25,13 +24,11 @@ from typing import Text, Tuple
 import absl
 import numpy as np
 import xgboost as xgb
-
+from tensorflow_metadata.proto.v0 import schema_pb2
 from tfx.components.trainer.fn_args_utils import DataAccessor, FnArgs
 from tfx.dsl.io import fileio
 from tfx.utils import io_utils
 from tfx_bsl.tfxio import dataset_options
-
-from tensorflow_metadata.proto.v0 import schema_pb2
 
 _FEATURE_KEYS = [
     'culmen_length_mm', 'culmen_depth_mm', 'flipper_length_mm', 'body_mass_g'
@@ -64,8 +61,8 @@ def _input_fn(
   """
   record_batch_iterator = data_accessor.record_batch_factory(
       file_pattern,
-      dataset_options.RecordBatchesOptions(batch_size=batch_size, num_epochs=1),
-      schema)
+      dataset_options.RecordBatchesOptions(batch_size=batch_size,
+                                           num_epochs=1), schema)
 
   feature_list = []
   label_list = []
@@ -82,9 +79,11 @@ def _input_fn(
 
 
 def _train(fn_args, x_train, y_train, x_eval, y_eval):
-  params = {'objective': fn_args.custom_config['objective'],
-            'learning_rate': fn_args.custom_config['learning_rate'],
-            'max_depth': fn_args.custom_config['max_depth']}
+  params = {
+      'objective': fn_args.custom_config['objective'],
+      'learning_rate': fn_args.custom_config['learning_rate'],
+      'max_depth': fn_args.custom_config['max_depth']
+  }
   matrix_train = xgb.DMatrix(x_train, label=y_train)
   matrix_eval = xgb.DMatrix(x_eval, label=y_eval)
   model = xgb.train(

@@ -65,7 +65,7 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
 
   def testPenguinPipelineSklearnLocal(self):
     tfx.orchestration.LocalDagRunner().run(
-        penguin_pipeline_sklearn_local._create_pipeline(  # pylint:disable=protected-access
+        penguin_pipeline_sklearn_loc.gital._create_pipeline(  # pylint:disable=protected-access
             pipeline_name=self._pipeline_name,
             pipeline_root=self._pipeline_root,
             data_root=self._data_root,
