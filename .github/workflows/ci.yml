@@ -28,6 +28,8 @@ jobs:
         python-version: 3.7
     - uses: pre-commit/action@v2.0.3
       name: Run pre-commit checks (pylint/yapf/isort)
+      env:
+        SKIP: insert-license
       with:
         extra_args: --hook-stage push --all-files
   pytest-ci:
@@ -36,7 +38,7 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       matrix:
-        tfx-version: [==0.30.2, ==1.0.0rc1]
+        tfx-version: [==0.30.2, ==1.0.0, ""]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
@@ -59,4 +61,4 @@ jobs:
         pip install -e ".[all, test]" tfx${{ matrix.tfx-version }}
     - name: Run tests
       run: pytest
-
+  
