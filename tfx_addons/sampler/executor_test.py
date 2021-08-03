@@ -295,7 +295,7 @@ class ExecutorTest(absltest.TestCase):
     }
 
     with self.assertRaises(ValueError) as context:
-      output = self._run_exec(exec_properties)
+      self._run_exec(exec_properties)
     self.assertTrue('Invalid split name bad is not in input artifact!' in str(
         context.exception))
 

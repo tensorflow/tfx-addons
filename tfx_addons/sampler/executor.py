@@ -89,8 +89,8 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     output_artifact = artifact_utils.get_single_instance(
         output_dict[spec.SAMPLER_OUTPUT_KEY])
 
-    if sampling_strategy != spec.SamplingStrategy.UNDERSAMPLE and \
-      sampling_strategy != spec.SamplingStrategy.OVERSAMPLE:
+    if sampling_strategy not in (spec.SamplingStrategy.UNDERSAMPLE,
+                                 spec.SamplingStrategy.OVERSAMPLE):
       raise ValueError("Invalid sampling strategy!")
 
     if not splits:
