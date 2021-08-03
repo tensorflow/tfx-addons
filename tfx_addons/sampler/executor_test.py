@@ -281,6 +281,24 @@ class ExecutorTest(absltest.TestCase):
              | "GetSample" >> beam.CombineGlobally(find_maximum))
       assert_that(val, equal_to([4]))
 
+  def testException(self):
+    exec_properties = {
+        spec.SAMPLER_LABEL_KEY: 'label',
+        spec.SAMPLER_NAME_KEY: 'undersampling',
+        spec.SAMPLER_SPLIT_KEY: json_utils.dumps(
+            ['bad']
+        ),  # List needs to be serialized before being passed into Do function.
+        spec.SAMPLER_COPY_KEY: False,
+        spec.SAMPLER_SHARDS_KEY: 1,
+        spec.SAMPLER_CLASSES_KEY: json_utils.dumps([]),
+        spec.SAMPLER_SAMPLE_KEY: spec.SamplingStrategy.UNDERSAMPLE,
+    }
+
+    with self.assertRaises(ValueError) as context:
+      output = self._run_exec(exec_properties)
+    self.assertTrue('Invalid split name bad is not in input artifact!' in str(
+        context.exception))
+
 
 if __name__ == '__main__':
   tf.test.main()

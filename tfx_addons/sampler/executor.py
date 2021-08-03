@@ -89,6 +89,21 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     output_artifact = artifact_utils.get_single_instance(
         output_dict[spec.SAMPLER_OUTPUT_KEY])
 
+    if sampling_strategy != spec.SamplingStrategy.UNDERSAMPLE and \
+      sampling_strategy != spec.SamplingStrategy.OVERSAMPLE:
+      raise ValueError("Invalid sampling strategy!")
+
+    if not splits:
+      raise ValueError("No splits are marked for sampling!")
+
+    for split in splits:
+      if split not in input_artifact.split_names:
+        raise ValueError(
+            f"Invalid split name {split} is not in input artifact!")
+
+    if shards < 0:
+      raise ValueError("Shards value must be non-negative!")
+
     if copy_others:
       output_artifact.split_names = input_artifact.split_names
     else:
