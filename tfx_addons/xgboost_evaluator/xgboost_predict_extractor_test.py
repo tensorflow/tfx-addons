@@ -20,7 +20,6 @@ import apache_beam as beam
 import pandas as pd
 import tensorflow as tf
 import xgboost as xgb
-import xgboost_predict_extractor
 from apache_beam.testing import util
 from google.protobuf import text_format
 from tensorflow_metadata.proto.v0 import schema_pb2
@@ -29,6 +28,8 @@ from tensorflow_model_analysis.api import model_eval_lib
 from tensorflow_model_analysis.eval_saved_model import testutil
 from tensorflow_model_analysis.extractors import features_extractor
 from tfx_bsl.tfxio import tensor_adapter, test_util
+
+from tfx_addons.xgboost_evaluator import xgboost_predict_extractor
 
 
 class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
