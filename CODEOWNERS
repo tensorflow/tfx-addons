@@ -31,3 +31,6 @@
 
 # Sampling Component
 /tfx_addons/sampling @kindalime
+
+# Feast ExampleGen Component
+/tfx_addons/feast_examplegen @BACtaki
