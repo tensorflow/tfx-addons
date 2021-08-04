@@ -28,3 +28,6 @@
 # XGBoost Evaluator Component
 /tfx_addons/xgboost_evaluator @kindalime @cent5
 /examples/xgboost_penguins @kindalime @cent5
+
+# Sampling Component
+/tfx_addons/sampling @kindalime
