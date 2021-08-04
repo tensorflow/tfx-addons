@@ -1,5 +1,30 @@
 # Global owners for SIG TFX-Addons
 * @rcrowe-google @mihaimaruseac @theadactyl
 
+# Core team for reviews of project proposals and main distribution files
+# /proposals/ daikeshi@gmail.com casassg hanneshapke junbopark larry.price@openx.com marcromeyn michalbrys nle@twitter.com olgai@spotify.com pselden rclough sngahane
+/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
+/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
+/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
+
+
+# CI configuration (for now owned by @casassg)
+/.github/workflows/ci.yml @casassg
+/.github/ci  @casassg
+
+
 # Sci-Kit Learn Example using the Penguins dataset
-/projects/examples/sklearn_penguins/ @TheMichaelHu @1025kb
+/examples/sklearn_penguins/ @TheMichaelHu @1025kb
+
+# MLMD Client Library
+/tfx_addons/mlmd_client/ @codesue @pselden @casassg
+
+# ExampleFilter Component
+/tfx_addons/example_filter/ @rclough
+
+# Schema Curation Component
+/tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97
+
+# XGBoost Evaluator Component
+/tfx_addons/xgboost_evaluator @kindalime @cent5
+/examples/xgboost_penguins @kindalime @cent5
