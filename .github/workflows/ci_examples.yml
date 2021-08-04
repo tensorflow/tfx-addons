@@ -61,5 +61,5 @@ jobs:
         python -m pip install --upgrade pip wheel
         pip install -e ".[all, test]" tfx${{ matrix.tfx-version }}
     - name: Run tests
-      run: pytest
+      run: pytest --ignore=examples/sklearn_penguins examples
   

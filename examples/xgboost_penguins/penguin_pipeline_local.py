@@ -15,7 +15,7 @@
 """Penguin example using TFX and XGBoost.
 
 Run pipeline:
-$ python tfx_addons/xgboost_evaluator/examples/penguin_pipeline_local.py
+$ python examples/xgboost_penguins/penguin_pipeline_local.py
 """
 
 import os
