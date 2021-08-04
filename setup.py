@@ -34,7 +34,8 @@ EXTRAS_REQUIRE = {
     ["ml-pipelines-sdk>=0.26.3<2.0.0", "ml-metadata>=0.26<2.0.0"],
     "schema_curation": [
         "tfx>=0.26.3<2.0.0",
-    ]
+    ],
+    "xgboost_evaluator": ["xgboost==1.4.2"]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
