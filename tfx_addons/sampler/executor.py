@@ -61,7 +61,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         - name: Optional unique name. Necessary if multiple components are
           declared in the same pipeline.
         - label: The name of the column containing class names to sample by.
-        - splits: A list containing splits to sample. Defaults to ['train'].
+        - splits: A list containing splits to sample.
         - copy_others: Determines whether we copy over the splits that aren't
           sampled, or just exclude them from the output artifact. Defaults
           to True.
@@ -192,7 +192,9 @@ def filter_null(item, keep_null=False, null_vals=None):
   and False values return the item.
 
   Args:
-    item: List whose first value determines whether it is returned or not.
+    item: Tuple whose first value determines whether it is returned or not.
+      Should always be a two-value tuple, with the first value being the class
+      value and the second value being all examples that belong to that class.
     keep_null: Determines whether we keep False/"null" values or True/not
       "null" values.
     null_vals: List containing values that should be considered as False/"null".
