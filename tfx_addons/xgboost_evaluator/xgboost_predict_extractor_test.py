@@ -81,6 +81,15 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     prediction_extractor = (
         xgboost_predict_extractor.make_xgboost_predict_extractor(
             self._eval_shared_model, self._eval_config))
+
+    def check_result(item):
+      try:
+        # Regular assert used due to errors with pytest when using self.AssertEqual
+        assert(item['labels'].shape == item['predictions'].shape)
+
+      except AssertionError as err:
+        raise util.BeamAssertException(err)
+
     with beam.Pipeline() as pipeline:
       predict_extracts = (
           pipeline
@@ -89,17 +98,8 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'BatchExamples' >> self._tfx_io.BeamSource()
           | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
-          | prediction_extractor.stage_name >> prediction_extractor.ptransform)
-
-      def check_result(actual):
-        try:
-          for item in actual:
-            self.assertEqual(item['labels'].shape, item['predictions'].shape)
-
-        except AssertionError as err:
-          raise util.BeamAssertException(err)
-
-      util.assert_that(predict_extracts, check_result)
+          | prediction_extractor.stage_name >> prediction_extractor.ptransform
+          | beam.Map(check_result))  # the test
 
   def testMakeXGBoostPredictExtractorWithMultiModels(self):
     """Tests that predictions are made from extracts for multiple models."""
@@ -128,6 +128,17 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
                 'model2': eval_shared_model_2,
             },
             eval_config=eval_config))
+
+    def check_result(item):
+      try:
+        # Regular assert used due to errors with pytest when using self.AssertEqual
+        assert(len(item['labels']) == len(item['predictions']))
+        assert('model1' in item['predictions'][0])
+        assert('model2' in item['predictions'][0])
+
+      except AssertionError as err:
+        raise util.BeamAssertException(err)
+
     with beam.Pipeline() as pipeline:
       predict_extracts = (
           pipeline
@@ -136,19 +147,8 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'BatchExamples' >> self._tfx_io.BeamSource()
           | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
-          | prediction_extractor.stage_name >> prediction_extractor.ptransform)
-
-      def check_result(actual):
-        try:
-          for item in actual:
-            self.assertEqual(len(item['labels']), len(item['predictions']))
-            self.assertIn('model1', item['predictions'][0])
-            self.assertIn('model2', item['predictions'][0])
-
-        except AssertionError as err:
-          raise util.BeamAssertException(err)
-
-      util.assert_that(predict_extracts, check_result)
+          | prediction_extractor.stage_name >> prediction_extractor.ptransform
+          | beam.Map(check_result))  # the test
 
   def test_custom_eval_shared_model(self):
     """Tests that an EvalSharedModel is created with a custom xgboost loader."""
