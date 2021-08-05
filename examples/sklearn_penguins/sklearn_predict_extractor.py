@@ -22,9 +22,7 @@ import apache_beam as beam
 import numpy as np
 import tensorflow as tf
 import tensorflow_model_analysis as tfma
-from tensorflow_model_analysis import constants
-from tensorflow_model_analysis import model_util
-from tensorflow_model_analysis import types
+from tensorflow_model_analysis import constants, model_util, types
 from tensorflow_model_analysis.extractors import extractor
 from tfx_bsl.tfxio import tensor_adapter
 
@@ -32,8 +30,7 @@ _PREDICT_EXTRACTOR_STAGE_NAME = 'SklearnPredict'
 
 
 def _make_sklearn_predict_extractor(
-    eval_shared_model: tfma.EvalSharedModel,
-) -> extractor.Extractor:
+    eval_shared_model: tfma.EvalSharedModel, ) -> extractor.Extractor:
   """Creates an extractor for performing predictions using a scikit-learn model.
 
   The extractor's PTransform loads and runs the serving pickle against
@@ -52,17 +49,18 @@ def _make_sklearn_predict_extractor(
   return extractor.Extractor(
       stage_name=_PREDICT_EXTRACTOR_STAGE_NAME,
       ptransform=_ExtractPredictions(  # pylint: disable=no-value-for-parameter
-          eval_shared_models={m.model_name: m for m in eval_shared_models}))
+          eval_shared_models={m.model_name: m
+                              for m in eval_shared_models}))
 
 
 @beam.typehints.with_input_types(types.Extracts)
 @beam.typehints.with_output_types(types.Extracts)
 class _TFMAPredictionDoFn(model_util.DoFnWithModels):
   """A DoFn that loads the models and predicts."""
-
   def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel]):
     super(_TFMAPredictionDoFn, self).__init__(
-        {k: v.model_loader for k, v in eval_shared_models.items()})
+        {k: v.model_loader
+         for k, v in eval_shared_models.items()})
 
   def setup(self):
     super(_TFMAPredictionDoFn, self).setup()
@@ -109,8 +107,9 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       if len(self._loaded_models) == 1:
         result[constants.PREDICTIONS_KEY] = preds
       elif constants.PREDICTIONS_KEY not in result:
-        result[constants.PREDICTIONS_KEY] = [
-            {model_name: pred} for pred in preds]
+        result[constants.PREDICTIONS_KEY] = [{
+            model_name: pred
+        } for pred in preds]
       else:
         for i, pred in enumerate(preds):
           result[constants.PREDICTIONS_KEY][i][model_name] = pred
@@ -143,9 +142,8 @@ def _custom_model_loader_fn(model_path: Text):
 
 
 # TFX Evaluator will call the following functions.
-def custom_eval_shared_model(
-    eval_saved_model_path, model_name, eval_config,
-    **kwargs) -> tfma.EvalSharedModel:
+def custom_eval_shared_model(eval_saved_model_path, model_name, eval_config,
+                             **kwargs) -> tfma.EvalSharedModel:
   """Returns a single custom EvalSharedModel."""
   model_path = os.path.join(eval_saved_model_path, 'model.pkl')
   return tfma.default_eval_shared_model(
@@ -164,8 +162,7 @@ def custom_extractors(
 ) -> List[tfma.extractors.Extractor]:
   """Returns default extractors plus a custom prediction extractor."""
   predict_extractor = _make_sklearn_predict_extractor(eval_shared_model)
-  return tfma.default_extractors(
-      eval_shared_model=eval_shared_model,
-      eval_config=eval_config,
-      tensor_adapter_config=tensor_adapter_config,
-      custom_predict_extractor=predict_extractor)
+  return tfma.default_extractors(eval_shared_model=eval_shared_model,
+                                 eval_config=eval_config,
+                                 tensor_adapter_config=tensor_adapter_config,
+                                 custom_predict_extractor=predict_extractor)
