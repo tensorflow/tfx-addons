@@ -21,8 +21,8 @@ from tfx.dsl.components.base import base_beam_component, executor_spec
 from tfx.types import channel_utils, standard_artifacts
 from tfx.utils import json_utils
 
-from tfx_addons.sampler.executor import Executor
-from tfx_addons.sampler.spec import SamplerSpec, SamplingStrategy
+from tfx_addons.sampling.executor import Executor
+from tfx_addons.sampling.spec import SamplerSpec, SamplingStrategy
 
 
 class Sampler(base_beam_component.BaseBeamComponent):

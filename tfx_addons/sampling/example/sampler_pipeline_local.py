@@ -34,7 +34,7 @@ from tfx.proto import pusher_pb2, trainer_pb2
 from tfx.types import Channel
 from tfx.types.standard_artifacts import Model, ModelBlessing
 
-from tfx_addons.sampler.component import Sampler
+from tfx_addons.sampling.component import Sampler
 
 _pipeline_name = 'sampling_credit_card'
 _sampling_root = os.path.dirname(__file__)

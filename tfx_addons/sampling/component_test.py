@@ -19,7 +19,7 @@ from absl.testing import absltest
 from tfx.types import artifact_utils, channel_utils, standard_artifacts
 from tfx.utils import json_utils
 
-from tfx_addons.sampler import component, spec
+from tfx_addons.sampling import component, spec
 
 
 class ComponentTest(absltest.TestCase):

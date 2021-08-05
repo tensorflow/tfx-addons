@@ -26,7 +26,7 @@ from tfx.dsl.io import fileio
 from tfx.types import artifact_utils
 from tfx.utils import io_utils, json_utils
 
-from tfx_addons.sampler import spec
+from tfx_addons.sampling import spec
 
 
 class Executor(base_beam_executor.BaseBeamExecutor):

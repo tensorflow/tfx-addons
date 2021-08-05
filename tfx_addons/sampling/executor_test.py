@@ -28,7 +28,7 @@ from tfx.dsl.io import fileio
 from tfx.types import artifact_utils, standard_artifacts
 from tfx.utils import io_utils, json_utils
 
-from tfx_addons.sampler import executor, spec
+from tfx_addons.samping import executor, spec
 
 
 class ExecutorTest(absltest.TestCase):
