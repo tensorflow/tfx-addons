@@ -85,13 +85,13 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     def check_result(item):
       try:
         # Regular assert used due to errors with pytest when using self.AssertEqual
-        assert(item['labels'].shape == item['predictions'].shape)
+        assert item['labels'].shape == item['predictions'].shape
 
       except AssertionError as err:
         raise util.BeamAssertException(err)
 
     with beam.Pipeline() as pipeline:
-      predict_extracts = (
+      _ = (
           pipeline
           | 'Create' >> beam.Create(
               [e.SerializeToString() for e in self._examples])
@@ -132,15 +132,15 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     def check_result(item):
       try:
         # Regular assert used due to errors with pytest when using self.AssertEqual
-        assert(len(item['labels']) == len(item['predictions']))
-        assert('model1' in item['predictions'][0])
-        assert('model2' in item['predictions'][0])
+        assert len(item['labels']) == len(item['predictions'])
+        assert 'model1' in item['predictions'][0]
+        assert 'model2' in item['predictions'][0]
 
       except AssertionError as err:
         raise util.BeamAssertException(err)
 
     with beam.Pipeline() as pipeline:
-      predict_extracts = (
+      _ = (
           pipeline
           | 'Create' >> beam.Create(
               [e.SerializeToString() for e in self._examples])
