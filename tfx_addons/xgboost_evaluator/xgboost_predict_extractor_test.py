@@ -27,9 +27,10 @@ from tensorflow_model_analysis import config, constants
 from tensorflow_model_analysis.api import model_eval_lib
 from tensorflow_model_analysis.eval_saved_model import testutil
 from tensorflow_model_analysis.extractors import features_extractor
+from tfx.types import channel_utils, standard_artifacts
 from tfx_bsl.tfxio import tensor_adapter, test_util
 
-from tfx_addons.xgboost_evaluator import xgboost_predict_extractor
+from tfx_addons.xgboost_evaluator import component, xgboost_predict_extractor
 
 
 class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
@@ -165,6 +166,20 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     self.assertLen(extractors, 6)
     self.assertIn('XGBoostPredict',
                   [extractor.stage_name for extractor in extractors])
+
+  def test_component(self):
+    examples = standard_artifacts.Examples()
+    model_exports = standard_artifacts.Model()
+    evaluator = component.XGBoostEvaluator(
+        examples=channel_utils.as_channel([examples]),
+        model=channel_utils.as_channel([model_exports]),
+        example_splits=['eval'],
+        module_file=xgboost_predict_extractor.get_module_file())
+
+    module_file = xgboost_predict_extractor.get_module_file()
+    self.assertEqual(standard_artifacts.ModelEvaluation.TYPE_NAME,
+                     evaluator.outputs['evaluation'].type_name)
+    self.assertEqual(module_file, evaluator.exec_properties["module_file"])
 
   def _create_xgboost_model(self, eval_export_dir):
     """Creates and pickles a toy xgboost model.
