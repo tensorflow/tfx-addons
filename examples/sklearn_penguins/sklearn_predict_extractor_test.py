@@ -17,6 +17,7 @@ import os
 import pickle
 
 import apache_beam as beam
+import sklearn_predict_extractor
 from apache_beam.testing import util
 from google.protobuf import text_format
 from sklearn import neural_network as nn
@@ -27,7 +28,6 @@ from tensorflow_model_analysis.eval_saved_model import testutil
 from tensorflow_model_analysis.extractors import features_extractor
 from tfx_bsl.tfxio import tensor_adapter, test_util
 
-import sklearn_predict_extractor
 
 
 class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
