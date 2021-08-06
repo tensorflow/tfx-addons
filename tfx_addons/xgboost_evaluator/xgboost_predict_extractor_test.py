@@ -173,8 +173,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     evaluator = component.XGBoostEvaluator(
         examples=channel_utils.as_channel([examples]),
         model=channel_utils.as_channel([model_exports]),
-        example_splits=['eval'],
-        module_file=xgboost_predict_extractor.get_module_file())
+        example_splits=['eval'])
 
     module_file = xgboost_predict_extractor.get_module_file()
     self.assertEqual(standard_artifacts.ModelEvaluation.TYPE_NAME,
