@@ -1,7 +1,5 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-# ToDo(gcasassaez): Skip sklearn_penguins until its refactored - https://github.com/tensorflow/tfx-addons/issues/61
-exclude: ^examples/sklearn_penguins/
 default_stages: [push,]
 repos:
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
