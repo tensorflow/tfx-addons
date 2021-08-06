@@ -2,16 +2,22 @@ name: TFX Addons package CI
 
 on:
   push:
-    paths-ignore:
-      - 'proposals/**'
-      - 'examples/**'
+    paths:
+      - 'tfx_addons/**'
+      - '.github/ci/**'
+      - '.github/workflows/ci.yml'
+      - 'setup.py'
+      - 'pyproject.toml'
     branches:
       - main
       - r*
   pull_request:
-    paths-ignore:
-      - 'proposals/**'
-      - 'examples/**'
+    paths:
+      - 'tfx_addons/**'
+      - '.github/ci/**'
+      - '.github/workflows/ci.yml'
+      - 'setup.py'
+      - 'pyproject.toml'
     branches:
       - main
       - r*

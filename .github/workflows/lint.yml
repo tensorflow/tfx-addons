@@ -2,14 +2,14 @@ name: Lint
 
 on:
   push:
-    paths-ignore:
-      - 'proposals/**'
+    paths:
+      - '**.py'
     branches:
       - main
       - r*
   pull_request:
-    paths-ignore:
-      - 'proposals/**'
+    paths:
+      - '**.py'
     branches:
       - main
       - r*
