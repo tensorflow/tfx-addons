@@ -21,5 +21,4 @@ from tfx_addons.xgboost_evaluator import xgboost_predict_extractor
 
 class XGBoostEvaluator(tfx.components.Evaluator):
   def __init__(self, **kwargs):
-    kwargs["module_file"] = xgboost_predict_extractor.get_module_file()
-    super().__init__(**kwargs)
+    super().__init__(module_file=xgboost_predict_extractor.get_module_file(), **kwargs)
