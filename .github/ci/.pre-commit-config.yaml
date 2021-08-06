@@ -14,10 +14,6 @@ repos:
           - --license-filepath
           - .github/license-templates/LICENSE.txt
           - --fuzzy-match-generates-todo
--   repo: https://github.com/PyCQA/pylint
-    rev: v2.8.3
-    hooks:
-    -   id: pylint
 -   repo:  https://github.com/pre-commit/mirrors-yapf
     rev: v0.31.0
     hooks:
@@ -27,3 +23,7 @@ repos:
     hooks:
     -   id: isort
         name: isort (python)
+-   repo: https://github.com/PyCQA/pylint
+    rev: v2.8.3
+    hooks:
+    -   id: pylint

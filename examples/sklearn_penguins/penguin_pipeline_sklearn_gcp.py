@@ -189,7 +189,8 @@ def _create_pipeline(
       model=trainer.outputs['model'],
       model_blessing=evaluator.outputs['blessing'],
       custom_config={
-          tfx.extensions.google_cloud_ai_platform.experimental.PUSHER_SERVING_ARGS_KEY:
+          tfx.extensions.google_cloud_ai_platform.experimental.
+          PUSHER_SERVING_ARGS_KEY:
           ai_platform_serving_args,
       })
 

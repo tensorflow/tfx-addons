@@ -63,6 +63,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
          for k, v in eval_shared_models.items()})
 
   def setup(self):
+    """Setup DoFn for sklearn"""
     super(_TFMAPredictionDoFn, self).setup()
     self._feature_keys = None
     self._label_key = None

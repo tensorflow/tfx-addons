@@ -22,7 +22,6 @@ from tfx import v1 as tfx
 from tfx.utils import test_case_utils
 
 
-
 class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
   def setUp(self):
     super(PenguinPipelineSklearnGcpTest, self).setUp()

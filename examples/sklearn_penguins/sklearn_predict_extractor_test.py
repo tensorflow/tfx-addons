@@ -29,7 +29,6 @@ from tensorflow_model_analysis.extractors import features_extractor
 from tfx_bsl.tfxio import tensor_adapter, test_util
 
 
-
 class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
   def setUp(self):
     super(SklearnPredictExtractorTest, self).setUp()
