@@ -21,19 +21,16 @@ from apache_beam.testing import util
 from google.protobuf import text_format
 from sklearn import neural_network as nn
 from tensorflow_metadata.proto.v0 import schema_pb2
-from tensorflow_model_analysis import config
-from tensorflow_model_analysis import constants
+from tensorflow_model_analysis import config, constants
 from tensorflow_model_analysis.api import model_eval_lib
 from tensorflow_model_analysis.eval_saved_model import testutil
 from tensorflow_model_analysis.extractors import features_extractor
-from tfx_bsl.tfxio import tensor_adapter
-from tfx_bsl.tfxio import test_util
+from tfx_bsl.tfxio import tensor_adapter, test_util
 
 import sklearn_predict_extractor
 
 
 class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
-
   def setUp(self):
     super(SklearnPredictExtractorTest, self).setUp()
     self._eval_export_dir = os.path.join(self._getTempDir(), 'eval_export')
@@ -76,7 +73,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     """Tests that predictions are made from extracts for a single model."""
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
-        sklearn_predict_extractor._make_sklearn_predict_extractor(
+        sklearn_predict_extractor._make_sklearn_predict_extractor(  # pylint:disable=protected-access
             self._eval_shared_model))
     with beam.Pipeline() as pipeline:
       predict_extracts = (
@@ -86,8 +83,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'BatchExamples' >> self._tfx_io.BeamSource()
           | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
-          | prediction_extractor.stage_name >> prediction_extractor.ptransform
-      )
+          | prediction_extractor.stage_name >> prediction_extractor.ptransform)
 
       def check_result(actual):
         try:
@@ -120,7 +116,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
-        sklearn_predict_extractor._make_sklearn_predict_extractor(
+        sklearn_predict_extractor._make_sklearn_predict_extractor(  # pylint:disable=protected-access
             eval_shared_model={
                 'model1': eval_shared_model_1,
                 'model2': eval_shared_model_2,
@@ -133,8 +129,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'BatchExamples' >> self._tfx_io.BeamSource()
           | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
-          | prediction_extractor.stage_name >> prediction_extractor.ptransform
-      )
+          | prediction_extractor.stage_name >> prediction_extractor.ptransform)
 
       def check_result(actual):
         try:
@@ -158,10 +153,11 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
   def test_custom_extractors(self):
     """Tests that the sklearn extractor is used when creating extracts."""
     extractors = sklearn_predict_extractor.custom_extractors(
-        self._eval_shared_model, self._eval_config, self._tensor_adapter_config)
+        self._eval_shared_model, self._eval_config,
+        self._tensor_adapter_config)
     self.assertLen(extractors, 6)
-    self.assertIn(
-        'SklearnPredict', [extractor.stage_name for extractor in extractors])
+    self.assertIn('SklearnPredict',
+                  [extractor.stage_name for extractor in extractors])
 
   def _create_sklearn_model(self, eval_export_dir):
     """Creates and pickles a toy scikit-learn model.
