@@ -23,4 +23,5 @@ class XGBoostEvaluator(tfx.components.Evaluator):
   def __init__(self, **kwargs):
     if 'module_file' in kwargs:
       raise ValueError('XGBoostEvaluator does not accept custom module_file')
-    super().__init__(module_file=xgboost_predict_extractor.get_module_file(), **kwargs)
+    super().__init__(module_file=xgboost_predict_extractor.get_module_file(),
+                     **kwargs)
