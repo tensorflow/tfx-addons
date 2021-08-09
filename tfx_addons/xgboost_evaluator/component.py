@@ -20,6 +20,8 @@ from tfx_addons.xgboost_evaluator import xgboost_predict_extractor
 
 
 class XGBoostEvaluator(tfx.components.Evaluator):
+  """A custom Evaluator component made for XGBoost. Keeps everything the same,
+  except inputs the custom module file containing the XGBoost Extractor."""
   def __init__(self, **kwargs):
     if 'module_file' in kwargs:
       raise ValueError('XGBoostEvaluator does not accept custom module_file')
