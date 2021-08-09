@@ -132,7 +132,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
           io_utils.copy_file(src=input_uri, dst=output_uri, overwrite=True)
 
 
-def generate_elements(example, label):
+def _generate_elements(example, label):
   """Function that fetches the class label from a tf.Example and returns one
   item in a K-V PCollection with the key as the label and the value as the
   string-parsed tf.Example.
@@ -226,7 +226,7 @@ def read_tfexamples(p, uri, label):
   # Output format is a K-V PCollection: {class_label: TFRecord in string format}
   data = (p
           | "DatasetToPCollection" >> beam.Create(dataset)
-          | "MapToLabel" >> beam.Map(generate_elements, label))
+          | "MapToLabel" >> beam.Map(_generate_elements, label))
   return data
 
 
