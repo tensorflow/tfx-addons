@@ -3,7 +3,7 @@
 [![TFX Addons package CI](https://github.com/tensorflow/tfx-addons/workflows/TFX%20Addons%20package%20CI/badge.svg?branch=main)](https://github.com/tensorflow/tfx-addons/actions?query=branch%3Amain)
 
 ## TL;DR
-This is the repo for projects organized under the special interest group, SIG TFX-Addons. Join the group by [joining the Google Group](http://goo.gle/tfx-addons-group) and participate in projects to build new components, libraries, tools, and other useful additions to TFX.
+This is the repo for projects organized under the special interest group, SIG TFX-Addons. Join the group by [joining the Google Group](http://goo.gle/tfx-addons-group) or our [Slack](https://join.slack.com/t/tfxaddons/shared_invite/zt-tu1981lj-npIhRSHF8gl9G0ldUovbcw) and participate in projects to build new components, libraries, tools, and other useful additions to TFX.
 
 ## Context
 Machine learning in production environments is a mission-critical part of a growing number of products and services across many industries. To become an [AI First company](https://ai.google/), Google required a state-of-the-art production ML infrastructure framework, and created TensorFlow Extended (TFX). Google open-sourced TFX in 2019 to enable other developers worldwide to benefit from and help us improve the TFX framework, and established open layers within the TFX architecture specifically focused at customization for a wide range of developer needs. These include custom pipeline components, containers, templates, and orchestrator support.
