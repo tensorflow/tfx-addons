@@ -26,14 +26,11 @@ import numpy as np
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-
-from tfx.components.trainer.fn_args_utils import DataAccessor
-from tfx.components.trainer.fn_args_utils import FnArgs
+from tensorflow_metadata.proto.v0 import schema_pb2
+from tfx.components.trainer.fn_args_utils import DataAccessor, FnArgs
 from tfx.dsl.io import fileio
 from tfx.utils import io_utils
 from tfx_bsl.tfxio import dataset_options
-
-from tensorflow_metadata.proto.v0 import schema_pb2
 
 _FEATURE_KEYS = [
     'culmen_length_mm', 'culmen_depth_mm', 'flipper_length_mm', 'body_mass_g'
@@ -67,8 +64,8 @@ def _input_fn(
   """
   record_batch_iterator = data_accessor.record_batch_factory(
       file_pattern,
-      dataset_options.RecordBatchesOptions(batch_size=batch_size, num_epochs=1),
-      schema)
+      dataset_options.RecordBatchesOptions(batch_size=batch_size,
+                                           num_epochs=1), schema)
 
   feature_list = []
   label_list = []
@@ -99,14 +96,14 @@ def run_fn(fn_args: FnArgs):
 
   steps_per_epoch = _TRAIN_DATA_SIZE / _TRAIN_BATCH_SIZE
 
-  estimator = MLPClassifier(
-      hidden_layer_sizes=[8, 8, 8],
-      activation='relu',
-      solver='adam',
-      batch_size=_TRAIN_BATCH_SIZE,
-      learning_rate_init=0.0005,
-      max_iter=int(fn_args.train_steps / steps_per_epoch),
-      verbose=True)
+  estimator = MLPClassifier(hidden_layer_sizes=[8, 8, 8],
+                            activation='relu',
+                            solver='adam',
+                            batch_size=_TRAIN_BATCH_SIZE,
+                            learning_rate_init=0.0005,
+                            max_iter=int(fn_args.train_steps /
+                                         steps_per_epoch),
+                            verbose=True)
 
   # Create a pipeline that standardizes the input data before passing it to an
   # estimator. Once the scaler is fit, it will use the same mean and stdev to
