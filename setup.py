@@ -36,6 +36,7 @@ EXTRAS_REQUIRE = {
     ],
     "xgboost_evaluator": [
         "tfx>=1.0.0<2",
+        "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2"]
 }
