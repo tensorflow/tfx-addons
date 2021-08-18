@@ -34,11 +34,11 @@ EXTRAS_REQUIRE = {
     "schema_curation": [
         "tfx>=0.26.3<2.0.0",
     ],
-    "xgboost_evaluator":
+    "xgboost_evaluator": [
         "tfx>=1.0.0<2",
+        "xgboost>=1.0.0",
     ],
-    "sampler": ["tensorflow>=2"],
-    "xgboost_evaluator": ["xgboost>=1.0.0"],
+    "sampler": ["tensorflow>=2"]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
