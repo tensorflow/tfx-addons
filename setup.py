@@ -34,7 +34,7 @@ EXTRAS_REQUIRE = {
     "schema_curation": [
         "tfx>=0.26.3<2.0.0",
     ],
-    "xgboost_evaluator":
+    "xgboost_evaluator": [
         "tfx>=1.0.0<2",
     ],
     "sampler": ["tensorflow>=2"]
