@@ -32,6 +32,9 @@ EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
     "schema_curation": [
+        "tfx>=0.26.3<2.0.0",
+    ],
+    "xgboost_evaluator":
         "tfx>=1.0.0<2",
     ],
     "sampler": ["tensorflow>=2"]
