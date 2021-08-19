@@ -13,12 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectKBest as SelectorFunc
 from sklearn.feature_selection import chi2 as ScoreFunc
 
-iris_data = load_iris()
-FEATURE_KEYS = iris_data.feature_names
-INPUT_DATA = iris_data.data
-TARGET_DATA = iris_data.target
 NUM_PARAM = 2
+TARGET_FEATURE = 'species'
