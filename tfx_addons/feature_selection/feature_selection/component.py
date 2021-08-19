@@ -16,6 +16,7 @@
 import importlib
 import tensorflow as tf
 import os
+from tfx_bsl.coders import example_coder
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact, artifact_utils
 from tfx.types.standard_artifacts import Examples
@@ -23,42 +24,36 @@ from tfx.v1.dsl.components import OutputArtifact, InputArtifact, Parameter
 # TODO: Why does import from tfx.dsl.components not work?
 
 
+# Output artifact containing required data related to feature selection
 """Custom Artifact type"""
 class FeatureSelectionArtifact(artifact.Artifact):
   """Output artifact containing feature scores from the Feature Selection component"""
   TYPE_NAME = 'Feature Selection'
   PROPERTIES = {
-      'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-      'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-      'selected_features': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-      'selected_data': artifact.Property(type=artifact.PropertyType.JSON_VALUE)
+    'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+    'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+    'selected_features': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+    'selected_data': artifact.Property(type=artifact.PropertyType.JSON_VALUE)
   }
 
 
-# TODO: Remove the need to declare extract_fn -- use tfx_bsl example_coder
-def extract_fn(data_record):
-    features = {
-        'species': tf.io.FixedLenFeature([], tf.int64),
-        'culmen_length_mm':tf.io.FixedLenFeature([], tf.float32),
-        'culmen_depth_mm':tf.io.FixedLenFeature([], tf.float32),
-        'flipper_length_mm':tf.io.FixedLenFeature([], tf.float32),
-        'body_mass_g':tf.io.FixedLenFeature([], tf.float32)
-    }
-    sample = tf.io.parse_single_example(data_record, features) 
-    return sample
-
-
+# reads data from TFRecords at URI and converts it to the required format
 def get_data_from_TFRecords(train_uri, target_feature):
-    train_uri = [os.path.join(train_uri, 'data_tfrecord-00000-of-00001.gz')]
-    raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
-    dataset = raw_dataset.map(extract_fn)
-    np_dataset = list(dataset.as_numpy_iterator())
+  train_uri = [os.path.join(train_uri, 'data_tfrecord-00000-of-00001.gz')]
+  raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
 
-    feature_keys = list(np_dataset[0].keys())
-    target = [i.pop(target_feature) for i in np_dataset]
-    input_data = [list(i.values()) for i in np_dataset]
+  np_dataset = []
+  for tfrecord in raw_dataset:
+    serialized_example = tfrecord.numpy()
+    example = example_coder.ExampleToNumpyDict(serialized_example)
+    example = {k: v[0] for k, v in example.items()}
+    np_dataset.append(example)
 
-    return [feature_keys, target, input_data]
+  feature_keys = list(np_dataset[0].keys())
+  target = [i.pop(target_feature) for i in np_dataset]
+  input_data = [list(i.values()) for i in np_dataset]
+
+  return [feature_keys, target, input_data]
 
 
 """
@@ -66,18 +61,19 @@ Feature selection component
 """
 @component
 def FeatureSelection(module_file: Parameter[str],
-    orig_examples: InputArtifact[Examples],
-    feature_selection: OutputArtifact[FeatureSelectionArtifact]):
+  orig_examples: InputArtifact[Examples],
+  feature_selection: OutputArtifact[FeatureSelectionArtifact]):
   """Feature Selection component
-      Args (from the module file):
-        NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
-          example: value of 'k' in SelectKBest
-        TARGET_FEATURE: Name of the feature containing target data
-        SelectorFunc: Selector function for univariate feature selection
-          example: SelectKBest, SelectPercentile from sklearn.feature_selection
-        ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
+    Args (from the module file):
+    - NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
+        example: value of 'k' in SelectKBest
+    - TARGET_FEATURE: Name of the feature containing target data
+    - SelectorFunc: Selector function for univariate feature selection
+      example: SelectKBest, SelectPercentile from sklearn.feature_selection
+    - ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
   """
 
+  # uri for the required data
   train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
 
   # importing the required functions and variables from
