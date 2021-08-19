@@ -15,6 +15,7 @@
 
 import importlib
 import tensorflow as tf
+import os
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact, artifact_utils
 from tfx.types.standard_artifacts import Examples
@@ -34,6 +35,7 @@ class FeatureSelectionArtifact(artifact.Artifact):
   }
 
 
+# TODO: Remove the need to declare extract_fn -- use tfx_bsl example_coder
 def extract_fn(data_record):
     features = {
         'species': tf.io.FixedLenFeature([], tf.int64),
@@ -46,9 +48,9 @@ def extract_fn(data_record):
     return sample
 
 
-def get_data_from_TFRecords(uri, target_feature):
-    tfrecord_filenames = uri + "/Split-train/data_tfrecord-00000-of-00001.gz"
-    raw_dataset = tf.data.TFRecordDataset(tfrecord_filenames, compression_type='GZIP')
+def get_data_from_TFRecords(train_uri, target_feature):
+    train_uri = [os.path.join(train_uri, 'data_tfrecord-00000-of-00001.gz')]
+    raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
     dataset = raw_dataset.map(extract_fn)
     np_dataset = list(dataset.as_numpy_iterator())
 
@@ -76,14 +78,14 @@ def FeatureSelection(module_file: Parameter[str],
         ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
   """
 
-  data_uri = orig_examples.uri
+  train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
 
   # importing the required functions and variables from
   modules = importlib.import_module(module_file)
   mod_names = ["NUM_PARAM", "TARGET_FEATURE", "SelectorFunc", "ScoreFunc"]
   NUM_PARAM, TARGET_FEATURE, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
 
-  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = get_data_from_TFRecords(data_uri, TARGET_FEATURE)
+  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = get_data_from_TFRecords(train_uri, TARGET_FEATURE)
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
