@@ -14,6 +14,8 @@
 # ==============================================================================
 
 import importlib
+import numpy as np
+from numpy.testing._private.utils import nulp_diff
 import tensorflow as tf
 import os
 from tfx_bsl.coders import example_coder
@@ -37,8 +39,8 @@ class FeatureSelectionArtifact(artifact.Artifact):
   }
 
 
-# reads data from TFRecords at URI and converts it to the required format
-def get_data_from_TFRecords(train_uri, target_feature):
+# reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
+def get_data_from_TFRecords(train_uri):
   train_uri = [os.path.join(train_uri, 'data_tfrecord-00000-of-00001.gz')]
   raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
 
@@ -46,8 +48,15 @@ def get_data_from_TFRecords(train_uri, target_feature):
   for tfrecord in raw_dataset:
     serialized_example = tfrecord.numpy()
     example = example_coder.ExampleToNumpyDict(serialized_example)
-    example = {k: v[0] for k, v in example.items()}
     np_dataset.append(example)
+
+  return np_dataset
+
+
+# returns data in list and nested list formats compatible with sklearn
+def data_preprocessing(np_dataset, target_feature):
+
+  np_dataset = [{k: v[0] for k, v in example.items()} for example in np_dataset]
 
   feature_keys = list(np_dataset[0].keys())
   target = [i.pop(target_feature) for i in np_dataset]
@@ -62,7 +71,8 @@ Feature selection component
 @component
 def FeatureSelection(module_file: Parameter[str],
   orig_examples: InputArtifact[Examples],
-  feature_selection: OutputArtifact[FeatureSelectionArtifact]):
+  feature_selection: OutputArtifact[FeatureSelectionArtifact],
+  updated_data: OutputArtifact[Examples]):
   """Feature Selection component
     Args (from the module file):
     - NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
@@ -73,15 +83,16 @@ def FeatureSelection(module_file: Parameter[str],
     - ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
   """
 
-  # uri for the required data
-  train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
 
   # importing the required functions and variables from
   modules = importlib.import_module(module_file)
   mod_names = ["NUM_PARAM", "TARGET_FEATURE", "SelectorFunc", "ScoreFunc"]
   NUM_PARAM, TARGET_FEATURE, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
 
-  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = get_data_from_TFRecords(train_uri, TARGET_FEATURE)
+  # uri for the required data
+  train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
+  np_dataset = get_data_from_TFRecords(train_uri)
+  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = data_preprocessing(np_dataset, TARGET_FEATURE)
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
@@ -89,6 +100,9 @@ def FeatureSelection(module_file: Parameter[str],
 
   # generate a list of selected features by matching _FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
+
+
+  np_dataset = [{k: v for k, v in example.items() if k in selected_features} for example in np_dataset]
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
