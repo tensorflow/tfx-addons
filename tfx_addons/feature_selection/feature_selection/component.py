@@ -14,9 +14,11 @@
 # ==============================================================================
 
 import importlib
+import tensorflow as tf
 from tfx.dsl.component.experimental.decorators import component
-from tfx.types import artifact
-from tfx.v1.dsl.components import OutputArtifact, Parameter
+from tfx.types import artifact, artifact_utils
+from tfx.types.standard_artifacts import Examples
+from tfx.v1.dsl.components import OutputArtifact, InputArtifact, Parameter
 # TODO: Why does import from tfx.dsl.components not work?
 
 
@@ -32,30 +34,56 @@ class FeatureSelectionArtifact(artifact.Artifact):
   }
 
 
+def extract_fn(data_record):
+    features = {
+        'species': tf.io.FixedLenFeature([], tf.int64),
+        'culmen_length_mm':tf.io.FixedLenFeature([], tf.float32),
+        'culmen_depth_mm':tf.io.FixedLenFeature([], tf.float32),
+        'flipper_length_mm':tf.io.FixedLenFeature([], tf.float32),
+        'body_mass_g':tf.io.FixedLenFeature([], tf.float32)
+    }
+    sample = tf.io.parse_single_example(data_record, features) 
+    return sample
+
+
+def get_data_from_TFRecords(uri, target_feature):
+    tfrecord_filenames = uri + "/Split-train/data_tfrecord-00000-of-00001.gz"
+    raw_dataset = tf.data.TFRecordDataset(tfrecord_filenames, compression_type='GZIP')
+    dataset = raw_dataset.map(extract_fn)
+    np_dataset = list(dataset.as_numpy_iterator())
+
+    feature_keys = list(np_dataset[0].keys())
+    target = [i.pop(target_feature) for i in np_dataset]
+    input_data = [list(i.values()) for i in np_dataset]
+
+    return [feature_keys, target, input_data]
+
+
 """
 Feature selection component
 """
 @component
 def FeatureSelection(module_file: Parameter[str],
+    orig_examples: InputArtifact[Examples],
     feature_selection: OutputArtifact[FeatureSelectionArtifact]):
   """Feature Selection component
-      Args:
+      Args (from the module file):
         NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
           example: value of 'k' in SelectKBest
-        INPUT_DATA: Two dimensional array containing the data vectors
-          shape: (number of data points, number of input features)
-        OUTPUT_DATA: Two dimensional array containing the target vector
-          shape: (number of data points,)
-        FEATURE_KEYS: List containing feature names corresponding to each data point in INPUT_DATA
+        TARGET_FEATURE: Name of the feature containing target data
         SelectorFunc: Selector function for univariate feature selection
           example: SelectKBest, SelectPercentile from sklearn.feature_selection
         ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
   """
 
+  data_uri = orig_examples.uri
+
   # importing the required functions and variables from
   modules = importlib.import_module(module_file)
-  mod_names = ["NUM_PARAM", "INPUT_DATA", "TARGET_DATA", "FEATURE_KEYS", "SelectorFunc", "ScoreFunc"]
-  NUM_PARAM, INPUT_DATA, TARGET_DATA, FEATURE_KEYS, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
+  mod_names = ["NUM_PARAM", "TARGET_FEATURE", "SelectorFunc", "ScoreFunc"]
+  NUM_PARAM, TARGET_FEATURE, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
+
+  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = get_data_from_TFRecords(data_uri, TARGET_FEATURE)
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
