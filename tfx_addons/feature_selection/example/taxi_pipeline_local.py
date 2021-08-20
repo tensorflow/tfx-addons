@@ -1,28 +1,27 @@
-# Lint as: python3
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
 """Chicago taxi example using TFX."""
 
 import os
 from typing import Text
 
 import absl
-from tfx.components import CsvExampleGen
-from tfx.components import StatisticsGen
-from tfx.examples.custom_components.hello_world.hello_component import component
-from tfx.orchestration import metadata
-from tfx.orchestration import pipeline
+from tfx.components import CsvExampleGen, StatisticsGen
+from tfx.examples.custom_components.hello_world.hello_component import \
+    component
+from tfx.orchestration import metadata, pipeline
 from tfx.orchestration.beam.beam_dag_runner import BeamDagRunner
 
 _pipeline_name = 'taxi_hello_pipeline'
@@ -48,19 +47,15 @@ def _create_pipeline(pipeline_name: Text, pipeline_root: Text, data_root: Text,
   # Brings data into the pipeline or otherwise joins/converts training data.
   example_gen = CsvExampleGen(input_base=data_root)
 
-  
-
-# Example usage of python based cutom component in a pipeline graph definition:
-# In our project it will be feature selection component in place of below MyTrainercomponent
-# ...
-trainer = MyTrainerComponent(
-    examples=example_gen.outputs['examples'],
-    dropout_hyperparameter=other_component.outputs['dropout'],
-    num_iterations=1000)
-pusher = Pusher(model=trainer.outputs['model'])
-# ...
-
-
+  # Example usage of python based cutom component in a pipeline graph definition:
+  # In our project it will be feature selection component in place of below MyTrainercomponent
+  # ...
+  trainer = MyTrainerComponent(
+      examples=example_gen.outputs['examples'],
+      dropout_hyperparameter=other_component.outputs['dropout'],
+      num_iterations=1000)
+  pusher = Pusher(model=trainer.outputs['model'])
+  # ...
 
   # Computes statistics over data for visualization and example validation.
   statistics_gen = StatisticsGen(examples=hello.outputs['output_data'])
@@ -79,8 +74,7 @@ pusher = Pusher(model=trainer.outputs['model'])
 if __name__ == '__main__':
   absl.logging.set_verbosity(absl.logging.INFO)
   BeamDagRunner().run(
-      _create_pipeline(
-          pipeline_name=_pipeline_name,
-          pipeline_root=_pipeline_root,
-          data_root=_data_root,
-          metadata_path=_metadata_path))
+      _create_pipeline(pipeline_name=_pipeline_name,
+                       pipeline_root=_pipeline_root,
+                       data_root=_data_root,
+                       metadata_path=_metadata_path))

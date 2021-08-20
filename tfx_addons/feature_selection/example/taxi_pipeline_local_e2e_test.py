@@ -1,17 +1,17 @@
-# Lint as: python3
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
 """E2E Tests for tfx.examples.custom_components_hello_world."""
 
 import os
@@ -19,13 +19,13 @@ from typing import Text
 
 import tensorflow as tf
 from tfx.dsl.io import fileio
-from tfx.examples.custom_components.hello_world.example import taxi_pipeline_hello
+from tfx.examples.custom_components.hello_world.example import \
+    taxi_pipeline_hello
 from tfx.orchestration import metadata
 from tfx.orchestration.beam.beam_dag_runner import BeamDagRunner
 
 
 class TaxiPipelineHelloEndToEndTest(tf.test.TestCase):
-
   def setUp(self):
     super(TaxiPipelineHelloEndToEndTest, self).setUp()
     self._test_dir = os.path.join(
@@ -43,8 +43,8 @@ class TaxiPipelineHelloEndToEndTest(tf.test.TestCase):
     """Check the component is executed exactly once."""
     component_path = os.path.join(self._pipeline_root, component)
     self.assertTrue(fileio.exists(component_path))
-    execution_path = os.path.join(
-        component_path, '.system', 'executor_execution')
+    execution_path = os.path.join(component_path, '.system',
+                                  'executor_execution')
     execution = fileio.listdir(execution_path)
     self.assertLen(execution, 1)
 

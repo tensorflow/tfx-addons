@@ -12,3 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
+from sklearn.feature_selection import SelectKBest as SelectorFunc
+from sklearn.feature_selection import chi2 as ScoreFunc
+
+NUM_PARAM = 2
+TARGET_FEATURE = 'species'
