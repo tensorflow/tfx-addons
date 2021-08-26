@@ -26,31 +26,21 @@ def _get_version():
 NAME = "tfx-addons"
 # VERSION = .... Change the version in tfx_addons/__init__.py
 
-# Avoid taking more than one hour to pip install dependencies by tightening
-# version requirement for some packages.
-TIGHTEN_REQUIRE = [
-    "pyrsistent>=0.18.0",
-    "ptyprocess>=0.7",
-]
-
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client": [
-        "ml-pipelines-sdk>=0.26.3<2.0.0",
-        "ml-metadata>=0.26<2.0.0",
-    ],
+    "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
     "schema_curation": [
         "tfx>=0.26.3<2.0.0",
     ],
     "xgboost_evaluator": [
-        "tfx>=0.30.2<2",
+        "tfx>=0.30.2<2.0.0",
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2"]
 }
-EXTRAS_REQUIRE["all"] = TIGHTEN_REQUIRE + list(
+EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
