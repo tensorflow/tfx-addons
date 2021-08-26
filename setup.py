@@ -28,7 +28,10 @@ NAME = "tfx-addons"
 
 # Avoid taking more than one hour to pip install dependencies by tightening
 # version requirement for some packages.
-TIGHTEN_REQUIRE = ["pyrsistent>=0.18.0"]
+TIGHTEN_REQUIRE = [
+    "pyrsistent>=0.18.0",
+    "ptyprocess>=0.7",
+]
 
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
