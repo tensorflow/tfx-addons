@@ -2,18 +2,24 @@ name: TFX Addons CI for examples
 
 on:
   push:
-    paths-ignore:
-      - 'proposals/**'
-      - 'examples/sklearn_penguins/**'
-      - 'tfx-addons/**'
+    paths:
+      - 'tfx_addons/**'
+      - 'examples/**'
+      - '.github/ci/**'
+      - '.github/workflows/ci.yml'
+      - 'setup.py'
+      - 'pyproject.toml'
     branches:
       - main
       - r*
   pull_request:
-    paths-ignore:
-      - 'proposals/**'
-      - 'examples/sklearn_penguins/**'
-      - 'tfx-addons/**'
+    paths:
+      - 'tfx_addons/**'
+      - 'examples/**'
+      - '.github/ci/**'
+      - '.github/workflows/ci.yml'
+      - 'setup.py'
+      - 'pyproject.toml'
     branches:
       - main
       - r*
@@ -42,7 +48,7 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip wheel
+        python -m pip install --upgrade pip wheel pytest
         cd examples/${{ matrix.project }}
         pip install -r requirements.txt
     - name: Run tests
