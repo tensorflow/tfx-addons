@@ -43,8 +43,9 @@ jobs:
         # This path is specific to Ubuntu
         path: ~/.cache/pip
         # Look to see if there is a cache hit for the corresponding setup.py + TFX version 
-        key: ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}
+        key: ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}-${{ hashFiles('examples/'+matrix.project+'/requirements.txt') }}
         restore-keys: |
+          ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}
           ${{ runner.os }}-pip-ciexamples-
     - name: Install dependencies
       run: |
