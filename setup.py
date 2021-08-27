@@ -38,7 +38,7 @@ EXTRAS_REQUIRE = {
         "tfx>=1.0.0<2.0.0",
         "xgboost>=1.0.0",
     ],
-    "sampler": ["tensorflow>=2"]
+    "sampler": ["tensorflow>=2.0.0"]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))

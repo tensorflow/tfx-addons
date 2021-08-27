@@ -29,7 +29,7 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       matrix:
-        tfx-version: [==1.0.0]
+        tfxversion: ["~=1.0.0 tensorflow~=2.5.0", "~=1.0.0 tensorflow~=2.5.0"]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
@@ -42,14 +42,14 @@ jobs:
         # This path is specific to Ubuntu
         path: ~/.cache/pip
         # Look to see if there is a cache hit for the corresponding setup.py + TFX version 
-        key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ matrix.tfx-version }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ matrix.tfxversion }}
         restore-keys: |
           ${{ runner.os }}-pip--${{ hashFiles('setup.py') }}
           ${{ runner.os }}-pip-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install -e ".[all, test]" tfx${{ matrix.tfx-version }}
+        pip install -e ".[all, test]" tfx${{ matrix.tfxversion }}
     - name: Run tests
       run: pytest tfx_addons
   
