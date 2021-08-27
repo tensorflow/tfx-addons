@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+addopts = "--verbose"
+python_files = "*_test.py"
+norecursedirs = ["data",]
