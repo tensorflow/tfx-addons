@@ -14,6 +14,7 @@
 """Tests for penguin_pipeline_sklearn_gcp."""
 
 import os
+import unittest
 from unittest import mock
 
 import penguin_pipeline_sklearn_gcp
@@ -22,6 +23,7 @@ from tfx import v1 as tfx
 from tfx.utils import test_case_utils
 
 
+@unittest.skip('End to end test only for example')
 class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
   def setUp(self):
     super(PenguinPipelineSklearnGcpTest, self).setUp()
