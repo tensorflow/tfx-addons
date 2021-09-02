@@ -5,8 +5,7 @@ on:
     paths:
       - 'tfx_addons/**'
       - 'examples/**'
-      - '.github/ci/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/ci_examples.yml'
       - 'setup.py'
       - 'pyproject.toml'
     branches:
@@ -16,8 +15,7 @@ on:
     paths:
       - 'tfx_addons/**'
       - 'examples/**'
-      - '.github/ci/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/ci_examples.yml'
       - 'setup.py'
       - 'pyproject.toml'
     branches:

@@ -4,12 +4,16 @@ on:
   push:
     paths:
       - '**.py'
+      - '.github/ci/**'
+      - '.github/workflows/lint.yml'
     branches:
       - main
       - r*
   pull_request:
     paths:
       - '**.py'
+      - '.github/ci/**'
+      - '.github/workflows/lint.yml'
     branches:
       - main
       - r*
