@@ -17,9 +17,9 @@ import os
 import unittest
 from typing import Text
 
+import penguin_pipeline_sklearn_local
 import tensorflow as tf
 from tfx import v1 as tfx
-from tfx.examples.penguin.experimental import penguin_pipeline_sklearn_local
 from tfx.orchestration import metadata
 
 
