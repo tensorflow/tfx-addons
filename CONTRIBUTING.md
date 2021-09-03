@@ -25,6 +25,12 @@ just getting started, Github has a [howto](https://help.github.com/articles/usin
 
 SIG team members will be assigned to review your pull requests. Once the pull requests are approved and pass continuous integration checks, we will merge the pull requests.
 
+### Reviewing contributions
+
+- Reviewers can approve pull requests using `/lgtm` command. CODEOWNERS file is used to validate approvals.
+- Reviewers can request an automatic merge using `/merge` command. Auto-merge will be performed after all tests have passed and enough approvals are recollected for the PR.
+- Changes to `.github/workflows` will need to be merged manually by a reviewer with write permissions.
+
 ### Development tips
 
 We use [pre-commit](https://pre-commit.com/) to validate our code before we push to the repository. We use push over commit to allow more flexibility.

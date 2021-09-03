@@ -2,7 +2,7 @@
 * @rcrowe-google @mihaimaruseac @theadactyl
 
 # Core team for reviews of project proposals and main distribution files
-# /proposals/ daikeshi@gmail.com casassg hanneshapke junbopark larry.price@openx.com marcromeyn michalbrys nle@twitter.com olgai@spotify.com pselden rclough sngahane
+/proposals/ @rcrowe-google [proposals]
 /tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
 /setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
 /pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
