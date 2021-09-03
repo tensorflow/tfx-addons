@@ -3,34 +3,34 @@
 
 # Core team for reviews of project proposals and main distribution files
 /proposals/ @rcrowe-google [proposals]
-/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
-/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
-/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
+/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane [core:distribution]
+/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane [core:distribution]
+/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane [core:distribution]
 
 
 # CI configuration (for now owned by @casassg)
-/.github/workflows/ci.yml @casassg
-/.github/ci  @casassg
+/.github/workflows/*.yml @casassg [core:actions]
+/.github/ci  @casassg [core:lint]
 
 
 # Sci-Kit Learn Example using the Penguins dataset
-/examples/sklearn_penguins/ @TheMichaelHu @1025kb
+/examples/sklearn_penguins/ @TheMichaelHu @1025kb [examples:sklearn_penguins]
 
 # MLMD Client Library
-/tfx_addons/mlmd_client/ @codesue @pselden @casassg
+/tfx_addons/mlmd_client/ @codesue @pselden @casassg [tfxa:mlmd_client]
 
 # ExampleFilter Component
-/tfx_addons/example_filter/ @rclough
+/tfx_addons/example_filter/ @rclough [tfxa:example_filter]
 
 # Schema Curation Component
-/tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97
+/tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97 [tfxa:schema_curation]
 
 # XGBoost Evaluator Component
-/tfx_addons/xgboost_evaluator @kindalime @cent5
-/examples/xgboost_penguins @kindalime @cent5
+/tfx_addons/xgboost_evaluator @kindalime @cent5 [tfxa:xgboost_evaluator]
+/examples/xgboost_penguins @kindalime @cent5 [examples:xgboost_penguins]
 
 # Sampling Component
-/tfx_addons/sampling @kindalime
+/tfx_addons/sampling @kindalime [tfxa:sampling]
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki
+/tfx_addons/feast_examplegen @BACtaki [tfxa:feast_examplegen]
