@@ -2,6 +2,7 @@
 # Serialized tensors can be easily parsed using `tf.train.Example.ParseFromString`
 
 import tensorflow as tf
+import numpy as np
 
 filename = "something"
 filenames = [filename]
