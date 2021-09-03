@@ -1,6 +1,7 @@
 # TFX Addons
 
-[![TFX Addons package CI](https://github.com/tensorflow/tfx-addons/workflows/TFX%20Addons%20package%20CI/badge.svg?branch=main)](https://github.com/tensorflow/tfx-addons/actions?query=branch%3Amain)
+[![TFX Addons package CI](https://github.com/tensorflow/tfx-addons/actions/workflows/ci.yml/badge.svg)](https://github.com/tensorflow/tfx-addons/actions/workflows/ci.yml)
+[![TFX Addons CI for examples](https://github.com/tensorflow/tfx-addons/actions/workflows/ci_examples.yml/badge.svg)](https://github.com/tensorflow/tfx-addons/actions/workflows/ci_examples.yml)
 
 ## TL;DR
 This is the repo for projects organized under the special interest group, SIG TFX-Addons. Join the group by [joining the Google Group](http://goo.gle/tfx-addons-group) and participate in projects to build new components, libraries, tools, and other useful additions to TFX.
