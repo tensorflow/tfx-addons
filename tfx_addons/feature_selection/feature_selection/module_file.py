@@ -14,7 +14,11 @@
 # ==============================================================================
 
 from sklearn.feature_selection import SelectKBest as SelectorFunc
-from sklearn.feature_selection import chi2 as ScoreFunc
+from sklearn.feature_selection import chi2
 
-NUM_PARAM = 2
+SELECTOR_PARAMS = {
+    "score_func": chi2,
+    "k": 2
+}
+
 TARGET_FEATURE = 'species'
