@@ -23,7 +23,6 @@ from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact, artifact_utils
 from tfx.types.standard_artifacts import Examples
 from tfx.v1.dsl.components import OutputArtifact, InputArtifact, Parameter
-# TODO: Why does import from tfx.dsl.components not work?
 
 
 # Output artifact containing required data related to feature selection
@@ -34,8 +33,7 @@ class FeatureSelectionArtifact(artifact.Artifact):
   PROPERTIES = {
     'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
     'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-    'selected_features': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-    'selected_data': artifact.Property(type=artifact.PropertyType.JSON_VALUE)
+    'selected_features': artifact.Property(type=artifact.PropertyType.JSON_VALUE)
   }
 
 
@@ -56,7 +54,8 @@ def get_data_from_TFRecords(train_uri):
 # returns data in list and nested list formats compatible with sklearn
 def data_preprocessing(np_dataset, target_feature):
 
-  np_dataset = [{k: v[0] for k, v in example.items()} for example in np_dataset]
+  # changing 
+  np_dataset = [{k: v[0] if v else None for k, v in example.items()} for example in np_dataset]
 
   feature_keys = list(np_dataset[0].keys())
   target = [i.pop(target_feature) for i in np_dataset]
@@ -101,7 +100,7 @@ def FeatureSelection(module_file: Parameter[str],
   # generate a list of selected features by matching _FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
 
-
+  # implmenting feature selection on the dataset to be saved as TFRecords
   np_dataset = [{k: v for k, v in example.items() if k in selected_features} for example in np_dataset]
 
   # get scores and p-values for artifacts
@@ -116,4 +115,5 @@ def FeatureSelection(module_file: Parameter[str],
   feature_selection.scores = selector_scores_dict
   feature_selection.p_values = selector_pvalues_dict
   feature_selection.selected_features = selected_features
-  feature_selection.selected_data = selected_data
+
+  updated_data.split_names = orig_examples.split_names
