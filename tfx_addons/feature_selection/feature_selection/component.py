@@ -74,19 +74,17 @@ def FeatureSelection(module_file: Parameter[str],
   updated_data: OutputArtifact[Examples]):
   """Feature Selection component
     Args (from the module file):
-    - NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
-        example: value of 'k' in SelectKBest
+    - SELECTOR_PARAMS: Parameters for SelectorFunc in the form of a kwargs dictionary
     - TARGET_FEATURE: Name of the feature containing target data
     - SelectorFunc: Selector function for univariate feature selection
       example: SelectKBest, SelectPercentile from sklearn.feature_selection
-    - ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
   """
 
 
   # importing the required functions and variables from
   modules = importlib.import_module(module_file)
-  mod_names = ["NUM_PARAM", "TARGET_FEATURE", "SelectorFunc", "ScoreFunc"]
-  NUM_PARAM, TARGET_FEATURE, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
+  mod_names = ["SELECTOR_PARAMS", "TARGET_FEATURE", "SelectorFunc"]
+  SELECTOR_PARAMS, TARGET_FEATURE, SelectorFunc = [getattr(modules, i) for i in mod_names]
 
   # uri for the required data
   train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
@@ -94,7 +92,7 @@ def FeatureSelection(module_file: Parameter[str],
   FEATURE_KEYS, TARGET_DATA, INPUT_DATA = data_preprocessing(np_dataset, TARGET_FEATURE)
 
   # Select features based on scores
-  selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
+  selector = SelectorFunc(**SELECTOR_PARAMS)
   selected_data = selector.fit_transform(INPUT_DATA, TARGET_DATA).tolist()
 
   # generate a list of selected features by matching _FEATURE_KEYS to selected indices
