@@ -37,3 +37,6 @@
 
 # Feature Selection Component
 /tfx_addons/feature_selection @nirzu97 @pratishtha-abrol @FatimahAdwan @deutranium
+
+# Firebase Publisher
+/tfx_addons/firebase_publisher @deep-diver @sayakpaul
