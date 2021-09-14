@@ -34,3 +34,6 @@
 
 # Feast ExampleGen Component
 /tfx_addons/feast_examplegen @BACtaki
+
+# Feature Selection Component
+/tfx_addons/feature_selection @nirzu97 @pratishtha-abrol @FatimahAdwan @deutranium
