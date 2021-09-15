@@ -30,7 +30,7 @@ The implementation details
 - Download saved TFLite model file by referncing the output from a previous component
   - Firebase SDK doesn't allow to publish models from GCS directly.
 - Initialize Firebase Admin with the credential and Firebase temporary-use GCS bucket.
-  - Firebase credentials can be setup via [Workload Identity]() for GKE or [Mounting Secret API in TFX runner](https://github.com/tensorflow/tfx/blob/d989bbd7fc366c73ad833428ce6b5cf57a587432/tfx/orchestration/kubeflow/kubeflow_dag_runner.py#L78).
+  - Firebase credentials can be setup via [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) for GKE or [Mounting Secret API in TFX runner](https://github.com/tensorflow/tfx/blob/d989bbd7fc366c73ad833428ce6b5cf57a587432/tfx/orchestration/kubeflow/kubeflow_dag_runner.py#L78).
 - Search if any models with the same `display name` has already been published.
   - if yes, update the existing Firebase ML mode, then publish it
   - if no, create a new Firebase ML model, then publish it
