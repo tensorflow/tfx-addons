@@ -27,7 +27,7 @@ The implementation details
 - Define a custom Python function-based TFX component. It takes the following parameters from a previous component.
   - It should follow the standard Pusher's interface since this is another custom pusher.
   - Additionally, it takes meta information to manage published model for Firebase ML such as `display name` and `tags`.
-- Download saved TFLite model file by referncing the output from a previous component
+- Download saved TFLite model file by referencing the output from a previous component
   - Firebase SDK doesn't allow to publish models from GCS directly.
 - Initialize Firebase Admin with the credential and Firebase temporary-use GCS bucket.
   - Firebase credentials can be setup via [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) for GKE or [Mounting Secret API in TFX runner](https://github.com/tensorflow/tfx/blob/d989bbd7fc366c73ad833428ce6b5cf57a587432/tfx/orchestration/kubeflow/kubeflow_dag_runner.py#L78).
