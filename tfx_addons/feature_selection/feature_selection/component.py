@@ -64,6 +64,18 @@ def data_preprocessing(np_dataset, target_feature):
   return [feature_keys, target, input_data]
 
 
+# update example with selected features
+def update_example(selected_features, orig_example):
+  result = {}
+  for key, feature in orig_example.features.feature.items():
+    if key not in selected_features:
+      result[key] = orig_example.features.feature[key]
+    
+    new_example = tf.train.Example(features=tf.train.Features(feature=result))
+    return new_example
+
+
+
 """
 Feature selection component
 """
@@ -95,13 +107,31 @@ def FeatureSelection(module_file: Parameter[str],
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
-  selected_data = selector.fit_transform(INPUT_DATA, TARGET_DATA).tolist()
 
-  # generate a list of selected features by matching _FEATURE_KEYS to selected indices
+  # generate a list of selected features by matching FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
 
-  # implmenting feature selection on the dataset to be saved as TFRecords
-  np_dataset = [{k: v for k, v in example.items() if k in selected_features} for example in np_dataset]
+  updated_data.split_names = orig_examples.split_names
+
+  # convert string to array
+  split_arr = eval(orig_examples.split_names)
+
+  # update feature per split
+  for split in split_arr:
+    split_uri = artifact_utils.get_split_uri([orig_examples], split)
+
+    split_dataset = tf.data.TFRecordDataset((split_uri + '/data_tfrecord-00000-of-00001.gz'), compression_type='GZIP')
+
+    # write the TFRecord
+    with tf.io.TFRecordWriter(path = (artifact_utils.get_split_uri([updated_data], split) + "blah.gzip"), options="GZIP") as writer:
+      for split_record in split_dataset.as_numpy_iterator():
+        example = tf.train.Example()
+        example.ParseFromString(split_record)
+
+        updated_example = update_example(selected_features, example)
+        writer.write(updated_example.SerializeToString())
+
+  
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
@@ -116,4 +146,3 @@ def FeatureSelection(module_file: Parameter[str],
   feature_selection.p_values = selector_pvalues_dict
   feature_selection.selected_features = selected_features
 
-  updated_data.split_names = orig_examples.split_names
