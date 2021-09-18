@@ -68,7 +68,7 @@ def data_preprocessing(np_dataset, target_feature):
 def update_example(selected_features, orig_example):
   result = {}
   for key, feature in orig_example.features.feature.items():
-    if key not in selected_features:
+    if key in selected_features:
       result[key] = orig_example.features.feature[key]
     
     new_example = tf.train.Example(features=tf.train.Features(feature=result))
