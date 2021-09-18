@@ -18,6 +18,8 @@ import numpy as np
 from numpy.testing._private.utils import nulp_diff
 import tensorflow as tf
 import os
+from os import listdir
+from os.path import isfile, join
 from tfx_bsl.coders import example_coder
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact, artifact_utils
@@ -69,12 +71,17 @@ def update_example(selected_features, orig_example):
   result = {}
   for key, feature in orig_example.features.feature.items():
     if key in selected_features:
-      result[key] = orig_example.features.feature[key]
+      result[key] = feature
+
     
-    new_example = tf.train.Example(features=tf.train.Features(feature=result))
-    return new_example
+    
+  new_example = tf.train.Example(features=tf.train.Features(feature=result))
+  return new_example
 
 
+def get_file_list(dir_path):
+  file_list = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
+  return file_list
 
 """
 Feature selection component
@@ -107,11 +114,13 @@ def FeatureSelection(module_file: Parameter[str],
 
   # Select features based on scores
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
+  selector.fit_transform(INPUT_DATA, TARGET_DATA)
 
   # generate a list of selected features by matching FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
 
   updated_data.split_names = orig_examples.split_names
+  updated_data.span = orig_examples.span
 
   # convert string to array
   split_arr = eval(orig_examples.split_names)
@@ -119,17 +128,20 @@ def FeatureSelection(module_file: Parameter[str],
   # update feature per split
   for split in split_arr:
     split_uri = artifact_utils.get_split_uri([orig_examples], split)
+    new_split_uri = artifact_utils.get_split_uri([updated_data], split)
+    os.mkdir(new_split_uri)
 
-    split_dataset = tf.data.TFRecordDataset((split_uri + '/data_tfrecord-00000-of-00001.gz'), compression_type='GZIP')
+    for file in get_file_list(split_uri):
+      split_dataset = tf.data.TFRecordDataset(os.path.join(split_uri,file), compression_type='GZIP')
 
     # write the TFRecord
-    with tf.io.TFRecordWriter(path = (artifact_utils.get_split_uri([updated_data], split) + "blah.gzip"), options="GZIP") as writer:
-      for split_record in split_dataset.as_numpy_iterator():
-        example = tf.train.Example()
-        example.ParseFromString(split_record)
+      with tf.io.TFRecordWriter(path = os.path.join( new_split_uri, file), options="GZIP") as writer:
+        for split_record in split_dataset.as_numpy_iterator():
+          example = tf.train.Example()
+          example.ParseFromString(split_record)
 
-        updated_example = update_example(selected_features, example)
-        writer.write(updated_example.SerializeToString())
+          updated_example = update_example(selected_features, example)
+          writer.write(updated_example.SerializeToString())
 
   
 
