@@ -17,24 +17,33 @@
 import tfx.v1 as tfx
 from feast.infra.offline_stores.bigquery import BigQueryOfflineStoreConfig
 from feast.repo_config import RepoConfig
+from pydantic import BaseModel
 
 from tfx_addons.feast_examplegen import FeastExampleGen
 
+
+# Use pydantic here to define this large configuration class (mostly out of easiness to use vs using protobuf)
+class FeastConnConfig(BaseModel):
+  repo_config: RepoConfig
+  gcp_project: str
+
+
 # This is a pydantic model, so it can be serialized into JSON in the component and reloaded back into the Python object in the executor!
-repo_config = RepoConfig(
-    registry="gs://feast_origin_registry/registry.db",
-    project="production",
-    provider="local",
-    offline_store=BigQueryOfflineStoreConfig(type="bigquery"))
+conn_config = FeastConnConfig(
+    gcp_project="some_project",
+    repo_config=RepoConfig(
+        registry="gs://feast_origin_registry/registry.db",
+        project="production",
+        provider="local",
+        offline_store=BigQueryOfflineStoreConfig(type="bigquery")))
 
 # Component definition
 example_gen = FeastExampleGen(
-    repo_config=repo_config,
+    conn_config=conn_config,
     entity_query=
     "SELECT * FROM `production.feast_origin.feast_origin_v1.user` WHERE datetime>=@begin_timestamp AND datetime<=@end_timestamp",  # we use the same driver as BQExampleGen here to substitute the timestamp
     range_config=tfx.proto.StaticRange(start_span_number=0, end_span_number=1),
-    gcp_project=
-    "some_project",  # not sure if this is needed, but I believe it may?
+    # not sure if this is needed, but I believe it may?
     feature_refs=[
         'partner',
         'daily_transactions',
