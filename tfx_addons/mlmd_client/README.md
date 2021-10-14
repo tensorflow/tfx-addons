@@ -7,4 +7,4 @@ Given metadata connection information, it should provide easy to use methods to 
 
 Idea from [#12](https://github.com/tensorflow/tfx-addons/issues/12)
 
-**Status**: WIP
+**Status**: Paused
