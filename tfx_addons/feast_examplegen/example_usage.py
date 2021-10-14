@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Losely based on internal examples and Feast tutorial: https://docs.feast.dev/v/v0.6-branch/user-guide/feature-retrieval"""
+"""Losely based on internal examples and Feast tutorial: https://docs.feast.dev/v/v0.6-branch/user-guide/feature-retrieval
+
+This is just a prototype meant to be used as reference.
+"""
 
 import tfx.v1 as tfx
 from feast.infra.offline_stores.bigquery import BigQueryOfflineStoreConfig
