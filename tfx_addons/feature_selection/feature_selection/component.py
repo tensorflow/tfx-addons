@@ -14,8 +14,6 @@
 # ==============================================================================
 
 import importlib
-import numpy as np
-from numpy.testing._private.utils import nulp_diff
 import tensorflow as tf
 import os
 from os import listdir
@@ -56,11 +54,13 @@ def get_data_from_TFRecords(train_uri):
 # returns data in list and nested list formats compatible with sklearn
 def data_preprocessing(np_dataset, target_feature):
 
-  # changing 
+  # getting the required data without any metadata
   np_dataset = [{k: v[0] for k, v in example.items()} for example in np_dataset]
 
+  # extracting `y`
   target = [i.pop(target_feature) for i in np_dataset]
   feature_keys = list(np_dataset[0].keys())
+  # getting `X`
   input_data = [[i[j] for j in feature_keys] for i in np_dataset]
 
   return [feature_keys, target, input_data]
@@ -73,12 +73,10 @@ def update_example(selected_features, orig_example):
     if key in selected_features:
       result[key] = feature
 
-    
-    
   new_example = tf.train.Example(features=tf.train.Features(feature=result))
   return new_example
 
-
+# get a list of files for the specifiEd path
 def get_file_list(dir_path):
   file_list = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
   return file_list
@@ -102,7 +100,7 @@ def FeatureSelection(module_file: Parameter[str],
   """
 
 
-  # importing the required functions and variables from
+  # importing the required functions and variables from the module file
   modules = importlib.import_module(module_file)
   mod_names = ["NUM_PARAM", "TARGET_FEATURE", "SelectorFunc", "ScoreFunc"]
   NUM_PARAM, TARGET_FEATURE, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
@@ -118,9 +116,6 @@ def FeatureSelection(module_file: Parameter[str],
 
   # generate a list of selected features by matching FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
-
-  updated_data.split_names = orig_examples.split_names
-  updated_data.span = orig_examples.span
 
   # convert string to array
   split_arr = eval(orig_examples.split_names)
@@ -144,6 +139,9 @@ def FeatureSelection(module_file: Parameter[str],
           writer.write(updated_example.SerializeToString())
 
   
+  # adding basic info to the updated example artifact as output
+  updated_data.split_names = orig_examples.split_names
+  updated_data.span = orig_examples.span
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
