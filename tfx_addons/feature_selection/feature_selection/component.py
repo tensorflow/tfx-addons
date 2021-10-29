@@ -114,6 +114,10 @@ def FeatureSelection(module_file: Parameter[str],
   selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
   selector.fit_transform(INPUT_DATA, TARGET_DATA)
 
+  # adding basic info to the updated example artifact as output
+  updated_data.split_names = orig_examples.split_names
+  updated_data.span = orig_examples.span
+
   # generate a list of selected features by matching FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
 
@@ -139,9 +143,6 @@ def FeatureSelection(module_file: Parameter[str],
           writer.write(updated_example.SerializeToString())
 
   
-  # adding basic info to the updated example artifact as output
-  updated_data.split_names = orig_examples.split_names
-  updated_data.span = orig_examples.span
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
