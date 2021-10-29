@@ -59,9 +59,9 @@ def data_preprocessing(np_dataset, target_feature):
   # changing 
   np_dataset = [{k: v[0] for k, v in example.items()} for example in np_dataset]
 
-  feature_keys = list(np_dataset[0].keys())
   target = [i.pop(target_feature) for i in np_dataset]
-  input_data = [list(i.values()) for i in np_dataset]
+  feature_keys = list(np_dataset[0].keys())
+  input_data = [[i[j] for j in feature_keys] for i in np_dataset]
 
   return [feature_keys, target, input_data]
 
