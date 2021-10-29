@@ -16,8 +16,6 @@
 import importlib
 import tensorflow as tf
 import os
-from os import listdir
-from os.path import isfile, join
 from tfx_bsl.coders import example_coder
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact, artifact_utils
@@ -76,9 +74,9 @@ def update_example(selected_features, orig_example):
   new_example = tf.train.Example(features=tf.train.Features(feature=result))
   return new_example
 
-# get a list of files for the specifiEd path
+# get a list of files for the specified path
 def get_file_list(dir_path):
-  file_list = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
+  file_list = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f))]
   return file_list
 
 """
