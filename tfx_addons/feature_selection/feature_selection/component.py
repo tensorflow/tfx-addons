@@ -37,7 +37,8 @@ class FeatureSelectionArtifact(artifact.Artifact):
 
 # reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
 def get_data_from_TFRecords(train_uri):
-  train_uri = [os.path.join(train_uri, 'data_tfrecord-00000-of-00001.gz')]
+  # get all the data files
+  train_uri = [os.path.join(train_uri, file_path) for file_path in get_file_list(train_uri)]
   raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
 
   np_dataset = []
@@ -154,4 +155,3 @@ def FeatureSelection(module_file: Parameter[str],
   feature_selection.scores = selector_scores_dict
   feature_selection.p_values = selector_pvalues_dict
   feature_selection.selected_features = selected_features
-
