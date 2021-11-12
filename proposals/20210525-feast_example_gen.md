@@ -89,7 +89,7 @@ The code will reside in `tfx/addons/feature-store-connector`. We will also publi
 
 ## Project Team
 1. Badrul Chowdhury, BACtaki, badrulchowdhury17@gmail.com
-2. Gerard Saez, casassg, ?
+2. Gerard Saez, casassg, gcasassaez@twitter.com
 3. Wihan Booyse, wihanbooyse, wihan@kriterion.ai
 4. Neelan Pather, neelanpather, neelan@kriterion.ai
 

@@ -33,7 +33,7 @@
 /tfx_addons/sampling @kindalime
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki
+/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse @neelanpather
 
 # Feature Selection Component
 /tfx_addons/feature_selection @nirzu97 @pratishtha-abrol @FatimahAdwan @deutranium
