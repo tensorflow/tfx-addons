@@ -38,7 +38,11 @@ EXTRAS_REQUIRE = {
         "tfx>=1.0.0<2.0.0",
         "xgboost>=1.0.0",
     ],
-    "sampler": ["tensorflow>=2.0.0"]
+    "sampler": ["tensorflow>=2.0.0"],
+    "feast_examplegen": [
+        "tfx>=1.0.0<2.0.0",
+        "feast>=0.11<1.0.0",
+    ]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
@@ -59,11 +63,8 @@ setup(
     tests_require=TESTS_REQUIRE,
     packages=find_namespace_packages(include=[
         # Add here new library package
-        "tfx_addons",
-        # "tfx_addons.mlmd_client",
-
-        # "tfx_addons.schema_curation.*",
-    ]),
+        "tfx_addons"
+    ] + [f'tfx_addons.{k}' for k in EXTRAS_REQUIRE]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",

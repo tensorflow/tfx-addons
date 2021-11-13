@@ -8,7 +8,7 @@ Examplegen for Feast Feature Store
 ```
 python -m venv venv
 . venv/bin/activate
-pip install -e .
+pip install -e ".[feast_examplegen] tfx==1.3"
 ```
 
 ### MacOS M1
