@@ -90,12 +90,10 @@ def FeatureSelection(module_file: Parameter[str],
   updated_data: OutputArtifact[Examples]):
   """Feature Selection component
     Args (from the module file):
-    - NUM_PARAM: Parameter for the corresponding mode in SelectorFunc
-        example: value of 'k' in SelectKBest
+    - SELECTOR_PARAMS: Parameters for SelectorFunc in the form of a kwargs dictionary
     - TARGET_FEATURE: Name of the feature containing target data
     - SelectorFunc: Selector function for univariate feature selection
       example: SelectKBest, SelectPercentile from sklearn.feature_selection
-    - ScoreFunc: Scoring function for various features with INPUT_DATA and OUTPUT_DATA as parameters
   """
 
 
