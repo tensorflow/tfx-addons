@@ -101,8 +101,8 @@ def FeatureSelection(module_file: Parameter[str],
 
   # importing the required functions and variables from the module file
   modules = importlib.import_module(module_file)
-  mod_names = ["NUM_PARAM", "TARGET_FEATURE", "SelectorFunc", "ScoreFunc"]
-  NUM_PARAM, TARGET_FEATURE, SelectorFunc, ScoreFunc = [getattr(modules, i) for i in mod_names]
+  mod_names = ["SELECTOR_PARAMS", "TARGET_FEATURE", "SelectorFunc"]
+  SELECTOR_PARAMS, TARGET_FEATURE, SelectorFunc = [getattr(modules, i) for i in mod_names]
 
   # uri for the required data
   train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
@@ -110,7 +110,7 @@ def FeatureSelection(module_file: Parameter[str],
   FEATURE_KEYS, TARGET_DATA, INPUT_DATA = data_preprocessing(np_dataset, TARGET_FEATURE)
 
   # Select features based on scores
-  selector = SelectorFunc(ScoreFunc, k=NUM_PARAM)
+  selector = SelectorFunc(**SELECTOR_PARAMS)
   selector.fit_transform(INPUT_DATA, TARGET_DATA)
 
   # adding basic info to the updated example artifact as output
