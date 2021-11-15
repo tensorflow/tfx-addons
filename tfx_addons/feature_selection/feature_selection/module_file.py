@@ -20,5 +20,4 @@ SELECTOR_PARAMS = {
     "score_func": chi2,
     "k": 2
 }
-
 TARGET_FEATURE = 'species'

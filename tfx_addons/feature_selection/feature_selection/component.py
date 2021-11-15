@@ -14,8 +14,6 @@
 # ==============================================================================
 
 import importlib
-import numpy as np
-from numpy.testing._private.utils import nulp_diff
 import tensorflow as tf
 import os
 from tfx_bsl.coders import example_coder
@@ -39,7 +37,8 @@ class FeatureSelectionArtifact(artifact.Artifact):
 
 # reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
 def get_data_from_TFRecords(train_uri):
-  train_uri = [os.path.join(train_uri, 'data_tfrecord-00000-of-00001.gz')]
+  # get all the data files
+  train_uri = [os.path.join(train_uri, file_path) for file_path in get_file_list(train_uri)]
   raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
 
   np_dataset = []
@@ -54,15 +53,32 @@ def get_data_from_TFRecords(train_uri):
 # returns data in list and nested list formats compatible with sklearn
 def data_preprocessing(np_dataset, target_feature):
 
-  # changing 
-  np_dataset = [{k: v[0] if v else None for k, v in example.items()} for example in np_dataset]
+  # getting the required data without any metadata
+  np_dataset = [{k: v[0] for k, v in example.items()} for example in np_dataset]
 
-  feature_keys = list(np_dataset[0].keys())
+  # extracting `y`
   target = [i.pop(target_feature) for i in np_dataset]
-  input_data = [list(i.values()) for i in np_dataset]
+  feature_keys = list(np_dataset[0].keys())
+  # getting `X`
+  input_data = [[i[j] for j in feature_keys] for i in np_dataset]
 
   return [feature_keys, target, input_data]
 
+
+# update example with selected features
+def update_example(selected_features, orig_example):
+  result = {}
+  for key, feature in orig_example.features.feature.items():
+    if key in selected_features:
+      result[key] = feature
+
+  new_example = tf.train.Example(features=tf.train.Features(feature=result))
+  return new_example
+
+# get a list of files for the specified path
+def get_file_list(dir_path):
+  file_list = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f))]
+  return file_list
 
 """
 Feature selection component
@@ -81,7 +97,7 @@ def FeatureSelection(module_file: Parameter[str],
   """
 
 
-  # importing the required functions and variables from
+  # importing the required functions and variables from the module file
   modules = importlib.import_module(module_file)
   mod_names = ["SELECTOR_PARAMS", "TARGET_FEATURE", "SelectorFunc"]
   SELECTOR_PARAMS, TARGET_FEATURE, SelectorFunc = [getattr(modules, i) for i in mod_names]
@@ -93,13 +109,37 @@ def FeatureSelection(module_file: Parameter[str],
 
   # Select features based on scores
   selector = SelectorFunc(**SELECTOR_PARAMS)
-  selected_data = selector.fit_transform(INPUT_DATA, TARGET_DATA).tolist()
+  selector.fit_transform(INPUT_DATA, TARGET_DATA)
 
-  # generate a list of selected features by matching _FEATURE_KEYS to selected indices
+  # adding basic info to the updated example artifact as output
+  updated_data.split_names = orig_examples.split_names
+  updated_data.span = orig_examples.span
+
+  # generate a list of selected features by matching FEATURE_KEYS to selected indices
   selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
 
-  # implmenting feature selection on the dataset to be saved as TFRecords
-  np_dataset = [{k: v for k, v in example.items() if k in selected_features} for example in np_dataset]
+  # convert string to array
+  split_arr = eval(orig_examples.split_names)
+
+  # update feature per split
+  for split in split_arr:
+    split_uri = artifact_utils.get_split_uri([orig_examples], split)
+    new_split_uri = artifact_utils.get_split_uri([updated_data], split)
+    os.mkdir(new_split_uri)
+
+    for file in get_file_list(split_uri):
+      split_dataset = tf.data.TFRecordDataset(os.path.join(split_uri,file), compression_type='GZIP')
+
+    # write the TFRecord
+      with tf.io.TFRecordWriter(path = os.path.join( new_split_uri, file), options="GZIP") as writer:
+        for split_record in split_dataset.as_numpy_iterator():
+          example = tf.train.Example()
+          example.ParseFromString(split_record)
+
+          updated_example = update_example(selected_features, example)
+          writer.write(updated_example.SerializeToString())
+
+  
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_
@@ -113,5 +153,3 @@ def FeatureSelection(module_file: Parameter[str],
   feature_selection.scores = selector_scores_dict
   feature_selection.p_values = selector_pvalues_dict
   feature_selection.selected_features = selected_features
-
-  updated_data.split_names = orig_examples.split_names
