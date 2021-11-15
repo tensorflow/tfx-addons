@@ -30,18 +30,21 @@ TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
+    "mlmd_client":
+    ["ml-pipelines-sdk>=1.0.0,<2.0.0", "ml-metadata>=1.0.0,<2.0.0"],
     "schema_curation": [
-        "tfx>=0.26.3<2.0.0",
+        "tfx>=0.26.3,<2.0.0",
     ],
     "xgboost_evaluator": [
-        "tfx>=1.0.0<2.0.0",
+        "tfx>=1.0.0,<2.0.0",
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
     "feast_examplegen": [
-        "tfx>=1.0.0<2.0.0",
-        "feast>=0.11<1.0.0",
+        # ToDo(gcasassaez): Fix this once TFX is released and feast is released.
+        "tfx==1.4.0rc0,<2.0.0",
+        # "feast>=0.15.1<1.0.0",
+        "feast@git+https://github.com/feast-dev/feast.git#subdirectory=sdk/python",
     ]
 }
 EXTRAS_REQUIRE["all"] = list(
