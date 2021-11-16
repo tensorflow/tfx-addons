@@ -40,16 +40,17 @@ EXTRAS_REQUIRE = {
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
-    "feast_examplegen": [
-        # ToDo(gcasassaez): Fix this once TFX is released and feast is released.
-        "tfx==1.4.0rc0,<2.0.0",
-        # "feast>=0.15.1<1.0.0",
-        "feast@git+https://github.com/feast-dev/feast.git#subdirectory=sdk/python",
-    ]
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
+# ToDo(gcasassaez): Don't include as all until 1.4 is released
+EXTRAS_REQUIRE["feast_examplegen"] = [
+    # ToDo(gcasassaez): Fix this once TFX is released and feast is released.
+    "tfx==1.4.0rc0,<2.0.0",
+    # "feast>=0.15.1<1.0.0",
+    "feast@git+https://github.com/feast-dev/feast.git#subdirectory=sdk/python",
+]
 
 setup(
     name=NAME,
