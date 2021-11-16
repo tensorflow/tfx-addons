@@ -24,11 +24,12 @@ import pandas as pd
 import tensorflow_model_analysis as tfma
 
 try:
-  # Path for TFMA < 0.34
-  from tensorflow_model_analysis import DoFnWithModels
-except ImportError:
   # Path for TFMA >= 0.34
-  from tensorflow_model_analysis.utils import DoFnWithModels
+  from tensorflow_model_analysis.utils import (
+      DoFnWithModels, verify_and_update_eval_shared_models)
+except ImportError:
+  # Path for TFMA < 0.34
+  from tensorflow_model_analysis import DoFnWithModels, verify_and_update_eval_shared_models
 
 import xgboost as xgb
 from tfx_bsl.tfxio import tensor_adapter
@@ -53,8 +54,7 @@ def make_xgboost_predict_extractor(
   Returns:
     Extractor for extracting predictions.
   """
-  eval_shared_models = tfma.verify_and_update_eval_shared_models(
-      eval_shared_model)
+  eval_shared_models = verify_and_update_eval_shared_models(eval_shared_model)
   return tfma.extractors.Extractor(
       stage_name=_PREDICT_EXTRACTOR_STAGE_NAME,
       ptransform=_ExtractPredictions(  # pylint: disable=no-value-for-parameter
