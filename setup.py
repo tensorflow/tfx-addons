@@ -30,19 +30,28 @@ TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
 EXTRAS_REQUIRE = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
+    "mlmd_client":
+    ["ml-pipelines-sdk>=1.0.0,<2.0.0", "ml-metadata>=1.0.0,<2.0.0"],
     "schema_curation": [
-        "tfx>=0.26.3<2.0.0",
+        "tfx>=0.26.3,<2.0.0",
     ],
     "xgboost_evaluator": [
-        "tfx>=1.0.0<2.0.0",
+        "tfx>=1.0.0,<2.0.0",
         "xgboost>=1.0.0",
     ],
-    "sampler": ["tensorflow>=2.0.0"]
+    "sampler": ["tensorflow>=2.0.0"],
 }
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
+# ToDo(gcasassaez): Don't include as all until 1.4 is released
+EXTRAS_REQUIRE["feast_examplegen"] = [
+    # NB(gcasassaez): TFX dependency on pyarrow makes feast non compatible before tfx 1.4.
+    "tfx==1.4.0rc0,<2.0.0",
+    # ToDo(gcasassaez): Fix this once TFX is released and feast is released.
+    # "feast>=0.15.1<1.0.0",
+    "feast@git+https://github.com/feast-dev/feast.git#subdirectory=sdk/python",
+]
 
 setup(
     name=NAME,
@@ -59,11 +68,8 @@ setup(
     tests_require=TESTS_REQUIRE,
     packages=find_namespace_packages(include=[
         # Add here new library package
-        "tfx_addons",
-        # "tfx_addons.mlmd_client",
-
-        # "tfx_addons.schema_curation.*",
-    ]),
+        "tfx_addons"
+    ] + [f'tfx_addons.{k}' for k in EXTRAS_REQUIRE]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
