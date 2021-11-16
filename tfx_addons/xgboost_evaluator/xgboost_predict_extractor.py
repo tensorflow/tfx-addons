@@ -22,9 +22,15 @@ import apache_beam as beam
 import numpy as np
 import pandas as pd
 import tensorflow_model_analysis as tfma
+
+try:
+  # Path for TFMA < 0.34
+  from tensorflow_model_analysis import DoFnWithModels
+except ImportError:
+  # Path for TFMA >= 0.34
+  from tensorflow_model_analysis.utils import DoFnWithModels
+
 import xgboost as xgb
-from tensorflow_model_analysis import constants, model_util, types
-from tensorflow_model_analysis.extractors import extractor
 from tfx_bsl.tfxio import tensor_adapter
 
 _PREDICT_EXTRACTOR_STAGE_NAME = 'XGBoostPredict'
@@ -33,7 +39,7 @@ _PREDICT_EXTRACTOR_STAGE_NAME = 'XGBoostPredict'
 def make_xgboost_predict_extractor(
     eval_shared_model: tfma.EvalSharedModel,
     eval_config: tfma.EvalConfig,
-) -> extractor.Extractor:
+) -> tfma.extractors.Extractor:
   """Creates an extractor for performing predictions using a xgboost model.
 
   The extractor's PTransform loads and runs the serving pickle against
@@ -47,9 +53,9 @@ def make_xgboost_predict_extractor(
   Returns:
     Extractor for extracting predictions.
   """
-  eval_shared_models = model_util.verify_and_update_eval_shared_models(
+  eval_shared_models = tfma.verify_and_update_eval_shared_models(
       eval_shared_model)
-  return extractor.Extractor(
+  return tfma.extractors.Extractor(
       stage_name=_PREDICT_EXTRACTOR_STAGE_NAME,
       ptransform=_ExtractPredictions(  # pylint: disable=no-value-for-parameter
           eval_shared_models={m.model_name: m
@@ -57,11 +63,11 @@ def make_xgboost_predict_extractor(
           eval_config=eval_config))
 
 
-@beam.typehints.with_input_types(types.Extracts)
-@beam.typehints.with_output_types(types.Extracts)
-class _TFMAPredictionDoFn(model_util.DoFnWithModels):
+@beam.typehints.with_input_types(tfma.Extracts)
+@beam.typehints.with_output_types(tfma.Extracts)
+class _TFMAPredictionDoFn(DoFnWithModels):
   """A DoFn that loads the models and predicts."""
-  def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel],
+  def __init__(self, eval_shared_models: Dict[Text, tfma.EvalSharedModel],
                eval_config: tfma.EvalConfig):
     super().__init__(
         {k: v.model_loader
@@ -88,7 +94,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       if self._feature_keys and self._label_key:
         assert self._feature_keys == feature_keys, (
             f'Features mismatch in loaded models. Expected {self._feature_keys}'
-            f', got {lfeature_keys} instead.')
+            f', got {feature_keys} instead.')
         assert self._label_key == label_config[name], (
             f'Label mismatch in loaded models. Expected "{self._label_key}"'
             f', got "{label_config[name]}" instead.')
@@ -108,7 +114,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
         label_specs[None] = config.label_key
     return label_specs
 
-  def process(self, elem: types.Extracts) -> Iterable[types.Extracts]:
+  def process(self, elem: tfma.Extracts) -> Iterable[tfma.Extracts]:
     """Uses loaded models to make predictions on batches of data.
 
     Args:
@@ -123,34 +129,32 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
     features = []
     labels = []
     result = copy.copy(elem)
-    for features_dict in result[constants.FEATURES_KEY]:
+    for features_dict in result[tfma.FEATURES_KEY]:
       features_row = [features_dict[key] for key in self._feature_keys]
       features.append(np.concatenate(features_row))
       labels.append(features_dict[self._label_key])
-    result[constants.LABELS_KEY] = np.concatenate(labels)
+    result[tfma.LABELS_KEY] = np.concatenate(labels)
     features = xgb.DMatrix(pd.DataFrame(features, columns=self._feature_keys))
 
     # Generate predictions for each model.
     for model_name, loaded_model in self._loaded_models.items():
       preds = loaded_model.predict(features)
       if len(self._loaded_models) == 1:
-        result[constants.PREDICTIONS_KEY] = preds
-      elif constants.PREDICTIONS_KEY not in result:
-        result[constants.PREDICTIONS_KEY] = [{
-            model_name: pred
-        } for pred in preds]
+        result[tfma.PREDICTIONS_KEY] = preds
+      elif tfma.PREDICTIONS_KEY not in result:
+        result[tfma.PREDICTIONS_KEY] = [{model_name: pred} for pred in preds]
       else:
         for i, pred in enumerate(preds):
-          result[constants.PREDICTIONS_KEY][i][model_name] = pred
+          result[tfma.PREDICTIONS_KEY][i][model_name] = pred
     yield result
 
 
 @beam.ptransform_fn
-@beam.typehints.with_input_types(types.Extracts)
-@beam.typehints.with_output_types(types.Extracts)
+@beam.typehints.with_input_types(tfma.Extracts)
+@beam.typehints.with_output_types(tfma.Extracts)
 def _ExtractPredictions(  # pylint: disable=invalid-name
     extracts: beam.pvalue.PCollection,
-    eval_shared_models: Dict[Text, types.EvalSharedModel],
+    eval_shared_models: Dict[Text, tfma.EvalSharedModel],
     eval_config: tfma.EvalConfig,
 ) -> beam.pvalue.PCollection:
   """A PTransform that adds predictions and possibly other tensors to extracts.
@@ -185,7 +189,7 @@ def custom_eval_shared_model(eval_saved_model_path, model_name, eval_config,
       eval_saved_model_path=model_path,
       model_name=model_name,
       eval_config=eval_config,
-      custom_model_loader=types.ModelLoader(
+      custom_model_loader=tfma.ModelLoader(
           construct_fn=_custom_model_loader_fn(model_path)),
       add_metrics_callbacks=kwargs.get('add_metrics_callbacks'))
 

@@ -19,21 +19,19 @@ import os
 import apache_beam as beam
 import pandas as pd
 import tensorflow as tf
+import tensorflow_model_analysis as tfma
 import xgboost as xgb
 from apache_beam.testing import util
 from google.protobuf import text_format
 from tensorflow_metadata.proto.v0 import schema_pb2
-from tensorflow_model_analysis import config, constants
-from tensorflow_model_analysis.api import model_eval_lib
-from tensorflow_model_analysis.eval_saved_model import testutil
-from tensorflow_model_analysis.extractors import features_extractor
 from tfx.types import channel_utils, standard_artifacts
 from tfx_bsl.tfxio import tensor_adapter, test_util
 
 from tfx_addons.xgboost_evaluator import component, xgboost_predict_extractor
 
 
-class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
+class XGBoostPredictExtractorTest(
+    tfma.test.testutil.TensorflowModelAnalysisTest):
   def setUp(self):
     """Function that sets up a schema, some examples, and some metadata
     for use in the tests."""
@@ -41,8 +39,8 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     super().setUp()
     self._eval_export_dir = os.path.join(self._getTempDir(), 'eval_export')
     self._create_xgboost_model(self._eval_export_dir)
-    self._eval_config = config.EvalConfig(
-        model_specs=[config.ModelSpec(name=None, label_key="label")])
+    self._eval_config = tfma.EvalConfig(
+        model_specs=[tfma.ModelSpec(name=None, label_key="label")])
     self._eval_shared_model = (
         xgboost_predict_extractor.custom_eval_shared_model(
             eval_saved_model_path=self._eval_export_dir,
@@ -64,8 +62,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
         }
         """, schema_pb2.Schema())
     self._tfx_io = test_util.InMemoryTFExampleRecord(
-        schema=self._schema,
-        raw_record_column_name=constants.ARROW_INPUT_COLUMN)
+        schema=self._schema, raw_record_column_name=tfma.ARROW_INPUT_COLUMN)
     self._tensor_adapter_config = tensor_adapter.TensorAdapterConfig(
         arrow_schema=self._tfx_io.ArrowSchema(),
         tensor_representations=self._tfx_io.TensorRepresentations())
@@ -78,7 +75,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
   def testMakeXGBoostPredictExtractor(self):
     """Tests that predictions are made from extracts for a single model."""
-    feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
+    feature_extractor = tfma.extractors.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
         xgboost_predict_extractor.make_xgboost_predict_extractor(
             self._eval_shared_model, self._eval_config))
@@ -97,16 +94,16 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'Create' >> beam.Create(
               [e.SerializeToString() for e in self._examples])
           | 'BatchExamples' >> self._tfx_io.BeamSource()
-          | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
+          | 'InputsToExtracts' >> tfma.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
           | prediction_extractor.stage_name >> prediction_extractor.ptransform
           | beam.Map(check_result))  # the test
 
   def testMakeXGBoostPredictExtractorWithMultiModels(self):
     """Tests that predictions are made from extracts for multiple models."""
-    eval_config = config.EvalConfig(model_specs=[
-        config.ModelSpec(name='model1', label_key="label"),
-        config.ModelSpec(name='model2', label_key="label"),
+    eval_config = tfma.EvalConfig(model_specs=[
+        tfma.ModelSpec(name='model1', label_key="label"),
+        tfma.ModelSpec(name='model2', label_key="label"),
     ])
     eval_export_dir_1 = os.path.join(self._eval_export_dir, '1')
     self._create_xgboost_model(eval_export_dir_1)
@@ -121,7 +118,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
         model_name='model2',
         eval_config=eval_config)
 
-    feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
+    feature_extractor = tfma.extractors.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
         xgboost_predict_extractor.make_xgboost_predict_extractor(
             eval_shared_model={
@@ -146,7 +143,7 @@ class XGBoostPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           | 'Create' >> beam.Create(
               [e.SerializeToString() for e in self._examples])
           | 'BatchExamples' >> self._tfx_io.BeamSource()
-          | 'InputsToExtracts' >> model_eval_lib.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
+          | 'InputsToExtracts' >> tfma.BatchedInputsToExtracts()  # pylint: disable=no-value-for-parameter
           | feature_extractor.stage_name >> feature_extractor.ptransform
           | prediction_extractor.stage_name >> prediction_extractor.ptransform
           | beam.Map(check_result))  # the test
