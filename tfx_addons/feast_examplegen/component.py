@@ -34,7 +34,7 @@ from tfx.components.example_gen import component
 from tfx.dsl.components.base import executor_spec
 from tfx.proto import example_gen_pb2
 
-from . import executor
+from tfx_addons.feast_examplegen import executor
 
 
 class FeastExampleGen(component.QueryBasedExampleGen):

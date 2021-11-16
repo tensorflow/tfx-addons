@@ -34,7 +34,7 @@ from tfx.components.example_gen import base_example_gen_executor
 from tfx.extensions.google_cloud_big_query import utils
 from tfx.proto import example_gen_pb2
 
-from . import converters
+from tfx_addons.feast_examplegen import converters
 
 _REPO_CONFIG_KEY = "repo_conf"
 _FEATURE_KEY = "feature_refs"
