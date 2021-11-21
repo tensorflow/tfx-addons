@@ -51,4 +51,3 @@ jobs:
         pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
     - name: Run tests
       run: pytest tfx_addons
-  
