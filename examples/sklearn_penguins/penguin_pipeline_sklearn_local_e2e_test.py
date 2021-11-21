@@ -14,19 +14,18 @@
 """E2E Tests for penguin_pipeline_sklearn_local."""
 
 import os
-from typing import Text
 import unittest
+from typing import Text
 
+import penguin_pipeline_sklearn_local
 import tensorflow as tf
 from tfx import v1 as tfx
-from tfx.examples.penguin.experimental import penguin_pipeline_sklearn_local
 from tfx.orchestration import metadata
 
 
 @unittest.skipIf(tf.__version__ < '2',
                  'Uses keras Model only compatible with TF 2.x')
 class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
-
   def setUp(self):
     super(PenguinPipelineSklearnLocalEndToEndTest, self).setUp()
     self._test_dir = os.path.join(
@@ -36,10 +35,10 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
 
     self._pipeline_name = 'sklearn_test'
     self._data_root = os.path.join(self._penguin_root, 'data')
-    self._trainer_module_file = os.path.join(
-        self._penguin_root, 'penguin_utils_sklearn.py')
-    self._evaluator_module_file = os.path.join(
-        self._penguin_root, 'sklearn_predict_extractor.py')
+    self._trainer_module_file = os.path.join(self._penguin_root,
+                                             'penguin_utils_sklearn.py')
+    self._evaluator_module_file = os.path.join(self._penguin_root,
+                                               'sklearn_predict_extractor.py')
     self._serving_model_dir = os.path.join(self._test_dir, 'serving_model')
     self._pipeline_root = os.path.join(self._test_dir, 'tfx', 'pipelines',
                                        self._pipeline_name)
@@ -50,8 +49,8 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
     """Check the component is executed exactly once."""
     component_path = os.path.join(self._pipeline_root, component)
     self.assertTrue(tfx.dsl.io.fileio.exists(component_path))
-    execution_path = os.path.join(
-        component_path, '.system', 'executor_execution')
+    execution_path = os.path.join(component_path, '.system',
+                                  'executor_execution')
     execution = tfx.dsl.io.fileio.listdir(execution_path)
     self.assertLen(execution, 1)
 
@@ -66,7 +65,7 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
 
   def testPenguinPipelineSklearnLocal(self):
     tfx.orchestration.LocalDagRunner().run(
-        penguin_pipeline_sklearn_local._create_pipeline(
+        penguin_pipeline_sklearn_local._create_pipeline(  # pylint:disable=protected-access
             pipeline_name=self._pipeline_name,
             pipeline_root=self._pipeline_root,
             data_root=self._data_root,

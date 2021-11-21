@@ -41,7 +41,7 @@ enable=indexing-exception,old-raise-syntax
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 # TODO(b/154672575): Enable wrong-import-order.
-disable=design,similarities,no-self-use,attribute-defined-outside-init,locally-disabled,star-args,pointless-except,bad-option-value,global-statement,fixme,suppressed-message,useless-suppression,locally-enabled,no-member,no-name-in-module,import-error,unsubscriptable-object,unbalanced-tuple-unpacking,undefined-variable,not-context-manager,useless-object-inheritance,unnecessary-pass,no-else-return,no-else-raise,no-else-continue,wrong-import-order,no-value-for-parameter,misplaced-comparison-constant,no-init,abstract-method,unpacking-non-sequence
+disable=design,similarities,no-self-use,attribute-defined-outside-init,locally-disabled,star-args,pointless-except,bad-option-value,global-statement,fixme,suppressed-message,useless-suppression,locally-enabled,no-member,no-name-in-module,import-error,unsubscriptable-object,unbalanced-tuple-unpacking,undefined-variable,not-context-manager,useless-object-inheritance,unnecessary-pass,no-else-return,no-else-raise,no-else-continue,wrong-import-order,no-value-for-parameter,misplaced-comparison-constant,no-init,abstract-method,unpacking-non-sequence,super-with-arguments
 
 
 # Set the cache size for astng objects.

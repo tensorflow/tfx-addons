@@ -1,5 +1,8 @@
 # TFX Addons
 
+[![TFX Addons package CI](https://github.com/tensorflow/tfx-addons/actions/workflows/ci.yml/badge.svg)](https://github.com/tensorflow/tfx-addons/actions/workflows/ci.yml)
+[![TFX Addons CI for examples](https://github.com/tensorflow/tfx-addons/actions/workflows/ci_examples.yml/badge.svg)](https://github.com/tensorflow/tfx-addons/actions/workflows/ci_examples.yml)
+
 ## TL;DR
 This is the repo for projects organized under the special interest group, SIG TFX-Addons. Join the group by [joining the Google Group](http://goo.gle/tfx-addons-group) and participate in projects to build new components, libraries, tools, and other useful additions to TFX.
 
@@ -26,6 +29,7 @@ We encourage any developers working in production ML environments, infrastructur
 We have multiple channels for participation, and publicly archive discussions in our user group mailing list: 
 - tfx-addons@tensorflow.org – Google group for SIG TFX-Addons
 - tfx@tensorflow.org – our general mailing list for TFX
+- [TFX Addons Slack](https://tfxaddons.slack.com) -  Our shared slack workspace (join [here](https://join.slack.com/t/tfxaddons/shared_invite/zt-tu1981lj-npIhRSHF8gl9G0ldUovbcw) )
 
 Other Resources 
 - SIG Repository: http://github.com/tensorflow/tfx-addons (this repo)

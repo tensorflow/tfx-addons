@@ -1,0 +1,2 @@
+../..[xgboost_evaluator]
+xgboost>=1.0.0

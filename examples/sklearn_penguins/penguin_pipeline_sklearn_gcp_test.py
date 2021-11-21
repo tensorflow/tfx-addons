@@ -14,17 +14,17 @@
 """Tests for penguin_pipeline_sklearn_gcp."""
 
 import os
+import unittest
 from unittest import mock
 
+import penguin_pipeline_sklearn_gcp
 import tensorflow as tf
 from tfx import v1 as tfx
 from tfx.utils import test_case_utils
 
-import penguin_pipeline_sklearn_gcp
 
-
+@unittest.skip('End to end test only for example')
 class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
-
   def setUp(self):
     super(PenguinPipelineSklearnGcpTest, self).setUp()
     self.enter_context(test_case_utils.change_working_dir(self.tmp_dir))
@@ -33,10 +33,10 @@ class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
 
     self._pipeline_name = 'sklearn_test'
     self._data_root = os.path.join(self._penguin_root, 'data')
-    self._trainer_module_file = os.path.join(
-        self._penguin_root, 'penguin_utils_sklearn.py')
-    self._evaluator_module_file = os.path.join(
-        self._penguin_root, 'sklearn_predict_extractor.py')
+    self._trainer_module_file = os.path.join(self._penguin_root,
+                                             'penguin_utils_sklearn.py')
+    self._evaluator_module_file = os.path.join(self._penguin_root,
+                                               'sklearn_predict_extractor.py')
     self._pipeline_root = os.path.join(self.tmp_dir, 'tfx', 'pipelines',
                                        self._pipeline_name)
     self._ai_platform_training_args = {
@@ -56,7 +56,7 @@ class PenguinPipelineSklearnGcpTest(test_case_utils.TfxTest):
     # not valid with respect to temporary directory.
     resolve_mock.side_effect = lambda pipeline_root: None
 
-    logical_pipeline = penguin_pipeline_sklearn_gcp._create_pipeline(
+    logical_pipeline = penguin_pipeline_sklearn_gcp._create_pipeline(  # pylint:disable=protected-access
         pipeline_name=self._pipeline_name,
         pipeline_root=self._pipeline_root,
         data_root=self._data_root,

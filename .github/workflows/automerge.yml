@@ -1,0 +1,17 @@
+name: Automatic merging
+on:
+  pull_request_target: { types: [opened, synchronize] }
+  issue_comment: { types: [created] }
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run Codeowners merge check
+        uses: casassg/auto-merge-bot@v0.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          merge_method: 'squash'
+          assign_reviewer: 'false'
