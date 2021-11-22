@@ -12,33 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Feature Selection component for tfx_addons"""
 import importlib
-import tensorflow as tf
 import os
-from tfx_bsl.coders import example_coder
+
+import tensorflow as tf
 from tfx.dsl.component.experimental.decorators import component
 from tfx.types import artifact, artifact_utils
 from tfx.types.standard_artifacts import Examples
-from tfx.v1.dsl.components import OutputArtifact, InputArtifact, Parameter
+from tfx.v1.dsl.components import InputArtifact, OutputArtifact, Parameter
+from tfx_bsl.coders import example_coder
 
 
 # Output artifact containing required data related to feature selection
-"""Custom Artifact type"""
 class FeatureSelectionArtifact(artifact.Artifact):
   """Output artifact containing feature scores from the Feature Selection component"""
   TYPE_NAME = 'Feature Selection'
   PROPERTIES = {
-    'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-    'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
-    'selected_features': artifact.Property(type=artifact.PropertyType.JSON_VALUE)
+      'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+      'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+      'selected_features':
+      artifact.Property(type=artifact.PropertyType.JSON_VALUE)
   }
 
 
 # reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
 def get_data_from_TFRecords(train_uri):
   # get all the data files
-  train_uri = [os.path.join(train_uri, file_path) for file_path in get_file_list(train_uri)]
+  train_uri = [
+      os.path.join(train_uri, file_path)
+      for file_path in get_file_list(train_uri)
+  ]
   raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
 
   np_dataset = []
@@ -54,7 +58,8 @@ def get_data_from_TFRecords(train_uri):
 def data_preprocessing(np_dataset, target_feature):
 
   # getting the required data without any metadata
-  np_dataset = [{k: v[0] for k, v in example.items()} for example in np_dataset]
+  np_dataset = [{k: v[0]
+                 for k, v in example.items()} for example in np_dataset]
 
   # extracting `y`
   target = [i.pop(target_feature) for i in np_dataset]
@@ -75,19 +80,21 @@ def update_example(selected_features, orig_example):
   new_example = tf.train.Example(features=tf.train.Features(feature=result))
   return new_example
 
+
 # get a list of files for the specified path
 def get_file_list(dir_path):
-  file_list = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f))]
+  file_list = [
+      f for f in os.listdir(dir_path)
+      if os.path.isfile(os.path.join(dir_path, f))
+  ]
   return file_list
 
-"""
-Feature selection component
-"""
+
 @component
-def FeatureSelection(module_file: Parameter[str],
-  orig_examples: InputArtifact[Examples],
-  feature_selection: OutputArtifact[FeatureSelectionArtifact],
-  updated_data: OutputArtifact[Examples]):
+def FeatureSelection(
+    module_file: Parameter[str], orig_examples: InputArtifact[Examples],
+    feature_selection: OutputArtifact[FeatureSelectionArtifact],
+    updated_data: OutputArtifact[Examples]):
   """Feature Selection component
     Args (from the module file):
     - SELECTOR_PARAMS: Parameters for SelectorFunc in the form of a kwargs dictionary
@@ -96,16 +103,18 @@ def FeatureSelection(module_file: Parameter[str],
       example: SelectKBest, SelectPercentile from sklearn.feature_selection
   """
 
-
   # importing the required functions and variables from the module file
   modules = importlib.import_module(module_file)
   mod_names = ["SELECTOR_PARAMS", "TARGET_FEATURE", "SelectorFunc"]
-  SELECTOR_PARAMS, TARGET_FEATURE, SelectorFunc = [getattr(modules, i) for i in mod_names]
+  SELECTOR_PARAMS, TARGET_FEATURE, SelectorFunc = [
+      getattr(modules, i) for i in mod_names
+  ]
 
   # uri for the required data
   train_uri = artifact_utils.get_split_uri([orig_examples], 'train')
   np_dataset = get_data_from_TFRecords(train_uri)
-  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = data_preprocessing(np_dataset, TARGET_FEATURE)
+  FEATURE_KEYS, TARGET_DATA, INPUT_DATA = data_preprocessing(
+      np_dataset, TARGET_FEATURE)
 
   # Select features based on scores
   selector = SelectorFunc(**SELECTOR_PARAMS)
@@ -116,7 +125,10 @@ def FeatureSelection(module_file: Parameter[str],
   updated_data.span = orig_examples.span
 
   # generate a list of selected features by matching FEATURE_KEYS to selected indices
-  selected_features = [val for (idx, val) in enumerate(FEATURE_KEYS) if idx in selector.get_support(indices=True)]
+  selected_features = [
+      val for (idx, val) in enumerate(FEATURE_KEYS)
+      if idx in selector.get_support(indices=True)
+  ]
 
   # convert string to array
   split_arr = eval(orig_examples.split_names)
@@ -128,18 +140,18 @@ def FeatureSelection(module_file: Parameter[str],
     os.mkdir(new_split_uri)
 
     for file in get_file_list(split_uri):
-      split_dataset = tf.data.TFRecordDataset(os.path.join(split_uri,file), compression_type='GZIP')
+      split_dataset = tf.data.TFRecordDataset(os.path.join(split_uri, file),
+                                              compression_type='GZIP')
 
-    # write the TFRecord
-      with tf.io.TFRecordWriter(path = os.path.join( new_split_uri, file), options="GZIP") as writer:
+      # write the TFRecord
+      with tf.io.TFRecordWriter(path=os.path.join(new_split_uri, file),
+                                options="GZIP") as writer:
         for split_record in split_dataset.as_numpy_iterator():
           example = tf.train.Example()
           example.ParseFromString(split_record)
 
           updated_example = update_example(selected_features, example)
           writer.write(updated_example.SerializeToString())
-
-  
 
   # get scores and p-values for artifacts
   selector_scores = selector.scores_

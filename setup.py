@@ -28,7 +28,7 @@ NAME = "tfx-addons"
 
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
-EXTRAS_REQUIRE = {
+PKG_REQUIRES = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
     "schema_curation": [
@@ -40,8 +40,9 @@ EXTRAS_REQUIRE = {
     ],
     "sampler": ["tensorflow>=2.0.0"]
 }
+EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
-    set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
+    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
 setup(
@@ -60,10 +61,7 @@ setup(
     packages=find_namespace_packages(include=[
         # Add here new library package
         "tfx_addons",
-        # "tfx_addons.mlmd_client",
-
-        # "tfx_addons.schema_curation.*",
-    ]),
+    ] + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES.keys()]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
