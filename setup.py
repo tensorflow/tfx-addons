@@ -44,10 +44,8 @@ EXTRAS_REQUIRE = {
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(EXTRAS_REQUIRE.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
-# ToDo(gcasassaez): Don't include as all until 1.4 is released
 EXTRAS_REQUIRE["feast_examplegen"] = [
-    # NB(gcasassaez): TFX dependency on pyarrow makes feast non compatible before tfx 1.4.
-    "tfx==1.4.0rc0,<2.0.0",
+    "tfx>=1.4.0,<2.0.0",
     # ToDo(gcasassaez): Fix this once TFX is released and feast is released.
     # "feast>=0.15.1<1.0.0",
     "feast@git+https://github.com/feast-dev/feast.git#subdirectory=sdk/python",

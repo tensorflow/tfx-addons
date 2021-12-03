@@ -23,16 +23,14 @@ https://github.com/tensorflow/tfx/blob/master/tfx/examples/custom_components/pre
 
 """
 
-import os
-import pathlib
-import tempfile
 from typing import List, Optional, Union
 
 import feast
 from google.protobuf.struct_pb2 import Struct
-from tfx.components.example_gen import component
+from tfx.components.example_gen import component, utils
 from tfx.dsl.components.base import executor_spec
 from tfx.proto import example_gen_pb2
+from tfx.v1.dsl.experimental import RuntimeParameter
 
 from tfx_addons.feast_examplegen import executor
 
@@ -43,7 +41,7 @@ class FeastExampleGen(component.QueryBasedExampleGen):
   Example:
 
     example_gen = FeastExampleGen(
-      repo_config=RepoConfig(registr="gs://..."),
+      repo_config=RepoConfig(register="gs://..."),
       entity_query="SELECT user, timestamp from some_user_dataset",
       features=["f1", "f2"],
     )
@@ -55,6 +53,8 @@ class FeastExampleGen(component.QueryBasedExampleGen):
                repo_config: feast.RepoConfig,
                features: Union[List[str], str, feast.FeatureService],
                entity_query: Optional[str] = None,
+               input_config: Union[example_gen_pb2.Input, RuntimeParameter,
+                                   None] = None,
                **kwargs):
     """Args:
             repo_config: Feast repo configuration object
@@ -63,17 +63,20 @@ class FeastExampleGen(component.QueryBasedExampleGen):
             entity_query: Query used to obtain the entity dataframe.
               Defaults to None.
             **kwargs: kwargs used in QueryBasedExampleGen
-        """
-    # Serialize repo config into a YAML to pass it to the executor
-    # ToDo: Potentially better would be to actually push the YAML to some pipeline path and load it back from executor to avoid having too much data in the entrypoint!
-    repo_yaml = None
-    with tempfile.TemporaryDirectory() as t:
-      repo_config.write_to_path(pathlib.Path(t))
-      with open(os.path.join(t, "feature_store.yaml")) as f:
-        repo_yaml = f.read()
+    """
+    # generate input config
+    if bool(entity_query) == bool(input_config):
+      raise RuntimeError(
+          'Exactly one of query and input_config should be set.')
+    input_config = input_config or utils.make_default_input_config(
+        entity_query)
+
     custom_config = Struct()
+
+    # Serialize repo config into a JSON to pass it to the executor
+    repo_json = repo_config.json(exclude={"repo_path"}, exclude_unset=True)
     custom_config.update({
-        executor._REPO_CONFIG_KEY: repo_yaml,
+        executor._REPO_CONFIG_KEY: repo_json,
     })
     if isinstance(features, str):
       custom_config.update({
@@ -94,6 +97,8 @@ class FeastExampleGen(component.QueryBasedExampleGen):
 
     # Store configuration as part of a protobuf struct and pack inside custom_config
     custom_config_pbs2 = example_gen_pb2.CustomConfig()
-    custom_config_pbs2.Pack(custom_config)
+    custom_config_pbs2.custom_config.Pack(custom_config)
 
-    super().__init__(custom_config=custom_config, query=entity_query, **kwargs)
+    super().__init__(custom_config=custom_config_pbs2,
+                     input_config=input_config,
+                     **kwargs)

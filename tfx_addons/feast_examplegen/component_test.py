@@ -16,12 +16,44 @@
 Tests for tfx_addons.feast_examplegen.component.
 """
 
-import tensorflow as tf
+import pytest
+
+try:
+  import feast
+except ImportError:
+  pytest.skip("feast not available, skipping", allow_module_level=True)
+
+from tfx.v1.proto import Input
+
+from tfx_addons.feast_examplegen.component import FeastExampleGen
 
 
-class ComponentTest(tf.test.TestCase):
-  pass
+def test_init_valid():
+  entity_query = 'SELECT user FROM fake_db'
+  repo_config = feast.RepoConfig(provider='local', project='default')
+  FeastExampleGen(repo_config=repo_config,
+                  features=['feature1', 'feature2'],
+                  entity_query='SELECT user FROM fake_db')
+  FeastExampleGen(repo_config=repo_config,
+                  features='feature_service1',
+                  entity_query='SELECT user FROM fake_db')
+  FeastExampleGen(repo_config=repo_config,
+                  features=['feature1', 'feature2'],
+                  input_config=Input(splits=[
+                      Input.Split(name='train', pattern=entity_query),
+                      Input.Split(name='eval', pattern=entity_query),
+                  ]))
 
 
-if __name__ == '__main__':
-  tf.test.main()
+def test_input_and_entity():
+  entity_query = 'SELECT user FROM fake_db'
+  repo_config = feast.RepoConfig(provider='local', project='default')
+  with pytest.raises(RuntimeError):
+
+    FeastExampleGen(repo_config=repo_config,
+                    features=['feature1', 'feature2'],
+                    entity_query=entity_query,
+                    input_config=Input(splits=[
+                        Input.Split(name='train', pattern=entity_query),
+                        Input.Split(name='eval', pattern=entity_query),
+                    ]))

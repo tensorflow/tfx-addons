@@ -17,7 +17,6 @@ Generic TFX FeastExampleGen executor.
 """
 
 import os
-import tempfile
 from typing import Any, Dict, List, Optional
 
 import apache_beam as beam
@@ -52,11 +51,8 @@ def _load_custom_config(custom_config):
 
 def _load_feast_feature_store(
     custom_config: Dict[str, Any]) -> feast.FeatureStore:
-  with tempfile.TemporaryDirectory() as t:
-    with open(os.path.join(t, "feature_store.yaml"), "w") as f:
-      f.write(custom_config[_REPO_CONFIG_KEY])
-
-    return feast.FeatureStore(repo_path=t)
+  repo_config = feast.RepoConfig.parse_raw(custom_config[_REPO_CONFIG_KEY])
+  return feast.FeatureStore(config=repo_config)
 
 
 def _get_retrieval_job(entity_query: str,
