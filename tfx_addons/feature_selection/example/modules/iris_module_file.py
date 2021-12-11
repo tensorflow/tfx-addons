@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Supplement for iris species example with specifics feature modification.
 This module file will be used in the feature selection component example.
 """
