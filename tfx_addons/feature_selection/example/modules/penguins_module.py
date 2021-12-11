@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Supplement for palmer penguins example with specific feature modification.
+This module file will be used in the feature selection component example.
+"""
 
 from sklearn.feature_selection import SelectKBest as SelectorFunc
 from sklearn.feature_selection import chi2 as ScoreFunc
