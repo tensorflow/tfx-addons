@@ -13,6 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 
+"""Supplement for iris species example with specifics feature modification.
+This module file will be used in the feature selection component example.
+"""
+
 from sklearn.feature_selection import SelectKBest as SelectorFunc
 from sklearn.feature_selection import f_classif as ScoreFunc
 
