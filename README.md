@@ -64,7 +64,6 @@ SIG TFX-Addons is a community-led open source project. As such, the project depe
   - Newton Le (Twitter)
   - Marc Romeyn (Spotify)
   - Ryan Clough (Spotify)
-  - Samuel Ngahane (Spotify)
   - Michal Brys (OpenX)
   -  Baris Can Durak (ZenML)
   -  Hamza Tahir (ZenML)
