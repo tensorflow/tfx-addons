@@ -9,8 +9,8 @@
 
 
 # CI configuration (for now owned by @casassg)
-/.github/workflows/*.yml @casassg
-/.github/ci  @casassg
+/.github/workflows/*.yml @casassg @vulkomilev
+/.github/ci  @casassg @vulkomilev
 
 
 # Sci-Kit Learn Example using the Penguins dataset
