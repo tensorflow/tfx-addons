@@ -41,15 +41,9 @@ The ModelCardComponentSpec outputs a ModelCardArtifact. The artifact uri points 
 The ModelCardExecutor will accept the above parameters, inputs, and outputs as args.
 It will create a TfxModelCardToolkit instance and run through the standard MCT workflow (see Outline below).
 
-### TfxModelCardToolkit
+### Source
 
-TfxModelCardToolkit inherits from ModelCardToolkit and follows a similar API, with a few differences to match TFX component APIs.
-
-**Input Artifacts**: While ModelCardToolkit discovers Artifacts by searching a MetadataStore, TfxModelCardToolkit will directly accept Artifacts as inputs instead.
-
-**Output Artifact**: TfxModelCardToolkit will write the model card assets to the uri specified in the ModelCardArtifact. TFX will then handle writing this ModelCardArtifact to MLMD.
-
-The TfxModelCardToolkit will also use the PushedModel's uri to populate a new `ModelCard.model_details.path` field.
+TFX component APIs accept Artifact inputs directly, while MCT today discovers Artifacts from a MLMD store. So, MCT's API will need to accept a broader range of inputs. These will be encapsulated with the new `MlmdSource` and `Source` classes.
 
 ## Outline
 
@@ -98,22 +92,50 @@ class ModelCardExecutor(BaseBeamExecutor):
     mct.export_format(template_path=exec_properties['model_card_template'])
 
 
-class TfxModelCardToolkit(ModelCardToolkit):
+class ModelCardToolkit:
 
   def __init__(self,
-               example_statistics_artifact: Optional[
-                   standard_artifacts.ExampleStatistics] = None,
-               pushed_model_artifact: Optional[standard_artifacts.PushedModel] = None,
-               model_evaluation_artifact: Optional[
-                   standard_artifacts.ModelEvaluation] = None,
-               output_dir: Optional[str] = None):
-    self._example_statistics_artifact = example_statistics_artifact
-    self._pushed_model_artifact = pushed_model_artifact
-    self._model_evaluation_artifact = model_evaluation_artifact
-    super().__init__(output_dir=output_dir)
+               output_dir: Optional[Text] = None,
+               mlmd_source: Optional[src.MlmdSource] = None,
+               source: Optional[src.Source] = None,
+               ):
+    ....
 
   def _scaffold_model_card(self) -> ModelCard:
     # TODO(karanshukla): populate ModelCard using input artifacts
+
+
+@dataclasses.dataclass
+class MlmdSource:
+  mlmd_store: mlmd.MetadataStore = None
+  model_uri: Text = None
+
+
+@dataclasses.dataclass
+class TfmaSource:
+  eval_result_paths: List[Text] = dataclasses.field(default_factory=list)
+  file_format: Optional[Text] = ''
+  example_statistics_artifact: Optional[
+     standard_artifacts.ExampleStatistics] = None
+
+
+@dataclasses.dataclass
+class TfdvSource:
+  dataset_statistics_paths: List[Text] = dataclasses.field(default_factory=list)
+  example_statistics_artifact: Optional[
+                   standard_artifacts.ModelEvaluation] = None
+
+
+@dataclasses.dataclass
+class ModelSource:
+  pushed_model_artifact: Optional[standard_artifacts.PushedModel] = None
+
+
+@dataclasses.dataclass
+class Source:
+  tfma: TfmaSource = dataclasses.field(default_factory=TfmaSource)
+  tfdv: TfdvSource = dataclasses.field(default_factory=TfdvSource)
+  model: ModelSource = dataclasses.field(default_factory=ModelSource)
 ```
 
 ### Packaging and Release
