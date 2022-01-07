@@ -15,9 +15,5 @@
 """Supplement for prima Indians Diabetics example with specifics feature modification.
 This module file will be used in the feature selection component example.
 """
-
-from sklearn.feature_selection import SelectKBest as SelectorFunc
-from sklearn.feature_selection import chi2 as ScoreFunc
-
 NUM_PARAM = 3
 TARGET_FEATURE = 'Outcome'
