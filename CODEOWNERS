@@ -3,9 +3,9 @@
 
 # Core team for reviews of project proposals and main distribution files
 /proposals/ @rcrowe-google
-/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
-/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
-/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
+/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 
 
 # CI configuration (for now owned by @casassg)
@@ -26,11 +26,11 @@
 /tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97
 
 # XGBoost Evaluator Component
-/tfx_addons/xgboost_evaluator @kindalime @cent5
-/examples/xgboost_penguins @kindalime @cent5
+/tfx_addons/xgboost_evaluator @kindalime @cent5 @casassg
+/examples/xgboost_penguins @kindalime @cent5 @casassg
 
 # Sampling Component
-/tfx_addons/sampling @kindalime
+/tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
 /tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse @neelanpather
