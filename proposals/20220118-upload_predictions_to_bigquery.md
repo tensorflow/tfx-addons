@@ -82,7 +82,7 @@ The component implicitly requires Google Cloud as a Dependency due to the writin
 ## Project Team
 
 * Hannes Hapke (@hanneshapke), hannes -at- digits.com
-* Ukjae Jeong
+* Ukjae Jeong (@jeongukjae)
 
 # Note
 
