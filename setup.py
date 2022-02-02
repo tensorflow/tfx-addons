@@ -19,9 +19,10 @@ def get_project_name_version():
     with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
         exec(fp.read(), version)
 
-    project_name = "tensorflow-addons"
+    project_name = "tfx-addons"
+    # TODO: Support nightly builds? Like https://github.com/tensorflow/addons/blob/d19c3efa5e4b9924e5f1e0b603fe0a22b8efcbfe/.github/workflows/release.yml#L65
     if "--nightly" in sys.argv:
-        project_name = "tfa-nightly"
+        project_name = "tfx-addons-nightly"  # TODO: Confirm project names with rcrowe
         version["__version__"] += get_last_commit_time()
         sys.argv.remove("--nightly")
 
