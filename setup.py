@@ -1,30 +1,39 @@
 """Package Setup script for TFX Addons."""
+import datetime
 import itertools
 import os
-import re
+import sys
 
 from setuptools import find_namespace_packages, setup
 
 
-def _get_version():
-  version_file = os.path.join(os.path.dirname(__file__),
-                              'tfx_addons/__init__.py')
-  with open(version_file, 'r') as fp:
-    version_file_text = fp.read()
+def get_last_commit_time() -> str:
+    string_time = os.getenv("NIGHTLY_TIME").replace('"', "")
+    return datetime.strptime(string_time, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M%S")
 
-  version_match = re.search(
-      r"^__version__ = ['\"]([^'\"]*)['\"]",
-      version_file_text,
-      re.M,
-  )
-  if version_match:
-    return version_match.group(1)
-  else:
-    raise RuntimeError("Unable to find version string.")
+
+def get_project_name_version():
+    # Version
+    version = {}
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
+        exec(fp.read(), version)
+
+    project_name = "tensorflow-addons"
+    if "--nightly" in sys.argv:
+        project_name = "tfa-nightly"
+        version["__version__"] += get_last_commit_time()
+        sys.argv.remove("--nightly")
+
+    return project_name, version
+
+
+project_name, version = get_project_name_version()
+inclusive_min_tfx_version = version["INCLUSIVE_MIN_TFX_VERSION"]
+exclusive_max_tfx_version = version["EXCLUSIVE_MAX_TFX_VERSION"]
 
 
 NAME = "tfx-addons"
-# VERSION = .... Change the version in tfx_addons/__init__.py
 
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
@@ -32,22 +41,23 @@ PKG_REQUIRES = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
     "schema_curation": [
-        "tfx>=0.26.3<2.0.0",
+        "tfx>={},<{}".format(inclusive_min_tfx_version, exclusive_max_tfx_version),
     ],
     "xgboost_evaluator": [
-        "tfx>=1.0.0<2.0.0",
+        "tfx>={},<{}".format(inclusive_min_tfx_version, exclusive_max_tfx_version),
         "xgboost>=1.0.0",
     ],
-    "sampler": ["tensorflow>=2.0.0"]
+    "sampler": ["tensorflow>=2.0.0"],
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
-    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
+    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values())))
+)
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
 setup(
     name=NAME,
-    version=_get_version(),
+    version=version["__version__"],
     description="TFX Addons libraries",
     author="The Tensorflow Authors",
     url="https://github.com/tensorflow/tfx-addons",
@@ -58,10 +68,13 @@ setup(
     },
     extras_require=EXTRAS_REQUIRE,
     tests_require=TESTS_REQUIRE,
-    packages=find_namespace_packages(include=[
-        # Add here new library package
-        "tfx_addons",
-    ] + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]),
+    packages=find_namespace_packages(
+        include=[
+            # Add here new library package
+            "tfx_addons",
+        ]
+        + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]
+    ),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
