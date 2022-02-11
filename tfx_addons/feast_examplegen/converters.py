@@ -16,8 +16,8 @@
 import abc
 from typing import Any, Dict, Optional
 
+import tensorflow as tf
 from google.cloud import bigquery
-from tfx.extensions.google_cloud_big_query import utils
 
 
 class _Converter(abc.ABC):
@@ -49,6 +49,56 @@ class _Converter(abc.ABC):
     pass
 
 
+# NB(gcasassaez): Fork from tfx.extensions.google_cloud_big_query.utils
+# This is mostly to add support for timestamp since its a common
+# format used by Feast.
+def row_to_example(  # pylint: disable=invalid-name
+    field_to_type: Dict[str, str],
+    field_name_to_data: Dict[str, Any]) -> tf.train.Example:
+  """Convert bigquery result row to tf example.
+
+  Args:
+    field_to_type: The name of the field to its type from BigQuery.
+    field_name_to_data: The data need to be converted from BigQuery that
+      contains field name and data.
+
+  Returns:
+    A tf.train.Example that converted from the BigQuery row. Note that BOOLEAN
+    type in BigQuery result will be converted to int in tf.train.Example.
+
+  Raises:
+    RuntimeError: If the data type is not supported to be converted.
+      Only INTEGER, BOOLEAN, FLOAT, STRING is supported now.
+  """
+  feature = {}
+  for key, value in field_name_to_data.items():
+    data_type = field_to_type[key]
+
+    if value is None:
+      feature[key] = tf.train.Feature()
+      continue
+
+    value_list = value if isinstance(value, list) else [value]
+    if data_type in ('INTEGER', 'BOOLEAN'):
+      feature[key] = tf.train.Feature(int64_list=tf.train.Int64List(
+          value=value_list))
+    elif data_type == 'FLOAT':
+      feature[key] = tf.train.Feature(float_list=tf.train.FloatList(
+          value=value_list))
+    elif data_type == 'TIMESTAMP':
+      feature[key] = tf.train.Feature(float_list=tf.train.FloatList(
+          value=[elem.timestamp() for elem in value_list]))
+    elif data_type == 'STRING':
+      feature[key] = tf.train.Feature(bytes_list=tf.train.BytesList(
+          value=[tf.compat.as_bytes(elem) for elem in value_list]))
+    else:
+      # TODO(jyzhao): support more types.
+      raise RuntimeError(
+          'BigQuery column type {} is not supported.'.format(data_type))
+
+  return tf.train.Example(features=tf.train.Features(feature=feature))
+
+
 class _BigQueryConverter(_Converter):
   """Converter class for BigQuery source data"""
   def __init__(self, query: str, project: Optional[str]) -> None:
@@ -62,7 +112,7 @@ class _BigQueryConverter(_Converter):
 
   def RowToExampleBytes(self, instance: Dict[str, Any]) -> bytes:
     """Convert bigquery result row to tf example."""
-    ex_pb2 = utils.row_to_example(self._type_map, instance)
+    ex_pb2 = row_to_example(self._type_map, instance)
     return ex_pb2.SerializeToString()
 
   def RowToSequenceExampleBytes(self, instance: Dict[str, Any]) -> bytes:

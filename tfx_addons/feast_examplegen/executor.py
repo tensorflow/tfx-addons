@@ -17,7 +17,7 @@ Generic TFX FeastExampleGen executor.
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import apache_beam as beam
 import feast
@@ -28,7 +28,6 @@ from feast.infra.offline_stores.offline_store import RetrievalJob
 from google.protobuf import json_format
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.struct_pb2 import Struct
-from tfx import types
 from tfx.components.example_gen import base_example_gen_executor
 from tfx.extensions.google_cloud_big_query import utils
 from tfx.proto import example_gen_pb2
@@ -89,12 +88,38 @@ def _get_gcp_project(exec_properties: Dict[str, Any]) -> Optional[str]:
   beam_pipeline_args = exec_properties["_beam_pipeline_args"]
   pipeline_options = beam.options.pipeline_options.PipelineOptions(
       beam_pipeline_args)
+
   # Try to parse the GCP project ID from the beam pipeline options.
   project = pipeline_options.view_as(
       beam.options.pipeline_options.GoogleCloudOptions).project
   if isinstance(project, value_provider.ValueProvider):
     return project.get()
-  return None
+  return project or None
+
+
+def _get_datasource_converter(exec_properties: Dict[str, Any],
+                              split_pattern: str):
+  # Load custom config dictionary
+  custom_config = _load_custom_config(exec_properties["custom_config"])
+
+  # Get Feast retrieval job
+  retrieval_job = _get_retrieval_job(entity_query=split_pattern,
+                                     custom_config=custom_config)
+
+  # Setup datasource and converter.
+  if isinstance(retrieval_job, BigQueryRetrievalJob):
+    table = retrieval_job.to_bigquery()
+    query = f'SELECT * FROM {table}'
+    # Internally Beam creates a temporary table and exports from the query.
+    datasource = utils.ReadFromBigQuery(query=query)
+    converter = converters._BigQueryConverter(  # pylint: disable=protected-access
+        query, _get_gcp_project(exec_properties))
+  else:
+    raise NotImplementedError(
+        f"Support for {type(retrieval_job)} is not available yet. "
+        "For now we only support BigQuery source.")
+
+  return datasource, converter
 
 
 @beam.ptransform_fn
@@ -113,25 +138,22 @@ def _FeastToExampleTransform(  # pylint: disable=invalid-name
     Returns:
       PCollection of TF examples.
     """
-  # Load custom config dictionary
-  custom_config = _load_custom_config(exec_properties["custom_config"])
-
-  # Get Feast retrieval job
-  retrieval_job = _get_retrieval_job(entity_query=split_pattern,
-                                     custom_config=custom_config)
-
-  # Setup datasource and converter.
-  if isinstance(retrieval_job, BigQueryRetrievalJob):
-    query = retrieval_job.to_sql()
-
-    # Internally Beam creates a temporary table and exports from the query.
-    datasource = utils.ReadFromBigQuery(query=query)
-    converter = converters._BigQueryConverter(  # pylint: disable=protected-access
-        query, _get_gcp_project(exec_properties))
-  else:
-    raise NotImplementedError(
-        f"Support for {type(retrieval_job)} is not available yet. "
-        "For now we only support BigQuery source.")
+  # Feast doesn't allow us to configure GCP project used to explore BQ (afaik),
+  # we instead set the beam project as default in environment as sometimes
+  # it may not work on the default project
+  gcp_project = _get_gcp_project(exec_properties)
+  logging.info("Detected GCP project %s", gcp_project)
+  restore_project = None
+  if gcp_project:
+    logging.info("Overwriting GOOGLE_CLOUD_PROJECT env var to %s", gcp_project)
+    restore_project = os.environ.get("GOOGLE_CLOUD_PROJECT", None)
+    os.environ["GOOGLE_CLOUD_PROJECT"] = gcp_project
+  try:
+    datasource, converter = _get_datasource_converter(
+        exec_properties=exec_properties, split_pattern=split_pattern)
+  finally:
+    if restore_project:
+      os.environ["GOOGLE_CLOUD_PROJECT"] = restore_project
 
   # Setup converter from dictionary of str -> value to bytes
   map_function = None
@@ -149,34 +171,11 @@ def _FeastToExampleTransform(  # pylint: disable=invalid-name
   # Setup pipeline
   return (pipeline
           | "DataRetrieval" >> datasource
-          | f"To{out_format.capitalize()}Bytes" >> beam.Map(map_function))
+          | "ToBytes" >> beam.Map(map_function))
 
 
 class Executor(base_example_gen_executor.BaseExampleGenExecutor):
   """Generic TFX FeastExampleGen executor."""
-  def Do(
-      self,
-      input_dict: Dict[str, List[types.Artifact]],
-      output_dict: Dict[str, List[types.Artifact]],
-      exec_properties: Dict[str, Any],
-  ) -> None:
-    """Run executor function.
-    """
-    # Feast doesn't allow us to configure GCP project used to explore BQ (afaik),
-    # we instead set the beam project as default in environment as sometimes
-    # it may not work on the default project
-    gcp_project = _get_gcp_project(exec_properties)
-    if gcp_project:
-      logging.info("Overwriting GOOGLE_CLOUD_PROJECT env var to %s",
-                   gcp_project)
-      restore_project = os.environ.get("GOOGLE_CLOUD_PROJECT", None)
-      os.environ["GOOGLE_CLOUD_PROJECT"] = gcp_project
-    try:
-      return super().Do(input_dict, output_dict, exec_properties)
-    finally:
-      if restore_project:
-        os.environ["GOOGLE_CLOUD_PROJECT"] = restore_project
-
   def GetInputSourceToExamplePTransform(self) -> beam.PTransform:
     """Returns PTransform for Feast to bytes."""
     return _FeastToExampleTransform

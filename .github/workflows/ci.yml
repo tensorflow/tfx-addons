@@ -27,11 +27,9 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       matrix:
-        depconstraint: ["tfx~=1.0.0 tensorflow~=2.5.0", "tfx~=1.4.0 tensorflow~=2.6.0",]
+        # ToDo(casassg): Remove future from here once resolved upstream: https://github.com/tensorflow/transform/issues/257
+        depconstraint: ["tfx~=1.4.0 tensorflow~=2.6.0 future", "tfx~=1.6.0 tensorflow~=2.7.0"]
         extras: ["all, test"]
-        include:
-          - depconstraint: "tfx~=1.4.0 tensorflow~=2.6.0"
-            extras: "all, test, feast_examplegen"
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
