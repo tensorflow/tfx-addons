@@ -28,6 +28,8 @@ The component excepts 4 parameters:
 
 `final_status` is the JSON string of the pipeline status, provided by TFX. The Slack parameters contain the credentials to submit the message. And `on_failure_only` is a configuration for frequently run pipeline to only alert on failures. We have a number of pipelines were this options was useful.
 
+The exit handler also accepts an optional module path in case the provider credentials are encrypted. Please specify `decrypt_fn` in case you want to decrypt your credentials on the fly.
+
 The component parses the status, and composes a message based on the content.
 
 ```python
@@ -48,27 +50,40 @@ Overall, the implementation is minimal, but it serves as a great exit handler ex
 #### Example usage
 
 ```python
-    from tfx_addons.message_exit_handler.component import MessageExitHandler
-    from tfx_addons.message_exit_handler.protos import slack_pb2
+from tfx_addons.message_exit_handler.component import MessageExitHandler
+from tfx_addons.message_exit_handler.protos import slack_pb2
+...
+
+dsl_pipeline = pipeline.create_pipeline(
     ...
+)
 
-    dsl_pipeline = pipeline.create_pipeline(
-        ...
-    )
+runner = kubeflow_v2_dag_runner.KubeflowV2DagRunner(
+  config=runner_config,
+)
 
-    runner = kubeflow_v2_dag_runner.KubeflowV2DagRunner(
-        config=runner_config,
-    )
+exit_handler = MessageExitHandler(
+  final_status=tfx.orchestration.experimental.FinalStatusStr(),
+  message_type="slack",
+  slack_credentials=slack_pb2.SlackSpec(
+    slack_token="YOUR_SLACK_TOKEN",
+    slack_channel_id="YOUR_SLACK_CHANNEL_ID")
+)
+runner.set_exit_handler(exit_handler)
+runner.run(pipeline=dsl_pipeline, write_out=True)
+```
 
-    exit_handler = MessageExitHandler(
-        final_status=tfx.orchestration.experimental.FinalStatusStr(),
-        message_type="slack",
-        slack_credentials=slack_pb2.SlackSpec(
-            slack_token="YOUR_SLACK_TOKEN",
-            slack_channel_id="YOUR_SLACK_CHANNEL_ID")
-    )
-    runner.set_exit_handler(exit_handler)
-    runner.run(pipeline=dsl_pipeline, write_out=True)
+If your credentials are encrypted, you can specific a custom function created by you to decrypt the credentials. You can pass the function to the exit handler as follows:
+
+```python
+exit_handler = MessageExitHandler(
+  final_status=tfx.orchestration.experimental.FinalStatusStr(),
+  message_type="slack",
+  slack_credentials=slack_pb2.SlackSpec(
+    slack_token="YOUR_SLACK_TOKEN",
+    slack_channel_id="YOUR_SLACK_CHANNEL_ID"),
+  decrypt_fn='path.to.your.decrypt.function'
+)
 ```
 
 #### Pipeline Success Message
