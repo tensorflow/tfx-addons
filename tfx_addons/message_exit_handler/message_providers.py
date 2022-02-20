@@ -98,8 +98,8 @@ class SlackMessageProvider(MessageProvider):
     if decrypt_fn:
       module_path, fn_name = decrypt_fn.rsplit(".", 1)
       logging.info(
-        f"MessageExitHandler: Importing {fn_name} from {module_path} "
-        "to decrypt credentials.")
+          f"MessageExitHandler: Importing {fn_name} from {module_path} "
+          "to decrypt credentials.")
       fn = import_utils.import_func_from_module(module_path, fn_name)
       self._slack_channel_id = fn(credentials.slack_channel_id)
       self._slack_token = fn(credentials.slack_token)

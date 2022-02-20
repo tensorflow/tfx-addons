@@ -21,8 +21,8 @@ import tensorflow as tf
 mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
            lambda x: x).start()
 
-from tfx_addons.message_exit_handler import component, constants
-from tfx_addons.message_exit_handler import message_providers
+from tfx_addons.message_exit_handler import (component, constants,
+                                             message_providers)
 from tfx_addons.message_exit_handler.proto import slack_pb2
 
 
@@ -68,12 +68,13 @@ class ComponentTest(tf.test.TestCase):
     final_status = self.get_final_status()
 
     with self.assertLogs(level="INFO") as logs:
-      component.MessageExitHandler(final_status=final_status,
-                                   message_type=message_providers.MessagingType.SLACK.value,
-                                   slack_credentials=slack_pb2.SlackSpec(
-                                     slack_token="token",
-                                     slack_channel_id="channel",)
-      )
+      component.MessageExitHandler(
+        final_status=final_status,
+        message_type=message_providers.MessagingType.SLACK.value,
+        slack_credentials=slack_pb2.SlackSpec(
+          slack_token="token",
+          slack_channel_id="channel",
+      ))
 
       mock_web_client.assert_called_once()
       mock_web_client.assert_called_with(token='token')
@@ -85,12 +86,14 @@ class ComponentTest(tf.test.TestCase):
     final_status = self.get_final_status()
 
     with self.assertLogs(level="INFO") as logs:
-      component.MessageExitHandler(final_status=final_status,
-                                   message_type=message_providers.MessagingType.SLACK.value,
-                                   slack_credentials=slack_pb2.SlackSpec(
-                                     slack_token="token",
-                                     slack_channel_id="channel",),
-                                   decrypt_fn='tfx_addons.message_exit_handler.component_tests.fake_decryption_fn'
+      component.MessageExitHandler(
+        final_status=final_status,
+        message_type=message_providers.MessagingType.SLACK.value,
+        slack_credentials=slack_pb2.SlackSpec(
+          slack_token="token",
+          slack_channel_id="channel",),
+        decrypt_fn=
+        'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn'
       )
 
       mock_web_client.assert_called_once()

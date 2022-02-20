@@ -74,9 +74,8 @@ class MessageProviderTest(tf.test.TestCase):
   @patch('tfx_addons.message_exit_handler.message_providers.WebClient')
   def test_slack_message_provider(self, web_client_mock):
     final_status = self.get_final_status()
-    credentials = slack_pb2.SlackSpec(
-      slack_token="test-token",
-      slack_channel_id="test-channel")
+    credentials = slack_pb2.SlackSpec(slack_token="test-token",
+                                      slack_channel_id="test-channel")
 
     message_provider = message_providers.SlackMessageProvider(
         final_status, credentials)
@@ -87,14 +86,14 @@ class MessageProviderTest(tf.test.TestCase):
   @patch('tfx_addons.message_exit_handler.message_providers.WebClient')
   def test_slack_message_provider_with_decrypt_fn(self, mock_web_client):
     final_status = self.get_final_status()
-    credentials = slack_pb2.SlackSpec(
-      slack_token="test-token",
-      slack_channel_id="test-channel")
+    credentials = slack_pb2.SlackSpec(slack_token="test-token",
+                                      slack_channel_id="test-channel")
 
     message_provider = message_providers.SlackMessageProvider(
         final_status,
         credentials,
-        decrypt_fn='tfx_addons.message_exit_handler.component_tests.fake_decryption_fn')
+        decrypt_fn=
+        'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn')
     message_provider.send_message()
     mock_web_client.assert_called_once()
     mock_web_client.assert_called_with(token='TEST-TOKEN')
