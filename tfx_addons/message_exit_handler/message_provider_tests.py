@@ -46,10 +46,12 @@ class MessageProviderTest(tf.test.TestCase):
       status.update({"error": {"message": error}})
     return status
 
+
   def test_message_provider_success(self):
     final_status = self.get_final_status()
     test_provider = message_providers.MessageProvider(final_status)
     self.assertEqual(SUCCESS_MESSAGE, test_provider.get_message())
+
 
   def test_message_provider_failure(self):
     final_status = self.get_final_status(
@@ -57,6 +59,7 @@ class MessageProviderTest(tf.test.TestCase):
     )
     test_provider = message_providers.MessageProvider(final_status)
     self.assertEqual(FAILURE_MESSAGE, test_provider.get_message())
+
 
   def test_logging_message_provider(self):
     final_status = self.get_final_status()
