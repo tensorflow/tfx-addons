@@ -20,6 +20,7 @@ import tensorflow as tf
 from mock import patch
 
 from tfx_addons.message_exit_handler import constants, message_providers
+from tfx_addons.message_exit_handler.proto import slack_pb2
 
 SUCCESS_MESSAGE = """:tada: Pipeline job *test-pipeline-job* (test-project) completed successfully.
 
@@ -73,29 +74,30 @@ class MessageProviderTest(tf.test.TestCase):
   @patch('tfx_addons.message_exit_handler.message_providers.WebClient')
   def test_slack_message_provider(self, web_client_mock):
     final_status = self.get_final_status()
-    credentials = json.dumps(
-        dict(slack_token="test-token", slack_channel_id="test-channel"))
+    credentials = slack_pb2.SlackSpec(
+      slack_token="test-token",
+      slack_channel_id="test-channel")
 
     message_provider = message_providers.SlackMessageProvider(
         final_status, credentials)
     message_provider.send_message()
-    web_client_mock.assert_called()
+    web_client_mock.assert_called_once()
     web_client_mock.assert_called_with(token='test-token')
 
   @patch('tfx_addons.message_exit_handler.message_providers.WebClient')
-  def test_slack_message_provider_with_decrypt_fn(self, web_client_mock):
-    def decrypt_fn(credential):
-      return credential.upper()
-
+  def test_slack_message_provider_with_decrypt_fn(self, mock_web_client):
     final_status = self.get_final_status()
-    credentials = json.dumps(
-        dict(slack_token="test-token", slack_channel_id="test-channel"))
+    credentials = slack_pb2.SlackSpec(
+      slack_token="test-token",
+      slack_channel_id="test-channel")
 
     message_provider = message_providers.SlackMessageProvider(
-        final_status, credentials, decrypt_fn=decrypt_fn)
+        final_status,
+        credentials,
+        decrypt_fn='tfx_addons.message_exit_handler.component_tests.fake_decryption_fn')
     message_provider.send_message()
-    web_client_mock.assert_called()
-    web_client_mock.assert_called_with(token='TEST-TOKEN')
+    mock_web_client.assert_called_once()
+    mock_web_client.assert_called_with(token='TEST-TOKEN')
 
 
 if __name__ == "__main__":

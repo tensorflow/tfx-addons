@@ -21,15 +21,13 @@ Currently supported:
 """
 
 import enum
-from typing import Callable, Dict, Optional, Text
+from typing import Dict, Optional, Text
 
 from absl import logging
 from slack import WebClient
 from slack.errors import SlackApiError
-from tfx.utils import proto_utils
-
+from tfx.utils import import_utils
 from tfx_addons.message_exit_handler import constants
-from tfx_addons.message_exit_handler.proto import slack_pb2
 
 
 class MessagingType(enum.Enum):
@@ -90,18 +88,24 @@ class SlackMessageProvider(MessageProvider):
   """Slack message provider."""
   def __init__(self,
                status: Dict,
-               credentials: slack_pb2.SlackSpec,
-               decrypt_fn: Optional[Callable] = None) -> None:
+               credentials: str,
+               decrypt_fn: Optional[str] = None) -> None:
     super().__init__(status=status)
-    credentials_pb = slack_pb2.SlackSpec()
-    proto_utils.json_to_proto(credentials, credentials_pb)
+
+    if not credentials:
+      raise ValueError("Slack credentials not provided.")
 
     if decrypt_fn:
-      self._slack_channel_id = decrypt_fn(credentials_pb.slack_channel_id)
-      self._slack_token = decrypt_fn(credentials_pb.slack_token)
+      module_path, fn_name = decrypt_fn.rsplit(".", 1)
+      logging.info(
+        f"MessageExitHandler: Importing {fn_name} from {module_path} "
+        "to decrypt credentials.")
+      fn = import_utils.import_func_from_module(module_path, fn_name)
+      self._slack_channel_id = fn(credentials.slack_channel_id)
+      self._slack_token = fn(credentials.slack_token)
     else:
-      self._slack_channel_id = credentials_pb.slack_channel_id
-      self._slack_token = credentials_pb.slack_token
+      self._slack_channel_id = credentials.slack_channel_id
+      self._slack_token = credentials.slack_token
 
     self._client = WebClient(token=self._slack_token)
 

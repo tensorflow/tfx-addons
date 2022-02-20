@@ -1,7 +1,9 @@
-# Project Proposal for Slack Exit Handler for TFX Pipelines
+# Project Proposal for Message Exit Handler for TFX Pipelines
 
 [![Python](https://img.shields.io/pypi/pyversions/tfx.svg?style=plastic)](https://github.com/tensorflow/tfx)
 [![TensorFlow](https://img.shields.io/badge/TFX-orange)](https://www.tensorflow.org/tfx)
+
+**The component can support any message provider therefore the project was renamed from *Slack Exit Handler* to *Message Exit Handler***
 
 ## Project Description
 
@@ -20,22 +22,21 @@ The existing implementation is Python-based and it uses the `tfx.orchestration.e
 The component excepts 4 parameters:
 
 - final_status
-- slack_token
-- slack_channel_id
 - on_failure_only
-- gcp_region
+- credentials
+- decrypt_fn
 
 `final_status` is the JSON string of the pipeline status, provided by TFX. The Slack parameters contain the credentials to submit the message. And `on_failure_only` is a configuration for frequently run pipeline to only alert on failures. We have a number of pipelines were this options was useful.
 
 The component parses the status, and composes a message based on the content.
 
-```
-    job_id = status["pipelineJobResourceName"].split("/")[-1]
-    if status["state"] == "SUCCEEDED":
-        message = f":tada: Pipeline job *{job_id}* completed successfully.\n"
-    else:
-        message = f":scream: Pipeline job *{job_id}* failed."
-        message += f"\n>{status['error']['message']}"
+```python
+job_id = status["pipelineJobResourceName"].split("/")[-1]
+if status["state"] == "SUCCEEDED":
+  message = f":tada: Pipeline job *{job_id}* completed successfully.\n"
+else:
+  message = f":scream: Pipeline job *{job_id}* failed."
+  message += f"\n>{status['error']['message']}"
 ```
 
 The a Slack web client object is created and the message is submitted via the object.
@@ -46,9 +47,9 @@ Overall, the implementation is minimal, but it serves as a great exit handler ex
 
 #### Example usage
 
-```
-    from tfx_addons.slack_exit_handler.component import SlackExitHandlerComponent
-
+```python
+    from tfx_addons.message_exit_handler.component import MessageExitHandler
+    from tfx_addons.message_exit_handler.protos import slack_pb2
     ...
 
     dsl_pipeline = pipeline.create_pipeline(
@@ -59,11 +60,12 @@ Overall, the implementation is minimal, but it serves as a great exit handler ex
         config=runner_config,
     )
 
-    exit_handler = SlackExitHandlerComponent(
+    exit_handler = MessageExitHandler(
         final_status=tfx.orchestration.experimental.FinalStatusStr(),
-        slack_token=YOUR_SLACK_TOKEN,
-        slack_channel_id=YOUR_SLACK_CHANNEL_ID,
-        gcp_region="us-central1",
+        message_type="slack",
+        slack_credentials=slack_pb2.SlackSpec(
+            slack_token="YOUR_SLACK_TOKEN",
+            slack_channel_id="YOUR_SLACK_CHANNEL_ID")
     )
     runner.set_exit_handler(exit_handler)
     runner.run(pipeline=dsl_pipeline, write_out=True)

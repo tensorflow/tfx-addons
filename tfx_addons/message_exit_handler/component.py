@@ -29,11 +29,12 @@ from tfx_addons.message_exit_handler.message_providers import (
 
 
 @exit_handler
-def SlackExitHandlerComponent(
+def MessageExitHandler(
     final_status: tfx.dsl.components.Parameter[str],
     on_failure_only: tfx.dsl.components.Parameter[bool] = False,
     message_type: Optional[str] = MessagingType.LOGGING.value,
     slack_credentials: Optional[str] = None,
+    decrypt_fn: Optional[str] = None,
 ):
   """
     Exit handler component for TFX pipelines originally developed by
@@ -46,6 +47,8 @@ def SlackExitHandlerComponent(
                            Slack API calls.
         on_failure_only: Whether to notify only on failure.
         message_type: The type of message to send.
+        decrypt_fn: (Optional) The function to use to decrypt the credentials,
+        'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn'
 
     """
 
@@ -63,7 +66,8 @@ def SlackExitHandlerComponent(
   # create the message provider
   if message_type == MessagingType.SLACK.value:
     provider = SlackMessageProvider(status=status,
-                                    slack_credentials=slack_credentials)
+                                    credentials=slack_credentials,
+                                    decrypt_fn=decrypt_fn)
   elif message_type == MessagingType.LOGGING.value:
     provider = LoggingMessageProvider(status=status)
   else:
