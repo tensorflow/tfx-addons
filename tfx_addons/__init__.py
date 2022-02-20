@@ -13,3 +13,5 @@
 # limitations under the License.
 # ==============================================================================
 """Init module for TFX."""
+
+from .version import __version__

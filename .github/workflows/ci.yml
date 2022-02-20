@@ -28,9 +28,8 @@ jobs:
       # Test for several versions of TFX in parallel
       matrix:
         depconstraint: [
-          "tfx~=1.0.0 tensorflow~=2.5.0",
-          "tfx~=1.3.0 tensorflow~=2.6.0",
-          "tfx~=1.5.0 tensorflow~=2.7.0",
+          "tfx=1.4.0 tensorflow>=2.0.0",
+          "tfx<1.7.0 tensorflow>=2.0.0",
         ]
         extras: ["all, test"]
     steps:

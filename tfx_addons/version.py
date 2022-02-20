@@ -14,9 +14,9 @@
 # ============================================================================
 """Define TFX Addons version information."""
 
-# Required TFX version [min, max)
+# Required TFX version [min, max), keep depconstraint in ci.yml in sync
 INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
-EXCLUSIVE_MAX_TFX_VERSION = "1.6.0"
+EXCLUSIVE_MAX_TFX_VERSION = "1.7.0"
 
 # We follow Semantic Versioning (https://semver.org/)
 _MAJOR_VERSION = "0"
