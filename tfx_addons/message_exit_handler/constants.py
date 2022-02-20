@@ -13,5 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
+""" Constants for the Message Exit Handler """
+
 SUCCESS_STATUS = "SUCCEEDED"
 FAILURE_STATUS = "FAILED"

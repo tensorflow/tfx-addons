@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
+""" Message Exit Handler component """
+
 import json
 from typing import Optional
 
@@ -32,20 +34,21 @@ from tfx_addons.message_exit_handler.message_providers import (
 
 @exit_handler
 def SlackExitHandlerComponent(
-    final_status: tfx.dsl.components.Parameter[str],
-    on_failure_only: tfx.dsl.components.Parameter[bool] = False,
-    message_type: Optional[str] = MessagingType.LOGGING.value,
-    slack_credentials: Optional[str] = None,
+  final_status: tfx.dsl.components.Parameter[str],
+  on_failure_only: tfx.dsl.components.Parameter[bool] = False,
+  message_type: Optional[str] = MessagingType.LOGGING.value,
+  slack_credentials: Optional[str] = None,
 ):
   """
-    Exit handler component for TFX pipelines originally developed by Digits Financial, Inc.
+    Exit handler component for TFX pipelines originally developed by
+    Digits Financial, Inc.
     The handler notifies the user of the final pipeline status via Slack.
 
     Args:
         final_status: The final status of the pipeline.
-        slack_credentials: (Optional) The credentials to use for the Slack API calls.
-        on_failure_only: Whether to notify only on failure
-                        (default is 0, TFX < 1.6 doesn't support the boolean type).
+        slack_credentials: (Optional) The credentials to use for the
+                           Slack API calls.
+        on_failure_only: Whether to notify only on failure.
         message_type: The type of message to send.
 
     """

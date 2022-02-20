@@ -31,8 +31,6 @@ from tfx.utils import proto_utils
 from tfx_addons.message_exit_handler import constants
 from tfx_addons.message_exit_handler.proto import slack_pb2
 
-# from google.cloud.aiplatform.compat.types import pipeline_state_v1beta1
-
 
 class MessagingType(enum.Enum):
   """Determines the type of message to send."""
@@ -60,7 +58,8 @@ class MessageProvider:
     # Generate message
     if status["state"] == constants.SUCCESS_STATUS:
       message = (
-          f":tada: Pipeline job *{job_id}* ({project}) completed successfully.\n"
+          ":tada: "
+          f"Pipeline job *{job_id}* ({project}) completed successfully.\n"
       )
     else:
       message = f":scream: Pipeline job *{job_id}* ({project}) failed."
@@ -93,8 +92,8 @@ class SlackMessageProvider(MessageProvider):
   def __init__(self, credentials: slack_pb2.SlackSpec, *args,
                **kwargs) -> None:
     super(SlackMessageProvider).__init__(*args, **kwargs)
-    _credentials = slack_pb2.SlackSpec()
-    proto_utils.json_to_proto(credentials, _credentials)
+    credentials_pb = slack_pb2.SlackSpec()
+    proto_utils.json_to_proto(credentials, credentials_pb)
 
     self._slack_channel_id = credentials.slack_channel_id
     self._slack_token = credentials.slack_token

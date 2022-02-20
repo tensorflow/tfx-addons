@@ -9,8 +9,8 @@ from setuptools import find_namespace_packages, setup
 def _get_version():
   version_file = os.path.join(os.path.dirname(__file__),
                               "tfx_addons/__init__.py")
-  with open(version_file, "r") as fp:
-    version_file_text = fp.read()
+  with open(version_file, "rb") as fp:
+    version_file_text = fp.read().decode("UTF-8")
 
   version_match = re.search(
       r"^__version__ = ['\"]([^'\"]*)['\"]",
@@ -39,7 +39,7 @@ PKG_REQUIRES = {
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
-    "message_exit_handler": ["tfx[kfp]>=1.4.0<2.0.0", "slackclient==2.9.3"],
+    "message_exit_handler": ["tfx[kfp]>=1.6.0<2.0.0", "slackclient==2.9.3"],
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
