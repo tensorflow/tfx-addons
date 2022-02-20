@@ -21,7 +21,7 @@ Currently supported:
 """
 
 import enum
-from typing import Dict, Text
+from typing import Callable, Dict, Text, Optional
 
 from absl import logging
 from slack import WebClient
@@ -78,7 +78,7 @@ class LoggingMessageProvider(MessageProvider):
   def __init__(
       self,
       status: Dict,
-      log_level: int = logging.INFO,
+      log_level: Optional[int] = logging.INFO,
   ) -> None:
     super().__init__(status=status)
     self._log_level = log_level
@@ -89,14 +89,19 @@ class LoggingMessageProvider(MessageProvider):
 
 class SlackMessageProvider(MessageProvider):
   """Slack message provider."""
-  def __init__(self, credentials: slack_pb2.SlackSpec, *args,
-               **kwargs) -> None:
-    super(SlackMessageProvider).__init__(*args, **kwargs)
+  def __init__(self, status: Dict, credentials: slack_pb2.SlackSpec,
+               decrypt_fn: Optional[Callable] = None) -> None:
+    super().__init__(status=status)
     credentials_pb = slack_pb2.SlackSpec()
     proto_utils.json_to_proto(credentials, credentials_pb)
 
-    self._slack_channel_id = credentials.slack_channel_id
-    self._slack_token = credentials.slack_token
+    if decrypt_fn:
+      self._slack_channel_id = decrypt_fn(credentials_pb.slack_channel_id)
+      self._slack_token = decrypt_fn(credentials_pb.slack_token)
+    else:
+      self._slack_channel_id = credentials_pb.slack_channel_id
+      self._slack_token = credentials_pb.slack_token
+
     self._client = WebClient(token=self._slack_token)
 
   def send_message(self) -> None:
