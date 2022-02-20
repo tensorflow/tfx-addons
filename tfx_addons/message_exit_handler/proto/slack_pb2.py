@@ -33,7 +33,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
     serialized_pb=
-    b'\n\x0bslack.proto\x12\x1dtfx_addons.slack_exit_handler":\n\tSlackSpec\x12\x13\n\x0bslack_token\x18\x01 \x01(\t\x12\x18\n\x10slack_channel_id\x18\x02 \x01(\tb\x06proto3',
+    b'\n\x0bslack.proto\x12\x1dtfx_addons.slack_exit_handler":\n\tSlackSpec\x12\x13\n\x0bslack_token\x18\x01 \x01(\t\x12\x18\n\x10slack_channel_id\x18\x02 \x01(\tb\x06proto3',  # pylint: disable=line-too-long
 )
 
 _SLACKSPEC = _descriptor.Descriptor(
@@ -42,7 +42,7 @@ _SLACKSPEC = _descriptor.Descriptor(
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
-    create_key=_descriptor._internal_create_key,
+    create_key=_descriptor._internal_create_key,  # pylint: disable=protected-access
     fields=[
         _descriptor.FieldDescriptor(
             name="slack_token",
@@ -61,7 +61,7 @@ _SLACKSPEC = _descriptor.Descriptor(
             extension_scope=None,
             serialized_options=None,
             file=DESCRIPTOR,
-            create_key=_descriptor._internal_create_key,
+            create_key=_descriptor._internal_create_key,  # pylint: disable=protected-access
         ),
         _descriptor.FieldDescriptor(
             name="slack_channel_id",
