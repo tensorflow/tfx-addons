@@ -25,10 +25,7 @@ from tfx.utils import proto_utils
 
 from tfx_addons.message_exit_handler import constants
 from tfx_addons.message_exit_handler.message_providers import (
-    LoggingMessageProvider,
-    MessagingType,
-    SlackMessageProvider,
-)
+    LoggingMessageProvider, MessagingType, SlackMessageProvider)
 
 
 @exit_handler
