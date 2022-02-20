@@ -1,4 +1,4 @@
-# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ Currently supported:
 """
 
 import enum
-from typing import Callable, Dict, Text, Optional
+from typing import Callable, Dict, Optional, Text
 
 from absl import logging
 from slack import WebClient
@@ -59,8 +59,7 @@ class MessageProvider:
     if status["state"] == constants.SUCCESS_STATUS:
       message = (
           ":tada: "
-          f"Pipeline job *{job_id}* ({project}) completed successfully.\n"
-      )
+          f"Pipeline job *{job_id}* ({project}) completed successfully.\n")
     else:
       message = f":scream: Pipeline job *{job_id}* ({project}) failed."
       message += f"\n>{status['error']['message']}"
@@ -89,7 +88,9 @@ class LoggingMessageProvider(MessageProvider):
 
 class SlackMessageProvider(MessageProvider):
   """Slack message provider."""
-  def __init__(self, status: Dict, credentials: slack_pb2.SlackSpec,
+  def __init__(self,
+               status: Dict,
+               credentials: slack_pb2.SlackSpec,
                decrypt_fn: Optional[Callable] = None) -> None:
     super().__init__(status=status)
     credentials_pb = slack_pb2.SlackSpec()

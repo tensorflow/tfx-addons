@@ -1,4 +1,4 @@
-# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """ Message Exit Handler component """
 
 import json
@@ -34,10 +33,10 @@ from tfx_addons.message_exit_handler.message_providers import (
 
 @exit_handler
 def SlackExitHandlerComponent(
-  final_status: tfx.dsl.components.Parameter[str],
-  on_failure_only: tfx.dsl.components.Parameter[bool] = False,
-  message_type: Optional[str] = MessagingType.LOGGING.value,
-  slack_credentials: Optional[str] = None,
+    final_status: tfx.dsl.components.Parameter[str],
+    on_failure_only: tfx.dsl.components.Parameter[bool] = False,
+    message_type: Optional[str] = MessagingType.LOGGING.value,
+    slack_credentials: Optional[str] = None,
 ):
   """
     Exit handler component for TFX pipelines originally developed by
