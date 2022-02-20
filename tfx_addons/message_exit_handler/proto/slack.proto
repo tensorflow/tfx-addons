@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package tfx_addons.slack_exit_handler;
+
+message SlackSpec {
+  // Sets the slack credentials.
+
+  // Slack token: secret to authenticate with slack.
+  string slack_token = 1;
+
+  // Slack channel: channel/user_id to post to.
+  string slack_channel_id = 2;
+
+}

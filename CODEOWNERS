@@ -41,5 +41,5 @@
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
 
-# Slack Exit Handler
-/tfx_addons/slack_exit_handler @hanneshapke
+# Message Exit Handler
+/tfx_addons/message_exit_handler @hanneshapke

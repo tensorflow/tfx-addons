@@ -7,19 +7,20 @@ from setuptools import find_namespace_packages, setup
 
 
 def _get_version():
-    version_file = os.path.join(os.path.dirname(__file__), "tfx_addons/__init__.py")
-    with open(version_file, "r") as fp:
-        version_file_text = fp.read()
+  version_file = os.path.join(os.path.dirname(__file__),
+                              "tfx_addons/__init__.py")
+  with open(version_file, "r") as fp:
+    version_file_text = fp.read()
 
-    version_match = re.search(
-        r"^__version__ = ['\"]([^'\"]*)['\"]",
-        version_file_text,
-        re.M,
-    )
-    if version_match:
-        return version_match.group(1)
-    else:
-        raise RuntimeError("Unable to find version string.")
+  version_match = re.search(
+      r"^__version__ = ['\"]([^'\"]*)['\"]",
+      version_file_text,
+      re.M,
+  )
+  if version_match:
+    return version_match.group(1)
+  else:
+    raise RuntimeError("Unable to find version string.")
 
 
 NAME = "tfx-addons"
@@ -38,12 +39,11 @@ PKG_REQUIRES = {
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
-    "slack_exit_handler": ["tfx[kfp]>=1.4.0<2.0.0", "slackclient==2.9.3"],
+    "message_exit_handler": ["tfx[kfp]>=1.4.0<2.0.0", "slackclient==2.9.3"],
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
-    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values())))
-)
+    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
 setup(
@@ -59,13 +59,10 @@ setup(
     },
     extras_require=EXTRAS_REQUIRE,
     tests_require=TESTS_REQUIRE,
-    packages=find_namespace_packages(
-        include=[
-            # Add here new library package
-            "tfx_addons",
-        ]
-        + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]
-    ),
+    packages=find_namespace_packages(include=[
+        # Add here new library package
+        "tfx_addons",
+    ] + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
