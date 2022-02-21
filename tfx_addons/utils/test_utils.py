@@ -24,35 +24,4 @@ def get_tfx_version(version: str) -> List[int]:
   """
   Returns the TFX version as integers.
   """
-  return [int(x) for x in version.split('.')]
-
-
-def disable_test(f: Callable,
-                 min_version="1.6.0",
-                 max_version="2.0.0") -> Callable:
-
-  """ Decorator to disable tests based on TFX version. """
-
-  current_major, current_minor, current_patch = \
-    get_tfx_version(tfx.__version__)
-  min_major,min_minor,min_patch = get_tfx_version(min_version)
-  max_major, max_minor, max_patch = get_tfx_version(max_version)
-
-  min_condition = (
-    current_major >= min_major and
-    current_minor >= min_minor and
-    current_patch >= min_patch)
-
-  if min_condition:
-    if current_major < max_major:
-      return f
-    if current_major == max_major and current_minor < max_minor:
-      return f
-    if (current_major == max_major and
-        current_minor == max_minor and
-        current_patch < max_patch):
-      return f
-
-  def _decorator():
-    logging.warn(f"{f.__name__} has been disabled due to incompatible TFX version.")
-  return _decorator
+  return tuple([int(x) for x in version.split('.')])

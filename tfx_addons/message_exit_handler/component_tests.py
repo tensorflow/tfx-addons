@@ -15,8 +15,12 @@
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
+import unittest
+
 import mock
 import tensorflow as tf
+from tfx import v1 as tfx
+from tfx_addons.utils.test_utils import get_tfx_version
 
 mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
            lambda x: x).start()
@@ -48,7 +52,12 @@ class ComponentTest(tf.test.TestCase):
       status.update({"error": {"message": error}})
     return json.dumps(status)
 
+  @unittest.skipIf(
+    get_tfx_version(tfx.__version__) < (1, 6, 0),
+    "not supported version")
   def test_component_fn(self):
+
+    assert 1 == 2
 
     final_status = self.get_final_status()
 
@@ -62,6 +71,9 @@ class ComponentTest(tf.test.TestCase):
           logs.output[0],
       )
 
+  @unittest.skipIf(
+    get_tfx_version(tfx.__version__) < (1, 6, 0),
+    "not supported version")
   @mock.patch('tfx_addons.message_exit_handler.message_providers.WebClient')
   def test_component_slack(self, mock_web_client):
 
@@ -80,6 +92,9 @@ class ComponentTest(tf.test.TestCase):
       mock_web_client.assert_called_with(token='token')
 
 
+  @unittest.skipIf(
+    get_tfx_version(tfx.__version__) < (1, 6, 0),
+    "not supported version")
   @mock.patch('tfx_addons.message_exit_handler.message_providers.WebClient')
   def test_component_slack_decrypt(self, mock_web_client):
 

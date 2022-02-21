@@ -33,23 +33,8 @@ class TestUtilTest(unittest.TestCase):
     TFX_VERSION = "1.4.0"
     self.assertEqual(
       test_utils.get_tfx_version(TFX_VERSION),
-      [1, 4, 0])
+      (1, 4, 0))
 
-  def test_disable_test_within_range(self):
-    fn = test_utils.disable_test(
-        test_fn, min_version="1.0.0", max_version="2.0.0")
-    self.assertEqual(fn(), MESSAGE_FN_CALLED)
-    self.assertEqual(fn.__name__, "test_fn")
-
-  def test_disable_test_outside_range(self):
-    with self.assertLogs(level="INFO") as logs:
-      fn = test_utils.disable_test(
-        test_fn, min_version="0.22.0", max_version="1.1.9")
-      fn()
-      self.assertEqual(len(logs.output), 1)
-      self.assertEqual(
-          EXPECTED_WARNING_MESSAGE, logs.output[0])
-      self.assertEqual(fn.__name__, "_decorator")
 
 if __name__ == "__main__":
   unittest.main()
