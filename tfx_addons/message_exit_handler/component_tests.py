@@ -57,8 +57,6 @@ class ComponentTest(tf.test.TestCase):
     "not supported version")
   def test_component_fn(self):
 
-    assert 1 == 2
-
     final_status = self.get_final_status()
 
     with self.assertLogs(level="INFO") as logs:
