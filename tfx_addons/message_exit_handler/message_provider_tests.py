@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for Message Provider functions."""
 
-import json
 
 import tensorflow as tf
 from mock import patch
