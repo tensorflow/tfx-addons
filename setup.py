@@ -39,7 +39,7 @@ PKG_REQUIRES = {
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
-    "message_exit_handler": ["tfx[kfp]>=1.6.0<2.0.0", "slackclient==2.9.3"],
+    "message_exit_handler": ["kfp~=1.8.6", "slackclient~=2.9.3"],
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
