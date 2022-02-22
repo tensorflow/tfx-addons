@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tfx_addons.slack_exit_handler;
+package tfx_addons.message_exit_handler;
 
 message SlackSpec {
   // Sets the slack credentials.

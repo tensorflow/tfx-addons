@@ -25,18 +25,22 @@ from tfx.utils import proto_utils
 
 from tfx_addons.message_exit_handler import constants
 from tfx_addons.message_exit_handler.message_providers import (
-    LoggingMessageProvider, MessagingType, SlackMessageProvider)
+    LoggingMessageProvider,
+    MessagingType,
+    SlackMessageProvider,
+)
+from tfx_addons.message_exit_handler.proto import slack_pb2
 
 
 @exit_handler
 def MessageExitHandler(
     final_status: tfx.dsl.components.Parameter[str],
     on_failure_only: tfx.dsl.components.Parameter[bool] = False,
-    message_type: Optional[str] = MessagingType.LOGGING.value,
-    slack_credentials: Optional[str] = None,
-    decrypt_fn: Optional[str] = None,
+    message_type: tfx.dsl.components.Parameter[str] = MessagingType.LOGGING.value,
+    slack_credentials: tfx.dsl.components.Parameter[str] = None,
+    decrypt_fn: tfx.dsl.components.Parameter[str] = None,
 ):
-  """
+    """
     Exit handler component for TFX pipelines originally developed by
     Digits Financial, Inc.
     The handler notifies the user of the final pipeline status via Slack.
@@ -45,35 +49,39 @@ def MessageExitHandler(
         final_status: The final status of the pipeline.
         slack_credentials: (Optional) The credentials to use for the
                            Slack API calls.
-        on_failure_only: Whether to notify only on failure.
-        message_type: The type of message to send.
+        on_failure_only: (Optional) Whether to notify only on failure. False is the default.
+        message_type: (Optional) The type of message to send. Logging is the default.
         decrypt_fn: (Optional) The function to use to decrypt the credentials,
         'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn'
 
     """
 
-  # parse the final status
-  pipeline_task_status = pipeline_spec_pb2.PipelineTaskFinalStatus()
-  proto_utils.json_to_proto(final_status, pipeline_task_status)
-  logging.debug(f"MessageExitHandler: {final_status}")
-  status = json.loads(final_status)
+    # parse the final status
+    pipeline_task_status = pipeline_spec_pb2.PipelineTaskFinalStatus()
+    proto_utils.json_to_proto(final_status, pipeline_task_status)
+    logging.debug(f"MessageExitHandler: {final_status}")
+    status = json.loads(final_status)
 
-  # leave the exit handler if pipeline succeeded and on_failure_only is True
-  if on_failure_only and status["state"] == constants.SUCCESS_STATUS:
-    logging.info("MessageExitHandler: Skipping notification on success.")
-    return
+    # leave the exit handler if pipeline succeeded and on_failure_only is True
+    if on_failure_only and status["state"] == constants.SUCCESS_STATUS:
+        logging.info("MessageExitHandler: Skipping notification on success.")
+        return
 
-  # create the message provider
-  if message_type == MessagingType.SLACK.value:
-    provider = SlackMessageProvider(status=status,
-                                    credentials=slack_credentials,
-                                    decrypt_fn=decrypt_fn)
-  elif message_type == MessagingType.LOGGING.value:
-    provider = LoggingMessageProvider(status=status)
-  else:
-    raise ValueError(
-        f"MessageExitHandler: Unknown message type: {message_type}")
+    # create the message provider
+    if message_type == MessagingType.SLACK.value:
+        # parse slack credentials
+        if not slack_credentials:
+            raise ValueError("Slack credentials not provided.")
+        slack_credentials_pb = slack_pb2.SlackSpec()
+        proto_utils.json_to_proto(slack_credentials, slack_credentials_pb)
+        provider = SlackMessageProvider(
+            status=status, credentials=slack_credentials_pb, decrypt_fn=decrypt_fn
+        )
+    elif message_type == MessagingType.LOGGING.value:
+        provider = LoggingMessageProvider(status=status)
+    else:
+        raise ValueError(f"MessageExitHandler: Unknown message type: {message_type}")
 
-  provider.send_message()
-  message = provider.get_message()
-  logging.info(f"MessageExitHandler: {message}")
+    provider.send_message()
+    message = provider.get_message()
+    logging.info(f"MessageExitHandler: {message}")
