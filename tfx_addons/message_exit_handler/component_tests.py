@@ -15,9 +15,9 @@
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
-import pytest
 
 import mock
+import pytest
 import tensorflow as tf
 from tfx import v1 as tfx
 
@@ -55,7 +55,7 @@ class ComponentTest(tf.test.TestCase):
       status.update({"error": {"message": error}})
     return json.dumps(status)
 
-  @pytest.mark.skipif((
+  @pytest.mark.skipif(
       get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
   def test_component_fn(self):
 
@@ -71,7 +71,7 @@ class ComponentTest(tf.test.TestCase):
           logs.output[0],
       )
 
-  @pytest.mark.skipif((
+  @pytest.mark.skipif(
       get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack(self, mock_web_client):
@@ -91,7 +91,7 @@ class ComponentTest(tf.test.TestCase):
       mock_web_client.assert_called_once()
       mock_web_client.assert_called_with(token="token")
 
-  @pytest.mark.skipif((
+  @pytest.mark.skipif(
       get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack_decrypt(self, mock_web_client):
