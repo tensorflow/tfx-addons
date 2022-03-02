@@ -14,14 +14,11 @@
 # ==============================================================================
 """ Util functions to assist with the TFX Addons tests """
 
-from typing import Callable, List
-
-from absl import logging
-from tfx import v1 as tfx
+from typing import List
 
 
 def get_tfx_version(version: str) -> List[int]:
   """
-  Returns the TFX version as integers.
-  """
-  return tuple([int(x) for x in version.split('.')])
+    Returns the TFX version as integers.
+    """
+  return tuple([int(x) for x in version.split(".")])  # pylint: disable=R1728

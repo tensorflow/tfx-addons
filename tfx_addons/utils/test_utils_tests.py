@@ -18,22 +18,19 @@ import unittest
 
 from tfx_addons.utils import test_utils
 
-
 MESSAGE_FN_CALLED = "test_fn called"
 EXPECTED_WARNING_MESSAGE = (
     "WARNING:absl:test_fn has been disabled due to incompatible TFX version.")
+
 
 def test_fn():
   return MESSAGE_FN_CALLED
 
 
 class TestUtilTest(unittest.TestCase):
-
   def test_get_tfx_version(self):
-    TFX_VERSION = "1.4.0"
-    self.assertEqual(
-      test_utils.get_tfx_version(TFX_VERSION),
-      (1, 4, 0))
+    tfx_version = "1.4.0"
+    self.assertEqual(test_utils.get_tfx_version(tfx_version), (1, 4, 0))
 
 
 if __name__ == "__main__":
