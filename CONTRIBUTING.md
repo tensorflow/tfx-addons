@@ -31,6 +31,14 @@ SIG team members will be assigned to review your pull requests. Once the pull re
 - Reviewers can request an automatic merge using `/merge` command. Auto-merge will be performed after all tests have passed and enough approvals are recollected for the PR.
 - Changes to `.github/workflows` will need to be merged manually by a reviewer with write permissions.
 
+### Code Ownership
+
+* Code ownership is tracked through the `CODEOWNERS` file. Users can be added if one of the following situations apply:
+  * When a project proposal is approved, the initial contributors become automatically code owner of the project folder.
+  * Developers who contribute or maintain a TFX Addons component, example, etc. can gain coder owner access to the project folders
+    if the initial contributors agree.
+  * In case, the initial contributors have abandoned the project or can't be reached, the TFX Addons core team can decide about the ownership reassignment.
+  * Requesting project code ownership requires a substantial contribution (e.g. update of a component to a newer TFX version).
 ### Development tips
 
 We use [pre-commit](https://pre-commit.com/) to validate our code before we push to the repository. We use push over commit to allow more flexibility.
@@ -61,14 +69,6 @@ make sure your changes are consistent with the guidelines and follow our coding 
 * When you contribute a new feature to TensorFlow, the maintenance burden is (by
   default) transferred to the SIG team. This means that benefit of the
   contribution must be compared against the cost of maintaining the feature.
-
-#### Code Ownership
-
-* When a project proposal is approved, the initial contributors become automatically code owner of the project folder.
-* Developers who contribute or maintain a TFX Addons component, example, etc. can gain coder owner access to the project folders
-  if the initial contributors agree.
-* In case, the initial contributors have abandoned the project or can't be reached, the TFX Addons core team can decide about the ownership reassignment.
-* Requesting project code ownership requires a substantial contribution (e.g. update of a component to a newer TFX version).
 
 #### Python coding style
 
