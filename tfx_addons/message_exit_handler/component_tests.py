@@ -15,20 +15,18 @@
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
-import pytest
 
 import mock
+import pytest
 import tensorflow as tf
 from tfx import v1 as tfx
 from tfx_addons.utils.test_utils import get_tfx_version
 
-mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler", lambda x: x).start()
+mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+           lambda x: x).start()
 
 from tfx_addons.message_exit_handler import (  # pylint: disable=C0413
-    component,
-    constants,
-    message_providers,
-)
+    component, constants, message_providers)
 from tfx_addons.message_exit_handler.proto import slack_pb2  # pylint: disable=C0413
 
 
