@@ -15,104 +15,105 @@
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
+import pytest
 
 import mock
-import pytest
 import tensorflow as tf
 from tfx import v1 as tfx
-
 from tfx_addons.utils.test_utils import get_tfx_version
 
-mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
-           lambda x: x).start()
+mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler", lambda x: x).start()
 
 from tfx_addons.message_exit_handler import (  # pylint: disable=C0413
-    component, constants, message_providers)
-from tfx_addons.message_exit_handler.proto import \
-    slack_pb2  # pylint: disable=C0413
+    component,
+    constants,
+    message_providers,
+)
+from tfx_addons.message_exit_handler.proto import slack_pb2  # pylint: disable=C0413
 
 
 def fake_decryption_fn(encrypted_message):
-  return encrypted_message.upper()
+    return encrypted_message.upper()
 
 
 class ComponentTest(tf.test.TestCase):
-  @staticmethod
-  def get_final_status(state: str = constants.SUCCESS_STATUS,
-                       error: str = "") -> str:
-    """Assemble final status for tests"""
-    # final status proto
-    status = {
-        "state":
-        state,
-        "error":
-        error,
-        "pipelineJobResourceName":
-        ("projects/test-project/locations/us-central1/"
-         "pipelineJobs/test-pipeline-job"),
-    }
-    if error:
-      status.update({"error": {"message": error}})
-    return json.dumps(status)
+    @staticmethod
+    def get_final_status(state: str = constants.SUCCESS_STATUS, error: str = "") -> str:
+        """Assemble final status for tests"""
+        # final status proto
+        status = {
+            "state": state,
+            "error": error,
+            "pipelineJobResourceName": (
+                "projects/test-project/locations/us-central1/"
+                "pipelineJobs/test-pipeline-job"
+            ),
+        }
+        if error:
+            status.update({"error": {"message": error}})
+        return json.dumps(status)
 
-  @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
-  def test_component_fn(self):
+    @pytest.mark.skipif(
+        get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version"
+    )
+    def test_component_fn(self):
 
-    final_status = self.get_final_status()
+        final_status = self.get_final_status()
 
-    with self.assertLogs(level="INFO") as logs:
-      component.MessageExitHandler(final_status=final_status,
-                                   on_failure_only=True)
+        with self.assertLogs(level="INFO") as logs:
+            component.MessageExitHandler(
+                final_status=final_status, on_failure_only=True
+            )
 
-      self.assertLen(logs.output, 1)
-      self.assertEqual(
-          "INFO:absl:MessageExitHandler: Skipping notification on success.",
-          logs.output[0],
-      )
+            self.assertLen(logs.output, 1)
+            self.assertEqual(
+                "INFO:absl:MessageExitHandler: Skipping notification on success.",
+                logs.output[0],
+            )
 
-  @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
-  @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
-  def test_component_slack(self, mock_web_client):
+    @pytest.mark.skipif(
+        get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version"
+    )
+    @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
+    def test_component_slack(self, mock_web_client):
 
-    final_status = self.get_final_status()
+        final_status = self.get_final_status()
 
-    with self.assertLogs(level="INFO"):
-      component.MessageExitHandler(
-          final_status=final_status,
-          message_type=message_providers.MessagingType.SLACK.value,
-          slack_credentials=slack_pb2.SlackSpec(
-              slack_token="token",
-              slack_channel_id="channel",
-          ),
-      )
+        with self.assertLogs(level="INFO"):
+            component.MessageExitHandler(
+                final_status=final_status,
+                message_type=message_providers.MessagingType.SLACK.value,
+                slack_credentials=slack_pb2.SlackSpec(
+                    slack_token="token",
+                    slack_channel_id="channel",
+                ),
+            )
 
-      mock_web_client.assert_called_once()
-      mock_web_client.assert_called_with(token="token")
+            mock_web_client.assert_called_once()
+            mock_web_client.assert_called_with(token="token")
 
-  @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
-  @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
-  def test_component_slack_decrypt(self, mock_web_client):
+    @pytest.mark.skipif(
+        get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version"
+    )
+    @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
+    def test_component_slack_decrypt(self, mock_web_client):
 
-    final_status = self.get_final_status()
+        final_status = self.get_final_status()
 
-    with self.assertLogs(level="INFO"):
-      component.MessageExitHandler(
-          final_status=final_status,
-          message_type=message_providers.MessagingType.SLACK.value,
-          slack_credentials=slack_pb2.SlackSpec(
-              slack_token="token",
-              slack_channel_id="channel",
-          ),
-          decrypt_fn=
-          "tfx_addons.message_exit_handler.component_tests.fake_decryption_fn",
-      )
+        with self.assertLogs(level="INFO"):
+            component.MessageExitHandler(
+                final_status=final_status,
+                message_type=message_providers.MessagingType.SLACK.value,
+                slack_credentials=slack_pb2.SlackSpec(
+                    slack_token="token",
+                    slack_channel_id="channel",
+                ),
+                decrypt_fn="tfx_addons.message_exit_handler.component_tests.fake_decryption_fn",
+            )
 
-      mock_web_client.assert_called_once()
-      mock_web_client.assert_called_with(token="TOKEN")
+            mock_web_client.assert_called_once()
+            mock_web_client.assert_called_with(token="TOKEN")
 
 
 if __name__ == "__main__":
-  tf.test.main()
+    tf.test.main()
