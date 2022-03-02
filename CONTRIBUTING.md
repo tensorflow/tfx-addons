@@ -1,6 +1,6 @@
 # Contributing guidelines
 
-Interested in contributing to TFX Addons? We appreciate all kinds of help and are working to make this guide as comprehensive as possible. 
+Interested in contributing to TFX Addons? We appreciate all kinds of help and are working to make this guide as comprehensive as possible.
 Please let us know if you think of something we could do to help lower the barrier to contributing.
 
 ## How to become a contributor and submit your own code
@@ -61,6 +61,14 @@ make sure your changes are consistent with the guidelines and follow our coding 
 * When you contribute a new feature to TensorFlow, the maintenance burden is (by
   default) transferred to the SIG team. This means that benefit of the
   contribution must be compared against the cost of maintaining the feature.
+
+#### Code Ownership
+
+* When a project proposal is approved, the initial contributors become automatically code owner of the project folder.
+* Developers who contribute or maintain a TFX Addons component, example, etc. can gain coder owner access to the project folders
+  if the initial contributors agree.
+* In case, the initial contributors have abandoned the project or can't be reached, the TFX Addons core team can decide about the ownership reassignment.
+* Requesting project code ownership requires a substantial contribution (e.g. update of a component to a newer TFX version).
 
 #### Python coding style
 
