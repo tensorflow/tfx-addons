@@ -1,4 +1,4 @@
 scikit-learn==0.23.2
 tensorflow==2.5.3
-tfx[kfp]~=1.6.1
 tensorflow-model-analysis==0.38.0
+tfx[kfp]~=1.6.1
