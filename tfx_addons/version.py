@@ -1,3 +1,5 @@
+# TODO: This license is not consistent with license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 # Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +18,7 @@
 
 # Required TFX version [min, max), keep depconstraint in ci.yml in sync
 INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
-EXCLUSIVE_MAX_TFX_VERSION = "1.7.0"
+EXCLUSIVE_MAX_TFX_VERSION = "1.8.0"
 
 # We follow Semantic Versioning (https://semver.org/)
 _MAJOR_VERSION = "0"

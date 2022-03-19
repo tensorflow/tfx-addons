@@ -30,7 +30,7 @@ jobs:
       matrix:
         depconstraint: [
           "tfx==1.4.0 tensorflow>=2.0.0",
-          "tfx==1.7.0 tensorflow>=2.0.0",
+          "tfx<1.8.0 tensorflow>=2.0.0",
         ]
         extras: ["all, test"]
     steps:
