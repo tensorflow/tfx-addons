@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,4 +33,4 @@ _VERSION_SUFFIX = "dev"
 # Example, '0.1.0-dev'
 __version__ = ".".join([_MAJOR_VERSION, _MINOR_VERSION, _PATCH_VERSION])
 if _VERSION_SUFFIX:
-    __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)
+  __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)

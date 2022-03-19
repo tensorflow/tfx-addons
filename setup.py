@@ -8,25 +8,25 @@ from setuptools import find_namespace_packages, setup
 
 
 def get_last_commit_time() -> str:
-    string_time = os.getenv("NIGHTLY_TIME").replace('"', "")
-    return datetime.strptime(string_time, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M%S")
+  string_time = os.getenv("NIGHTLY_TIME").replace('"', "")
+  return datetime.strptime(string_time,
+                           "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M%S")
 
 
 def get_project_name_version():
-    # Version
-    version = {}
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
-        exec(fp.read(), version)
+  # Version
+  version = {}
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
+    exec(fp.read(), version)
 
-    project_name = "tfx-addons"
-    return project_name, version
+  project_name = "tfx-addons"
+  return project_name, version
 
 
 project_name, version = get_project_name_version()
 inclusive_min_tfx_version = version["INCLUSIVE_MIN_TFX_VERSION"]
 exclusive_max_tfx_version = version["EXCLUSIVE_MAX_TFX_VERSION"]
-
 
 NAME = "tfx-addons"
 
@@ -36,18 +36,19 @@ PKG_REQUIRES = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
     "schema_curation": [
-        "tfx>={},<{}".format(inclusive_min_tfx_version, exclusive_max_tfx_version),
+        "tfx>={},<{}".format(inclusive_min_tfx_version,
+                             exclusive_max_tfx_version),
     ],
     "xgboost_evaluator": [
-        "tfx>={},<{}".format(inclusive_min_tfx_version, exclusive_max_tfx_version),
+        "tfx>={},<{}".format(inclusive_min_tfx_version,
+                             exclusive_max_tfx_version),
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
-    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values())))
-)
+    set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
 setup(
@@ -63,13 +64,10 @@ setup(
     },
     extras_require=EXTRAS_REQUIRE,
     tests_require=TESTS_REQUIRE,
-    packages=find_namespace_packages(
-        include=[
-            # Add here new library package
-            "tfx_addons",
-        ]
-        + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]
-    ),
+    packages=find_namespace_packages(include=[
+        # Add here new library package
+        "tfx_addons",
+    ] + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
