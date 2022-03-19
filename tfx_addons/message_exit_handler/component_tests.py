@@ -26,9 +26,10 @@ from tfx_addons.utils.test_utils import get_tfx_version
 mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
            lambda x: x).start()
 
-from tfx_addons.message_exit_handler import (component, constants,
-                                             message_providers)
-from tfx_addons.message_exit_handler.proto import slack_pb2  # pylint: disable=C0413
+from tfx_addons.message_exit_handler import (  # pylint: disable=wrong-import-position
+    component, constants, message_providers)
+from tfx_addons.message_exit_handler.proto import \
+    slack_pb2  # pylint: disable=wrong-import-position
 
 
 def fake_decryption_fn(encrypted_message):
@@ -36,7 +37,6 @@ def fake_decryption_fn(encrypted_message):
 
 
 class ComponentTest(tf.test.TestCase):
-
   @staticmethod
   def get_final_status(state: str = constants.SUCCESS_STATUS,
                        error: str = "") -> str:
