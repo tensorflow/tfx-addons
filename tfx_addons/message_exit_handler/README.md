@@ -80,8 +80,8 @@ exit_handler = MessageExitHandler(
   final_status=tfx.orchestration.experimental.FinalStatusStr(),
   message_type="slack",
   slack_credentials=slack_pb2.SlackSpec(
-    slack_token="YOUR_SLACK_TOKEN",
-    slack_channel_id="YOUR_SLACK_CHANNEL_ID"),
+    slack_token="YOUR_ENCRYPTED_SLACK_TOKEN",
+    slack_channel_id="YOUR_ENCRYPTED_SLACK_CHANNEL_ID"),
   decrypt_fn='path.to.your.decrypt.function'
 )
 ```
@@ -109,4 +109,8 @@ The component will also require Google Cloud's Vertex pipelines as its orchestra
 
 ## Project Team
 
-- Hannes Max Hapke (@hanneshapke), Digits Financial, Inc., hannes -at- digits.com
+The component was initiated, designed and implemented by [Digits'](https://www.digits.com) machine learning team. For questions regarding this component or
+contribution submission, please reach out to:
+* Hannes Max Hapke (@hanneshapke), Digits Financial, Inc., hannes -at- digits.com
+
+If you would like to join Digits' ML team, please reach out. More information are available on [Digits' Job Page](https://digits.com/jobs/).
