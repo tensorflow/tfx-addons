@@ -29,8 +29,8 @@ jobs:
       # keep constraints in sync with version.py
       matrix:
         depconstraint: [
-          "tfx==1.4.0 tensorflow>=2.0.0",
-          "tfx<1.8.0 tensorflow>=2.0.0",
+          "tfx~=1.4.0 tensorflow>=2.6.0",
+          "tfx~=1.7.0 tensorflow>=2.7.1",
         ]
         extras: ["all, test"]
     steps:
