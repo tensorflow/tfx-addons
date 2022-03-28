@@ -1,4 +1,4 @@
-# Project Proposal for Message Exit Handler for TFX Pipelines
+# Message Exit Handler for TFX Pipelines
 
 [![Python](https://img.shields.io/pypi/pyversions/tfx.svg?style=plastic)](https://github.com/tensorflow/tfx)
 [![TensorFlow](https://img.shields.io/badge/TFX-orange)](https://www.tensorflow.org/tfx)
