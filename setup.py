@@ -2,9 +2,10 @@
 import datetime
 import itertools
 import os
-import sys
 
 from setuptools import find_namespace_packages, setup
+
+PROJECT_NAME = "tfx-addons"
 
 
 def get_last_commit_time() -> str:
@@ -15,13 +16,12 @@ def get_last_commit_time() -> str:
 
 def get_project_name_version():
   # Version
-  version = {}
+  extracted_version = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
-    exec(fp.read(), version)
+    extracted_version = fp.read()
 
-  project_name = "tfx-addons"
-  return project_name, version
+  return PROJECT_NAME, extracted_version
 
 
 project_name, version = get_project_name_version()
