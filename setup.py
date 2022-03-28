@@ -19,7 +19,7 @@ def get_project_name_version():
   extracted_version = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
-    extracted_version = fp.read()
+    exec(fp.read(), extracted_version)  # pylint: disable=exec-used
 
   return PROJECT_NAME, extracted_version
 
