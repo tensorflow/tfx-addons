@@ -39,7 +39,7 @@ PKG_REQUIRES = {
         "xgboost>=1.0.0",
         # NB(gcasassaez): Numpy 1.20 deprecates np.float and other aliases,
         # we need to constraint if we want to have compatibility.
-        "numpy<1.20"
+        "numpy<1.21"
     ],
     "sampler": ["tensorflow>=2.0.0"]
 }
