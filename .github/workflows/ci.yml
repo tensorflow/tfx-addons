@@ -50,6 +50,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        python -m pip pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
+        python -m pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
     - name: Run tests
       run: pytest tfx_addons
