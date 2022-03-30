@@ -129,7 +129,7 @@ class _TFMAPredictionDoFn(DoFnWithModels):
     features = []
     labels = []
     result = copy.copy(elem)
-    for features_dict in result[tfma.FEATURES_KEY]:
+    for features_dict in result[tfma.FEATURES_KEY].values():
       features_row = [features_dict[key] for key in self._feature_keys]
       features.append(np.concatenate(features_row))
       labels.append(features_dict[self._label_key])
