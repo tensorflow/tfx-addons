@@ -27,12 +27,9 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       matrix:
-        depconstraint: [
-          "tfx~=1.0.0 tensorflow~=2.5.0",
-          # NB(gcasassaez): TF 2.8 moves numpy to >=1.20 wich doesnt work for pyarrow<3
-          # See: https://issues.apache.org/jira/browse/ARROW-11450
-          "tfx~=1.7.0 tensorflow~=2.8.0 pyarrow>=3.0.0",
-        ]
+        # NB(gcasassaez): TF 2.8 moves numpy to >=1.20 wich doesnt work for pyarrow<3
+        # See: https://issues.apache.org/jira/browse/ARROW-11450
+        depconstraint: ["tfx~=1.0.0 tensorflow~=2.5.0", "tfx~=1.7.0 tensorflow~=2.8.0 pyarrow>=3.0.0"]
         extras: ["all, test"]
     steps:
     - uses: actions/checkout@v2
