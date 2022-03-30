@@ -39,12 +39,12 @@ jobs:
       uses: actions/cache@v2
       with:
         # Cache installed dependencies
-        path: ${{ env.pythonLocation }}
+        path: ~/.cache/pip
         # Look to see if there is a cache hit for the corresponding requirement.txt + project name 
-        key: ${{ env.pythonLocation }}-pip-ciexamples-${{ matrix.project }}-${{ hashFiles(format('examples/{0}/requirements.txt', matrix.project)) }}
+        key: ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}-${{ hashFiles(format('examples/{0}/requirements.txt', matrix.project)) }}
         restore-keys: |
-          ${{ env.pythonLocation }}-pip-ciexamples-${{ matrix.project }}
-          ${{ env.pythonLocation }}-pip-ciexamples-
+          ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}
+          ${{ runner.os }}-pip-ciexamples-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel pytest
