@@ -37,9 +37,6 @@ PKG_REQUIRES = {
     "xgboost_evaluator": [
         "tfx>=1.0.0<2.0.0",
         "xgboost>=1.0.0",
-        # NB(gcasassaez): Numpy 1.20 deprecates np.float and other aliases,
-        # we need to constraint pyarrow to a compatible version
-        "pyarrow>2"
     ],
     "sampler": ["tensorflow>=2.0.0"]
 }
