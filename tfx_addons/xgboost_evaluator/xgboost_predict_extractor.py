@@ -144,7 +144,7 @@ class _TFMAPredictionDoFn(DoFnWithModels):
             features.append([])
           features[i].append(v)
       result[tfma.LABELS_KEY] = features_key[self._label_key]
-    
+
     features = xgb.DMatrix(pd.DataFrame(features, columns=self._feature_keys))
 
     # Generate predictions for each model.
