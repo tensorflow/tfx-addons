@@ -27,7 +27,7 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       matrix:
-        depconstraint: ["tfx~=1.0.0 tensorflow~=2.5.0", "tfx~=1.3.0 tensorflow~=2.6.0",]
+        depconstraint: ["tfx~=1.0.0 tensorflow~=2.5.0", "tfx~=1.6.0 tensorflow~=2.7.0",]
         extras: ["all, test"]
     steps:
     - uses: actions/checkout@v2
