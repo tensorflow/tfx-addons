@@ -1,5 +1,18 @@
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#   http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """Package Setup script for TFX Addons."""
-import datetime
 import itertools
 import os
 
@@ -8,40 +21,38 @@ from setuptools import find_namespace_packages, setup
 PROJECT_NAME = "tfx-addons"
 
 
-def get_last_commit_time() -> str:
-  string_time = os.getenv("NIGHTLY_TIME").replace('"', "")
-  return datetime.strptime(string_time,
-                           "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M%S")
-
-
-def get_project_name_version():
+def get_project_version():
   # Version
   extracted_version = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
     exec(fp.read(), extracted_version)  # pylint: disable=exec-used
 
-  return PROJECT_NAME, extracted_version
+  return extracted_version
 
 
-project_name, version = get_project_name_version()
+version = get_project_version()
 inclusive_min_tfx_version = version["INCLUSIVE_MIN_TFX_VERSION"]
 exclusive_max_tfx_version = version["EXCLUSIVE_MAX_TFX_VERSION"]
 
-NAME = "tfx-addons"
-
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
+
+required_tfx_version = "tfx>={},<{}".format(inclusive_min_tfx_version,
+                                            exclusive_max_tfx_version)
+required_ml_pipelines_sdk_version = "ml_pipelines_sdk>={},<{}".format(
+    inclusive_min_tfx_version, exclusive_max_tfx_version)
+required_ml_metadata_version = "ml_metadata>={},<{}".format(
+    inclusive_min_tfx_version, exclusive_max_tfx_version)
 
 PKG_REQUIRES = {
     # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client": ["ml-pipelines-sdk>=1.0.0<2", "ml-metadata>=1.0.0<2"],
+    "mlmd_client":
+    [required_ml_pipelines_sdk_version, required_ml_metadata_version],
     "schema_curation": [
-        "tfx>={},<{}".format(inclusive_min_tfx_version,
-                             exclusive_max_tfx_version),
+        required_tfx_version,
     ],
     "xgboost_evaluator": [
-        "tfx>={},<{}".format(inclusive_min_tfx_version,
-                             exclusive_max_tfx_version),
+        required_tfx_version,
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
@@ -52,7 +63,7 @@ EXTRAS_REQUIRE["all"] = list(
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
 setup(
-    name=NAME,
+    name=PROJECT_NAME,
     version=version["__version__"],
     description="TFX Addons libraries",
     author="The Tensorflow Authors",
