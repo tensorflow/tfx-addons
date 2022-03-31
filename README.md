@@ -63,6 +63,7 @@ SIG TFX-Addons is a community-led open source project. As such, the project depe
   - Gerard Casas Saez (Twitter)
   - Newton Le (Twitter)
   - David Xia (Spotify)
+  - Jonathan Jin (Spotify)
   - Michal Brys (OpenX)
   -  Baris Can Durak (ZenML)
   -  Hamza Tahir (ZenML)
