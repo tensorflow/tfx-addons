@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """ Constants for the Message Exit Handler """
 
 SUCCESS_STATUS = "SUCCEEDED"

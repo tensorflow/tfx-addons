@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
 
-import unitest.mock as mock
 import pytest
 import tensorflow as tf
+import unittest.mock as mock
 from tfx import v1 as tfx
-
 from tfx_addons.utils.test_utils import get_tfx_version
 
 mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",

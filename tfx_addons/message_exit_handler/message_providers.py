@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Message Providers supported by the Message Exit Handler component.
 
 Currently supported:
