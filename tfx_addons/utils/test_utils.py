@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
-
 """ Util functions to assist with the TFX Addons tests """
 
 from typing import List
