@@ -56,8 +56,8 @@ class ComponentTest(tf.test.TestCase):
   def test_component_fn(self):
 
     # import in function to pass TFX 1.4 tests
-    from tfx_addons.message_exit_handler import (  # pylint: disable=import-outside-toplevel
-        component)
+    from tfx_addons.message_exit_handler import \
+      component  # pylint: disable=import-outside-toplevel
     final_status = self.get_final_status()
 
     with self.assertLogs(level="INFO") as logs:
