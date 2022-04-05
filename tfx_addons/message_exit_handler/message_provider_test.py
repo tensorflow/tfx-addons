@@ -91,7 +91,7 @@ class MessageProviderTest(tf.test.TestCase):
         final_status,
         credentials,
         decrypt_fn=
-        'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn')
+        'tfx_addons.message_exit_handler.component_test.fake_decryption_fn')
     message_provider.send_message()
     mock_web_client.assert_called_once()
     mock_web_client.assert_called_with(token='TEST-TOKEN')

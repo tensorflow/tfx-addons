@@ -51,7 +51,7 @@ def MessageExitHandler(
         message_type: (Optional) The type of message to send.
             Logging is the default.
         decrypt_fn: (Optional) The function to use to decrypt the credentials,
-        'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn'
+        'tfx_addons.message_exit_handler.component_test.fake_decryption_fn'
 
     """
 

@@ -56,7 +56,7 @@ class ComponentTest(tf.test.TestCase):
     return json.dumps(status)
 
   @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
+      get_tfx_version(tfx.__version__) < (1, 6, 0), reason="not supported version")
   def test_component_fn(self):
 
     final_status = self.get_final_status()
@@ -72,42 +72,38 @@ class ComponentTest(tf.test.TestCase):
       )
 
   @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
+      get_tfx_version(tfx.__version__) < (1, 6, 0), reason="not supported version")
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack(self, mock_web_client):
 
     final_status = self.get_final_status()
+    creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
 
     with self.assertLogs(level="INFO"):
       component.MessageExitHandler(
           final_status=final_status,
           message_type=message_providers.MessagingType.SLACK.value,
-          slack_credentials=slack_pb2.SlackSpec(
-              slack_token="token",
-              slack_channel_id="channel",
-          ),
+          slack_credentials=creds,
       )
 
       mock_web_client.assert_called_once()
       mock_web_client.assert_called_with(token="token")
 
   @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), "not supported version")
+      get_tfx_version(tfx.__version__) < (1, 6, 0), reason="not supported version")
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack_decrypt(self, mock_web_client):
 
     final_status = self.get_final_status()
+    creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
 
     with self.assertLogs(level="INFO"):
       component.MessageExitHandler(
           final_status=final_status,
           message_type=message_providers.MessagingType.SLACK.value,
-          slack_credentials=slack_pb2.SlackSpec(
-              slack_token="token",
-              slack_channel_id="channel",
-          ),
+          slack_credentials=creds,
           decrypt_fn=
-          "tfx_addons.message_exit_handler.component_tests.fake_decryption_fn",
+          "tfx_addons.message_exit_handler.component_test.fake_decryption_fn",
       )
 
       mock_web_client.assert_called_once()
