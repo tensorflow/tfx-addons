@@ -17,6 +17,7 @@
 from unittest.mock import patch
 
 import tensorflow as tf
+
 from tfx_addons.message_exit_handler import constants, message_providers
 from tfx_addons.message_exit_handler.proto import slack_pb2
 

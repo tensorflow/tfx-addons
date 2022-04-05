@@ -15,20 +15,19 @@
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
+import unittest.mock as mock
 
 import pytest
 import tensorflow as tf
-import unittest.mock as mock
 from tfx import v1 as tfx
+
 from tfx_addons.utils.test_utils import get_tfx_version
+
+from tfx_addons.message_exit_handler import constants
 
 mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
            lambda x: x).start()
 
-from tfx_addons.message_exit_handler import (  # pylint: disable=wrong-import-position
-    component, constants, message_providers)
-from tfx_addons.message_exit_handler.proto import \
-    slack_pb2  # pylint: disable=wrong-import-position
 
 
 def fake_decryption_fn(encrypted_message):
@@ -58,6 +57,8 @@ class ComponentTest(tf.test.TestCase):
                       reason="not supported version")
   def test_component_fn(self):
 
+    # import in function to pass TFX 1.4 tests
+    from tfx_addons.message_exit_handler import component  # pylint: disable=wrong-import-position
     final_status = self.get_final_status()
 
     with self.assertLogs(level="INFO") as logs:
@@ -75,6 +76,9 @@ class ComponentTest(tf.test.TestCase):
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack(self, mock_web_client):
 
+    # import in function to pass TFX 1.4 tests
+    from tfx_addons.message_exit_handler import (  # pylint: disable=wrong-import-position
+    component, message_providers)
     final_status = self.get_final_status()
     creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
 
@@ -93,6 +97,9 @@ class ComponentTest(tf.test.TestCase):
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack_decrypt(self, mock_web_client):
 
+    # import in function to pass TFX 1.4 tests
+    from tfx_addons.message_exit_handler import (  # pylint: disable=wrong-import-position
+    component, message_providers)
     final_status = self.get_final_status()
     creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
 
