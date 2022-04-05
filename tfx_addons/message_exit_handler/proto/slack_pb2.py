@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# TODO: This license is not consistent with license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 # Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

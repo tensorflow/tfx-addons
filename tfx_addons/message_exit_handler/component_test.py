@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
 """Tests for tfx_addons.message_exit_handler.component."""
 
 import json
@@ -55,8 +56,8 @@ class ComponentTest(tf.test.TestCase):
       status.update({"error": {"message": error}})
     return json.dumps(status)
 
-  @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), reason="not supported version")
+  @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
+                      reason="not supported version")
   def test_component_fn(self):
 
     final_status = self.get_final_status()
@@ -71,8 +72,8 @@ class ComponentTest(tf.test.TestCase):
           logs.output[0],
       )
 
-  @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), reason="not supported version")
+  @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
+                      reason="not supported version")
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack(self, mock_web_client):
 
@@ -89,8 +90,8 @@ class ComponentTest(tf.test.TestCase):
       mock_web_client.assert_called_once()
       mock_web_client.assert_called_with(token="token")
 
-  @pytest.mark.skipif(
-      get_tfx_version(tfx.__version__) < (1, 6, 0), reason="not supported version")
+  @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
+                      reason="not supported version")
   @mock.patch("tfx_addons.message_exit_handler.message_providers.WebClient")
   def test_component_slack_decrypt(self, mock_web_client):
 
