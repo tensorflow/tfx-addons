@@ -20,6 +20,7 @@ import unittest.mock as mock
 import pytest
 import tensorflow as tf
 from tfx import v1 as tfx
+
 from tfx_addons.message_exit_handler import constants
 from tfx_addons.utils.test_utils import get_tfx_version
 
@@ -55,8 +56,8 @@ class ComponentTest(tf.test.TestCase):
   def test_component_fn(self):
 
     # import in function to pass TFX 1.4 tests
-    from tfx_addons.message_exit_handler import \
-        component  # pylint: disable=wrong-import-position
+    from tfx_addons.message_exit_handler import (  # pylint: disable=import-outside-toplevel
+        component)
     final_status = self.get_final_status()
 
     with self.assertLogs(level="INFO") as logs:
@@ -75,7 +76,7 @@ class ComponentTest(tf.test.TestCase):
   def test_component_slack(self, mock_web_client):
 
     # import in function to pass TFX 1.4 tests
-    from tfx_addons.message_exit_handler import (  # pylint: disable=wrong-import-position
+    from tfx_addons.message_exit_handler import (  # pylint: disable=import-outside-toplevel
         component, message_providers)
     final_status = self.get_final_status()
     creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
@@ -96,7 +97,7 @@ class ComponentTest(tf.test.TestCase):
   def test_component_slack_decrypt(self, mock_web_client):
 
     # import in function to pass TFX 1.4 tests
-    from tfx_addons.message_exit_handler import (  # pylint: disable=wrong-import-position
+    from tfx_addons.message_exit_handler import (  # pylint: disable=import-outside-toplevel
         component, message_providers)
     final_status = self.get_final_status()
     creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
