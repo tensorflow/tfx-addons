@@ -17,7 +17,7 @@
 
 import json
 
-import mock
+import unitest.mock as mock
 import pytest
 import tensorflow as tf
 from tfx import v1 as tfx
