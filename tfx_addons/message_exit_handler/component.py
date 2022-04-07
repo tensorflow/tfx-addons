@@ -23,9 +23,9 @@ from tfx.orchestration.kubeflow.v2.decorators import exit_handler
 from tfx.utils import proto_utils
 
 from tfx_addons.message_exit_handler import constants
-from tfx_addons.message_exit_handler.message_providers import (
-    LoggingMessageProvider, MessagingType, SlackMessageProvider)
-from tfx_addons.message_exit_handler.proto import slack_pb2
+from tfx_addons.message_exit_handler.message_providers.base_provider import MessagingType
+from tfx_addons.message_exit_handler.message_providers.logging_provider import LoggingMessageProvider
+from tfx_addons.message_exit_handler.message_providers.slack_provider import SlackMessageProvider
 
 
 @exit_handler
@@ -45,13 +45,13 @@ def MessageExitHandler(
     Args:
         final_status: The final status of the pipeline.
         slack_credentials: (Optional) The credentials to use for the
-                           Slack API calls.
+                           Slack API calls, json format.
         on_failure_only: (Optional) Whether to notify only on failure.
             False is the default.
         message_type: (Optional) The type of message to send.
             Logging is the default.
         decrypt_fn: (Optional) The function to use to decrypt the credentials,
-        'tfx_addons.message_exit_handler.component_test.fake_decryption_fn'
+        'tfx_addons.message_exit_handler.component_tests.fake_decryption_fn'
 
     """
 
@@ -71,10 +71,8 @@ def MessageExitHandler(
     # parse slack credentials
     if not slack_credentials:
       raise ValueError("Slack credentials not provided.")
-    slack_credentials_pb = slack_pb2.SlackSpec()
-    proto_utils.json_to_proto(slack_credentials, slack_credentials_pb)
     provider = SlackMessageProvider(status=status,
-                                    credentials=slack_credentials_pb,
+                                    credentials=slack_credentials,
                                     decrypt_fn=decrypt_fn)
   elif message_type == MessagingType.LOGGING.value:
     provider = LoggingMessageProvider(status=status)

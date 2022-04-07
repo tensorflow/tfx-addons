@@ -21,12 +21,9 @@ Currently supported:
 """
 
 import enum
-from typing import Dict, Optional, Text
+from typing import Dict, Text
 
-from absl import logging
-from slack import WebClient
-from slack.errors import SlackApiError
-from tfx.utils import import_utils
+
 
 from tfx_addons.message_exit_handler import constants
 
@@ -38,7 +35,7 @@ class MessagingType(enum.Enum):
   SLACK = "slack"
 
 
-class MessageProvider:
+class BaseProvider:
   """Message provider interface."""
   def __init__(self, status: Dict) -> None:
     self._status = status
@@ -71,50 +68,3 @@ class MessageProvider:
     return self._message
 
 
-class LoggingMessageProvider(MessageProvider):
-  """Logging message provider."""
-  def __init__(
-      self,
-      status: Dict,
-      log_level: Optional[int] = logging.INFO,
-  ) -> None:
-    super().__init__(status=status)
-    self._log_level = log_level
-
-  def send_message(self) -> None:
-    logging.log(self._log_level, f"MessageExitHandler: {self._message}")
-
-
-class SlackMessageProvider(MessageProvider):
-  """Slack message provider."""
-  def __init__(self,
-               status: Dict,
-               credentials: str,
-               decrypt_fn: Optional[str] = None) -> None:
-    super().__init__(status=status)
-
-    if not credentials:
-      raise ValueError("Slack credentials not provided.")
-
-    if decrypt_fn:
-      module_path, fn_name = decrypt_fn.rsplit(".", 1)
-      logging.info(
-          f"MessageExitHandler: Importing {fn_name} from {module_path} "
-          "to decrypt credentials.")
-      fn = import_utils.import_func_from_module(module_path, fn_name)
-      self._slack_channel_id = fn(credentials.slack_channel_id)
-      self._slack_token = fn(credentials.slack_token)
-    else:
-      self._slack_channel_id = credentials.slack_channel_id
-      self._slack_token = credentials.slack_token
-
-    self._client = WebClient(token=self._slack_token)
-
-  def send_message(self) -> None:
-    try:
-      response = self._client.chat_postMessage(channel=self._slack_channel_id,
-                                               text=self._message)
-      logging.info(f"MessageExitHandler: Slack response: {response}")
-    except SlackApiError as e:
-      logging.error(
-          f"MessageExitHandler: Slack API error: {e.response['error']}")
