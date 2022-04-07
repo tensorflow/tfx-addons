@@ -51,7 +51,8 @@ class ComponentTest(tf.test.TestCase):
 
   @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
                       reason="not supported version")
-  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler", lambda x: x)
+  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+              lambda x: x)
   def test_component_fn(self):
 
     # import in function to pass TFX 1.4 tests
@@ -71,13 +72,16 @@ class ComponentTest(tf.test.TestCase):
 
   @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
                       reason="not supported version")
-  @mock.patch("tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient")
-  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler", lambda x: x)
+  @mock.patch(
+      "tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient"  # pylint: disable=line-too-long
+  )
+  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+              lambda x: x)
   def test_component_slack(self, mock_web_client):
 
     # import in function to pass TFX 1.4 tests
-    from tfx_addons.message_exit_handler import (  # pylint: disable=import-outside-toplevel
-        component)
+    from tfx_addons.message_exit_handler import \
+        component  # pylint: disable=import-outside-toplevel
     final_status = self.get_final_status()
     creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
 
@@ -93,13 +97,16 @@ class ComponentTest(tf.test.TestCase):
 
   @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
                       reason="not supported version")
-  @mock.patch("tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient")
-  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler", lambda x: x)
+  @mock.patch(
+      "tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient"  # pylint: disable=line-too-long
+  )
+  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+              lambda x: x)
   def test_component_slack_decrypt(self, mock_web_client):
 
     # import in function to pass TFX 1.4 tests
-    from tfx_addons.message_exit_handler import (  # pylint: disable=import-outside-toplevel
-        component)
+    from tfx_addons.message_exit_handler import \
+        component  # pylint: disable=import-outside-toplevel
     final_status = self.get_final_status()
     creds = json.dumps({"slack_token": "token", "slack_channel_id": "channel"})
 

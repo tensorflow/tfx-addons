@@ -17,6 +17,7 @@
 from unittest.mock import patch
 
 import tensorflow as tf
+
 from tfx_addons.message_exit_handler import constants
 from tfx_addons.message_exit_handler.message_providers import slack_provider
 
@@ -39,11 +40,13 @@ class SlackProviderTest(tf.test.TestCase):
       status.update({"error": {"message": error}})
     return status
 
-  @patch('tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient')
+  @patch(
+      'tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient'
+  )
   def test_slack_message_provider(self, web_client_mock):
     final_status = self.get_final_status()
-    credentials = slack_provider.SlackCredentials(slack_token="test-token",
-                                                  slack_channel_id="test-channel").json()
+    credentials = slack_provider.SlackCredentials(
+        slack_token="test-token", slack_channel_id="test-channel").json()
 
     message_provider = slack_provider.SlackMessageProvider(
         final_status, credentials)
@@ -51,11 +54,13 @@ class SlackProviderTest(tf.test.TestCase):
     web_client_mock.assert_called_once()
     web_client_mock.assert_called_with(token='test-token')
 
-  @patch('tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient')
+  @patch(
+      'tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient'
+  )
   def test_slack_message_provider_with_decrypt_fn(self, mock_web_client):
     final_status = self.get_final_status()
-    credentials = slack_provider.SlackCredentials(slack_token="test-token",
-                                                  slack_channel_id="test-channel").json()
+    credentials = slack_provider.SlackCredentials(
+        slack_token="test-token", slack_channel_id="test-channel").json()
 
     message_provider = slack_provider.SlackMessageProvider(
         final_status,

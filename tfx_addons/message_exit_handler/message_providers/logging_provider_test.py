@@ -14,13 +14,10 @@
 # ==============================================================================
 """Tests for Logging Provider functions."""
 
-from unittest.mock import patch
-
 import tensorflow as tf
 
 from tfx_addons.message_exit_handler import constants
 from tfx_addons.message_exit_handler.message_providers import logging_provider
-
 
 SUCCESS_MESSAGE = """:tada: Pipeline job *test-pipeline-job* (test-project) completed successfully.
 

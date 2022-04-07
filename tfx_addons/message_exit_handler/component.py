@@ -23,9 +23,12 @@ from tfx.orchestration.kubeflow.v2.decorators import exit_handler
 from tfx.utils import proto_utils
 
 from tfx_addons.message_exit_handler import constants
-from tfx_addons.message_exit_handler.message_providers.base_provider import MessagingType
-from tfx_addons.message_exit_handler.message_providers.logging_provider import LoggingMessageProvider
-from tfx_addons.message_exit_handler.message_providers.slack_provider import SlackMessageProvider
+from tfx_addons.message_exit_handler.message_providers.base_provider import \
+    MessagingType
+from tfx_addons.message_exit_handler.message_providers.logging_provider import \
+    LoggingMessageProvider
+from tfx_addons.message_exit_handler.message_providers.slack_provider import \
+    SlackMessageProvider
 
 
 @exit_handler

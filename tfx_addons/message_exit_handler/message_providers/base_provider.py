@@ -23,8 +23,6 @@ Currently supported:
 import enum
 from typing import Dict, Text
 
-
-
 from tfx_addons.message_exit_handler import constants
 
 
@@ -66,5 +64,3 @@ class BaseProvider:
   def get_message(self) -> Text:
     """Get the message to be sent."""
     return self._message
-
-

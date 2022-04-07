@@ -21,14 +21,15 @@ from pydantic import BaseModel
 from slack import WebClient
 from slack.errors import SlackApiError
 from tfx.utils import import_utils
+
 from tfx_addons.message_exit_handler.message_providers.base_provider import \
     BaseProvider
 
 
 class SlackCredentials(BaseModel):
-    """Pydantic class to de/serialize the slack credentials."""
-    slack_token: str
-    slack_channel_id: str
+  """Pydantic class to de/serialize the slack credentials."""
+  slack_token: str
+  slack_channel_id: str
 
 
 class SlackMessageProvider(BaseProvider):
