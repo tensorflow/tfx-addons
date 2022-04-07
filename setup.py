@@ -56,6 +56,11 @@ PKG_REQUIRES = {
         "xgboost>=1.0.0",
     ],
     "sampler": ["tensorflow>=2.0.0"],
+    "message_exit_handler": [
+        "kfp>=1.8,<1.9",
+        "slackclient>=2.9.0",
+        "pydantic>=1.8.0",
+    ],
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(

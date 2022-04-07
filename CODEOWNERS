@@ -40,3 +40,6 @@
 
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
+
+# Message Exit Handler
+/tfx_addons/message_exit_handler @hanneshapke
