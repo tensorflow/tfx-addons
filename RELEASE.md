@@ -12,6 +12,7 @@ TFX Addons follows [Semantic Versioning 2.0](https://semver.org/) strategy.
 3. Create a [new release](https://github.com/tensorflow/tfx-addons/releases) from `rX.Y` branch. Create a tag with `vX.Y.Z` name.
     * Add updates for new features, enhancements, bug fixes
     * Add contributors using `git shortlog <last-version>..HEAD -s`
+4. Create a new PR and merge an increase of `_MINOR_VERSION` number in `main` to get ready for next release.
 
 ## Patch releases
 1. Cherry-pick commits to `rX.Y` branch
