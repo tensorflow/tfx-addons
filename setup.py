@@ -17,6 +17,7 @@ import itertools
 import os
 
 from setuptools import find_namespace_packages, setup
+from pathlib import Path
 
 PROJECT_NAME = "tfx-addons"
 
@@ -30,6 +31,9 @@ def get_project_version():
 
   return extracted_version
 
+def get_long_description():
+    this_directory = Path(__file__).parent
+    return (this_directory / "README.md").read_text()
 
 version = get_project_version()
 inclusive_min_tfx_version = version["INCLUSIVE_MIN_TFX_VERSION"]
@@ -72,6 +76,8 @@ setup(
     version=version["__version__"],
     description="TFX Addons libraries",
     author="The Tensorflow Authors",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/tensorflow/tfx-addons",
     project_urls={
         # ToDo(gcasassaez): To add docs once we have some docs integrated.
