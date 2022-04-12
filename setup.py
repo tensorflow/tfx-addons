@@ -17,7 +17,6 @@ import itertools
 import os
 
 from setuptools import find_namespace_packages, setup
-from pathlib import Path
 
 PROJECT_NAME = "tfx-addons"
 
@@ -31,9 +30,12 @@ def get_project_version():
 
   return extracted_version
 
+
 def get_long_description():
-    this_directory = Path(__file__).parent
-    return (this_directory / "README.md").read_text()
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  with open(os.path.join(base_dir, "README.md")) as fp:
+    return fp.read()
+
 
 version = get_project_version()
 inclusive_min_tfx_version = version["INCLUSIVE_MIN_TFX_VERSION"]
