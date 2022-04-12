@@ -76,7 +76,7 @@ setup(
     version=version["__version__"],
     description="TFX Addons libraries",
     author="The Tensorflow Authors",
-    long_description=long_description,
+    long_description=get_long_description(),
     long_description_content_type='text/markdown',
     url="https://github.com/tensorflow/tfx-addons",
     project_urls={
