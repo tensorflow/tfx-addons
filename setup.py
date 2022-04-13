@@ -91,7 +91,8 @@ setup(
     packages=find_namespace_packages(include=[
         # Add here new library package
         "tfx_addons",
-    ] + [f"tfx_addons.{m}.*" for m in PKG_REQUIRES]),
+    ] + [f"tfx_addons.{m}.*"
+         for m in PKG_REQUIRES] + [f"tfx_addons.{m}" for m in PKG_REQUIRES]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
