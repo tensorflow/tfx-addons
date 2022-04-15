@@ -1,0 +1,2 @@
+from tfx_addons.components_addons.components.example_gen.remote_zip_example_gen.component import RemoteZipCsvExampleGen
+

@@ -38,3 +38,6 @@ env/*
 #Editor
 .idea/*
 .vscode/*
+venv/*
+
+tfx_addons.egg-info/

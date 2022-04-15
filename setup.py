@@ -22,19 +22,19 @@ PROJECT_NAME = "tfx-addons"
 
 
 def get_project_version():
-  # Version
-  extracted_version = {}
-  base_dir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
-    exec(fp.read(), extracted_version)  # pylint: disable=exec-used
+    # Version
+    extracted_version = {}
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
+        exec(fp.read(), extracted_version)  # pylint: disable=exec-used
 
-  return extracted_version
+    return extracted_version
 
 
 def get_long_description():
-  base_dir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(base_dir, "README.md")) as fp:
-    return fp.read()
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(base_dir, "README.md")) as fp:
+        return fp.read()
 
 
 version = get_project_version()
@@ -53,7 +53,7 @@ required_ml_metadata_version = "ml_metadata>={},<{}".format(
 PKG_REQUIRES = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client":
-    [required_ml_pipelines_sdk_version, required_ml_metadata_version],
+        [required_ml_pipelines_sdk_version, required_ml_metadata_version],
     "schema_curation": [
         required_tfx_version,
     ],
@@ -66,7 +66,9 @@ PKG_REQUIRES = {
         "kfp>=1.8,<1.9",
         "slackclient>=2.9.0",
         "pydantic>=1.8.0",
+
     ],
+    "components":["tfx==1.7.1"]
 }
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
@@ -88,11 +90,12 @@ setup(
     },
     extras_require=EXTRAS_REQUIRE,
     tests_require=TESTS_REQUIRE,
-    packages=find_namespace_packages(include=[
-        # Add here new library package
-        "tfx_addons",
-    ] + [f"tfx_addons.{m}.*"
-         for m in PKG_REQUIRES] + [f"tfx_addons.{m}" for m in PKG_REQUIRES]),
+    install_requires = ['tfx==1.6.1', 'apache-airflow'],
+    packages=find_namespace_packages(include=["tfx==1.7.1"
+                                                 # Add here new library package
+                                                 "tfx_addons",
+                                             ] + [f"tfx_addons.{m}.*"
+                                                  for m in PKG_REQUIRES] + [f"tfx_addons.{m}" for m in PKG_REQUIRES]),
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
