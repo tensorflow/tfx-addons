@@ -40,4 +40,4 @@ env/*
 .vscode/*
 venv/*
 
-tfx_addons*/
+tfx_addons.egg-info/
