@@ -34,7 +34,7 @@ import feast
 from absl import logging
 from tfx import v1 as tfx
 
-import tfx_addons as tfxa
+from tfx_addons import feast_example_gen
 
 _pipeline_name = 'feast_fraud'
 
@@ -101,7 +101,7 @@ def create_pipeline(
       "user_has_fraudulent_transactions:user_has_fraudulent_transactions_7d"
   ]
 
-  example_gen = tfxa.feast_examplegen.FeastExampleGen(
+  example_gen = feast_examplegen.FeastExampleGen(
       repo_config=feast.RepoConfig(registry=registry_uri,
                                    project="fraud_tutorial",
                                    offline_store={'type': 'bigquery'},
