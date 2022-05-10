@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import feast
 from absl import logging
 from tfx import v1 as tfx
 
-from tfx_addons import feast_example_gen
+from tfx_addons import feast_examplegen
 
 _pipeline_name = 'feast_fraud'
 
@@ -101,13 +101,13 @@ def create_pipeline(
       "user_has_fraudulent_transactions:user_has_fraudulent_transactions_7d"
   ]
 
-  example_gen = feast_examplegen.FeastExampleGen(
-      repo_config=feast.RepoConfig(registry=registry_uri,
-                                   project="fraud_tutorial",
-                                   offline_store={'type': 'bigquery'},
-                                   provider="gcp"),
-      entity_query=entity_df,
-      features=features)
+  example_gen = feast_examplegen.FeastExampleGen(repo_config=feast.RepoConfig(
+      registry=registry_uri,
+      project="fraud_tutorial",
+      offline_store={'type': 'bigquery'},
+      provider="gcp"),
+                                                 entity_query=entity_df,
+                                                 features=features)
 
   # Computes statistics over data for visualization and example validation.
   statistics_gen = tfx.components.StatisticsGen(
