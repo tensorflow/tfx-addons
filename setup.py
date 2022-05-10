@@ -60,6 +60,7 @@ PKG_REQUIRES = {
     "feast_examplegen": [
        required_tfx_version,
         "feast>=0.16.0,<1.0.0",
+    ],
     "xgboost_evaluator": [
         required_tfx_version,
         "xgboost>=1.0.0",
