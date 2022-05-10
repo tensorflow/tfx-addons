@@ -113,7 +113,7 @@ class _BigQueryConverter(_Converter):
   def RowToExampleBytes(self, instance: Dict[str, Any]) -> bytes:
     """Convert bigquery result row to tf example."""
     ex_pb2 = row_to_example(self._type_map, instance)
-    return ex_pb2.SerializeToString()
+    return ex_pb2.SerializeToString(deterministic=True)
 
   def RowToSequenceExampleBytes(self, instance: Dict[str, Any]) -> bytes:
     """Convert bigquery result row to tf sequence example."""
