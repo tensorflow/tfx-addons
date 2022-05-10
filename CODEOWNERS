@@ -1,20 +1,20 @@
 # Global owners for SIG TFX-Addons
-* @rcrowe-google @mihaimaruseac @theadactyl
+* @rcrowe-google @theadactyl
 
 # Core team for reviews of project proposals and main distribution files
 /proposals/ @rcrowe-google
-/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
-/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
-/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough @sngahane
+/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 
 
 # CI configuration (for now owned by @casassg)
-/.github/workflows/*.yml @casassg
-/.github/ci  @casassg
+/.github/workflows/*.yml @casassg @vulkomilev
+/.github/ci  @casassg @vulkomilev
 
 
 # Sci-Kit Learn Example using the Penguins dataset
-/examples/sklearn_penguins/ @TheMichaelHu @1025kb
+/examples/sklearn_penguins/ @TheMichaelHu @1025KB
 
 # MLMD Client Library
 /tfx_addons/mlmd_client/ @codesue @pselden @casassg
@@ -26,11 +26,11 @@
 /tfx_addons/schema_curation/ @pratishtha-abrol @FatimahAdwan @deutranium @nirzu97
 
 # XGBoost Evaluator Component
-/tfx_addons/xgboost_evaluator @kindalime @cent5
-/examples/xgboost_penguins @kindalime @cent5
+/tfx_addons/xgboost_evaluator @kindalime @cent5 @casassg
+/examples/xgboost_penguins @kindalime @cent5 @casassg
 
 # Sampling Component
-/tfx_addons/sampling @kindalime
+/tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
 /tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse 
@@ -41,3 +41,7 @@
 
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
+
+# Message Exit Handler
+/tfx_addons/message_exit_handler @hanneshapke
+

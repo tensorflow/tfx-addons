@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+"""Module file for feature selector test"""
+from sklearn.feature_selection import \
+    SelectKBest as SelectorFunc  # pylint: disable=W0611
+from sklearn.feature_selection import chi2
 
-from .version import __version__
+SELECTOR_PARAMS = {"score_func": chi2, "k": 2}
+TARGET_FEATURE = 'species'

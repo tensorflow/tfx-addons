@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+""" Util functions to assist with the TFX Addons tests """
 
-from .version import __version__
+from typing import List
+
+
+def get_tfx_version(version: str) -> List[int]:
+  """
+    Returns the TFX version as integers.
+    """
+  return tuple([int(x) for x in version.split(".")])  # pylint: disable=R1728

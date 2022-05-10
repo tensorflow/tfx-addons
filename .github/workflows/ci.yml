@@ -26,9 +26,11 @@ jobs:
     timeout-minutes: 60
     strategy:
       # Test for several versions of TFX in parallel
+      # keep constraints in sync with version.py
       matrix:
-        # ToDo(casassg): Remove future from here once resolved upstream: https://github.com/tensorflow/transform/issues/257
-        depconstraint: ["tfx~=1.4.0 tensorflow~=2.6.0 future", "tfx~=1.6.0 tensorflow~=2.7.0"]
+        depconstraint: 
+          - "tfx~=1.4.0 tensorflow~=2.6.0"
+          - "tfx~=1.7.0 tensorflow~=2.8.0"
         extras: ["all, test"]
     steps:
     - uses: actions/checkout@v2
@@ -39,16 +41,16 @@ jobs:
     - name: Cache python environment
       uses: actions/cache@v2
       with:
-        # Cache installed dependencies
-        path: ${{ env.pythonLocation }}
-        # Look to see if there is a cache hit for the corresponding setup.py + TFX version 
-        key: ${{ env.pythonLocation }}-pip-${{ matrix.depconstraint }}-${{ hashFiles('setup.py') }}
+        # Cache pip
+        path: ~/.cache/pip
+        # Look to see if there is a cache hit for the corresponding setup.py + TFX version
+        key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ matrix.depconstraint }}
         restore-keys: |
-          ${{ env.pythonLocation }}-pip-${{ matrix.depconstraint }}
+          ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          ${{ runner.os }}-pip-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
+        python -m pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
     - name: Run tests
       run: pytest tfx_addons
-  

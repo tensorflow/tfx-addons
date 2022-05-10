@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+"""Supplement for iris species example with specifics feature modification.
+This module file will be used in the feature selection component example.
+"""
 
-from .version import __version__
+NUM_PARAM = 2
+TARGET_FEATURE = 'species'
