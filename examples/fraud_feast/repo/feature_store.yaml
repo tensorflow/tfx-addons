@@ -1,0 +1,5 @@
+project: fraud_tutorial
+registry: ./data/registry.db
+provider: gcp
+online_store: 
+  type: sqlite
