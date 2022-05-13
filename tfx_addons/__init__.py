@@ -18,7 +18,7 @@ from .version import __version__, _PKG_METADATA
 
 __all__ = [
     "__version__",
-] + __PKG_METADATA.keys()
+] + _PKG_METADATA.keys()
 
 def __getattr__(name):
     # PEP-562: Lazy loaded attributes on python modules
