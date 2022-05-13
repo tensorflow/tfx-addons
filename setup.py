@@ -23,12 +23,21 @@ PROJECT_NAME = "tfx-addons"
 
 def get_pkg_metadata():
   # Version
-  extracted_version = {}
+  context = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
-    exec(fp.read(), extracted_version)  # pylint: disable=exec-used
+    exec(fp.read(), context)  # pylint: disable=exec-used
 
-  return extracted_version["_PKG_METADATA"]
+  return context["_PKG_METADATA"]
+
+def get_version():
+  # Version
+  context = {}
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
+    exec(fp.read(), context)  # pylint: disable=exec-used
+
+  return context["__version__"]
 
 
 def get_long_description():
@@ -46,7 +55,7 @@ EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 
 setup(
     name=PROJECT_NAME,
-    version=version["__version__"],
+    version=get_version(),
     description="TFX Addons libraries",
     author="The Tensorflow Authors",
     long_description=get_long_description(),
