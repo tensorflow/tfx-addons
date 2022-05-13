@@ -56,7 +56,8 @@ _PKG_METADATA = {
     ],
     "sampling": [f"tfx{_TFXVERSION_CONSTRAINT}", "tensorflow>=2.0.0"],
     "message_exit_handler": [
-        f"tfx[kfp]{_TFXVERSION_CONSTRAINT}",
+        f"tfx{_TFXVERSION_CONSTRAINT}",
+        "kfp>=1.8,<2",
         "slackclient>=2.9.0",
         "pydantic>=1.8.0",
     ],
