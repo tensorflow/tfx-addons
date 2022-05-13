@@ -16,14 +16,14 @@
 
 from .version import __version__, _PKG_METADATA
 
-__all__ = [
+_ACTIVE_MODULES = [
     "__version__",
-] + _PKG_METADATA.keys()
+] + list(_PKG_METADATA.keys())
 
 def __getattr__(name):
     # PEP-562: Lazy loaded attributes on python modules
     # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
     # for some subpackes
-    if name in __all__:
+    if name in _ACTIVE_MODULES:
          return importlib.import_module("." + name, __name__)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
