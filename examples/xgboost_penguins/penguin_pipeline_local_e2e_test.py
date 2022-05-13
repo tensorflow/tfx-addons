@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class PenguinPipelineLocalEndToEndTest(tf.test.TestCase):
             beam_pipeline_args=[]))
 
     self.assertTrue(tfx.dsl.io.fileio.exists(self._metadata_path))
-    expected_execution_count = 5
+    expected_execution_count = 6
     metadata_config = (
         tfx.orchestration.metadata.sqlite_metadata_connection_config(
             self._metadata_path))

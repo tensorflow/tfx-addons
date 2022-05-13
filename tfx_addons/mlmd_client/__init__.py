@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
-
-import importlib as _importlib
-
-from .version import _PKG_METADATA, __version__
-
-_ACTIVE_MODULES = [
-    "__version__",
-] + list(_PKG_METADATA.keys())
-
-
-def __getattr__(name):  # pylint: disable=C0103
-  # PEP-562: Lazy loaded attributes on python modules
-  # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
-  # for some subpackes
-  if name in _ACTIVE_MODULES:
-    return _importlib.import_module("." + name, __name__)
-  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+"""MLMDClient module"""
+__all__ = ["MetadataClient"]
+from .client import MetadataClient

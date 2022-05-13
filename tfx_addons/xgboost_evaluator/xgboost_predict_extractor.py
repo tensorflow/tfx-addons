@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,10 +108,7 @@ class _TFMAPredictionDoFn(DoFnWithModels):
   def extract_model_specs(self):
     label_specs = {}
     for config in self._eval_config.model_specs:
-      if config.name:
-        label_specs[config.name] = config.label_key
-      else:  # if the input name to ModelSpec is None, ModelSpec doesn't save it and config.name resolves to ''.
-        label_specs[None] = config.label_key
+      label_specs[config.name] = config.label_key
     return label_specs
 
   def process(self, elem: tfma.Extracts) -> Iterable[tfma.Extracts]:

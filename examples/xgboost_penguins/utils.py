@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ def _train(fn_args, x_train, y_train, x_eval, y_eval):
       num_boost_round=fn_args.custom_config['num_boost_round'],
       early_stopping_rounds=fn_args.custom_config['early_stopping_rounds'],
       evals=[(matrix_eval, 'eval')])
+  model.feature_names = _FEATURE_KEYS
   return model
 
 

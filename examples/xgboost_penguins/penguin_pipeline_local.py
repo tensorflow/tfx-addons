@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,11 @@ import os
 from pathlib import Path
 from typing import List, Text
 
+import tensorflow_model_analysis as tfma
 from absl import logging
 from tfx import v1 as tfx
+
+import tfx_addons as tfxa
 
 _pipeline_name = 'penguin_xgboost_local'
 
@@ -100,6 +103,29 @@ def create_pipeline(
       custom_config=trainer_custom_config,
   )
 
+  # Uses TFMA to compute evaluation statistics over features of a model and
+  # perform quality validation of a candidate model (compared to a baseline).
+  eval_config = tfma.EvalConfig(
+      model_specs=[tfma.ModelSpec(label_key='species')],
+      slicing_specs=[tfma.SlicingSpec()],
+      metrics_specs=[
+          tfma.MetricsSpec(metrics=[
+              tfma.MetricConfig(
+                  class_name='Accuracy',
+                  threshold=tfma.MetricThreshold(
+                      value_threshold=tfma.GenericValueThreshold(
+                          lower_bound={'value': 0.6}),
+                      change_threshold=tfma.GenericChangeThreshold(
+                          direction=tfma.MetricDirection.HIGHER_IS_BETTER,
+                          absolute={'value': -1e-10})))
+          ])
+      ])
+  evaluator = tfxa.xgboost_evaluator.XGBoostEvaluator(
+      model=trainer.outputs["model"],
+      eval_config=eval_config,
+      examples=example_gen.outputs['examples'],
+  )
+
   return tfx.dsl.Pipeline(
       pipeline_name=pipeline_name,
       pipeline_root=pipeline_root,
@@ -109,6 +135,7 @@ def create_pipeline(
           schema_gen,
           example_validator,
           trainer,
+          evaluator,
       ],
       enable_cache=True,
       metadata_connection_config=tfx.orchestration.metadata.
