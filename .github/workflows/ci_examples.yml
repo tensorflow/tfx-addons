@@ -1,4 +1,4 @@
-name: TFX Addons CI for examples
+name: Examples CI
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: TFX Addons package CI
+name: CI
 
 on:
   push:

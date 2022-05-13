@@ -21,14 +21,14 @@ from setuptools import find_namespace_packages, setup
 PROJECT_NAME = "tfx-addons"
 
 
-def get_project_version():
+def get_pkg_metadata():
   # Version
   extracted_version = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
     exec(fp.read(), extracted_version)  # pylint: disable=exec-used
 
-  return extracted_version
+  return extracted_version["_PKG_METADATA"]
 
 
 def get_long_description():
@@ -36,42 +36,9 @@ def get_long_description():
   with open(os.path.join(base_dir, "README.md")) as fp:
     return fp.read()
 
-
-version = get_project_version()
-inclusive_min_tfx_version = version["INCLUSIVE_MIN_TFX_VERSION"]
-exclusive_max_tfx_version = version["EXCLUSIVE_MAX_TFX_VERSION"]
-
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
-required_tfx_version = "tfx>={},<{}".format(inclusive_min_tfx_version,
-                                            exclusive_max_tfx_version)
-required_ml_pipelines_sdk_version = "ml_pipelines_sdk>={},<{}".format(
-    inclusive_min_tfx_version, exclusive_max_tfx_version)
-required_ml_metadata_version = "ml_metadata>={},<{}".format(
-    inclusive_min_tfx_version, exclusive_max_tfx_version)
-
-PKG_REQUIRES = {
-    # Add dependencies here for your project. Avoid using install_requires.
-    "mlmd_client":
-    [required_ml_pipelines_sdk_version, required_ml_metadata_version],
-    "schema_curation": [
-        required_tfx_version,
-    ],
-    "feast_examplegen": [
-        required_tfx_version,
-        "feast>=0.16.0,<1.0.0",
-    ],
-    "xgboost_evaluator": [
-        required_tfx_version,
-        "xgboost>=1.0.0",
-    ],
-    "sampler": ["tensorflow>=2.0.0"],
-    "message_exit_handler": [
-        "kfp>=1.8,<1.9",
-        "slackclient>=2.9.0",
-        "pydantic>=1.8.0",
-    ],
-}
+PKG_REQUIRES = get_pkg_metadata()
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
