@@ -34,10 +34,15 @@ To use TFX Addons:
 ```python
 from tfx import v1 as tfx
 import tfx_addons as tfxa
+
+# Then you can easily load projects tfxa.{project_name}. Ex:
+
+tfxa.feast_examplegen.FeastExampleGen(...)
+
 ```
 
 
-## Addons Subpackages
+## TFX Addons projects
 
 * [tfxa.mlmd_client](tfx_addons/mlmd_client) 
 * [tfxa.schema_curation](tfx_addons/schema_curation) 
@@ -46,6 +51,8 @@ import tfx_addons as tfxa
 * [tfxa.sampling](tfx_addons/sampling)
 * [tfxa.message_exit_handler](tfx_addons/message_exit_handler) 
 
+
+Check out [proposal](proposals) for a list of existing or upcoming projects proposal for TFX Addons
 
 
 ## Tutorials and examples

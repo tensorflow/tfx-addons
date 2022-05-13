@@ -37,6 +37,10 @@ _EXCLUSIVE_MAX_TFX_VERSION = "1.8.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
 
+# This is a list of officially  maintained projects with their dependencies.
+# Any project added here will be automatically picked up on release.
+# - Key: Project name that corresponds to  folder tfx_addons.{} namespace.
+# - Value: Python dependencies needed for project to work.
 _PKG_METADATA = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client": [
