@@ -39,10 +39,6 @@ if _VERSION_SUFFIX:
 _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
 _EXCLUSIVE_MAX_TFX_VERSION = "1.8.0"
 _TFXVERSION_CONSTRAINT = f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}"
-required_ml_pipelines_sdk_version = "ml_pipelines_sdk>={},<{}".format(
-    inclusive_min_tfx_version, exclusive_max_tfx_version)
-required_ml_metadata_version = "ml_metadata>={},<{}".format(
-    inclusive_min_tfx_version, exclusive_max_tfx_version)
 
 _PKG_METADATA = {
     # Add dependencies here for your project. Avoid using install_requires.
