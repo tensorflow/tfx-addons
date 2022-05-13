@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ class XGBoostPredictExtractorTest(
     self._eval_export_dir = os.path.join(self._getTempDir(), 'eval_export')
     self._create_xgboost_model(self._eval_export_dir)
     self._eval_config = tfma.EvalConfig(
-        model_specs=[tfma.ModelSpec(name=None, label_key="label")])
+        model_specs=[tfma.ModelSpec(name='', label_key="label")])
     self._eval_shared_model = (
         xgboost_predict_extractor.custom_eval_shared_model(
             eval_saved_model_path=self._eval_export_dir,
-            model_name=None,
+            model_name='',
             eval_config=self._eval_config))
     self._schema = text_format.Parse(
         """

@@ -30,6 +30,7 @@ def get_pkg_metadata():
 
   return context["_PKG_METADATA"]
 
+
 def get_version():
   # Version
   context = {}
@@ -44,6 +45,7 @@ def get_long_description():
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "README.md")) as fp:
     return fp.read()
+
 
 TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
