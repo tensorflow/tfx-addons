@@ -25,6 +25,7 @@ from typing import List, Text
 from absl import logging
 from tfx import v1 as tfx
 import tfx_addons as tfxa
+import tensorflow_model_analysis as tfma
 
 _pipeline_name = 'penguin_xgboost_local'
 
