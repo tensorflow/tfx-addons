@@ -118,7 +118,7 @@ def create_pipeline(
                       absolute={'value': -1e-10})))
       ])
   ])
-  tfxa.xgboost_evaluator.XGBoostEvaluator(
+  evaluator = tfxa.xgboost_evaluator.XGBoostEvaluator(
       model=trainer.outputs["model"],
       eval_config=eval_config,
       examples=example_gen.outputs['examples'],
@@ -133,6 +133,7 @@ def create_pipeline(
           schema_gen,
           example_validator,
           trainer,
+          evaluator,
       ],
       enable_cache=True,
       metadata_connection_config=tfx.orchestration.metadata.
