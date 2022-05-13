@@ -1,6 +1,6 @@
 # Contributing guidelines
 
-Interested in contributing to TFX Addons? We appreciate all kinds of help and are working to make this guide as comprehensive as possible. 
+Interested in contributing to TFX Addons? We appreciate all kinds of help and are working to make this guide as comprehensive as possible.
 Please let us know if you think of something we could do to help lower the barrier to contributing.
 
 ## How to become a contributor and submit your own code
@@ -31,6 +31,14 @@ SIG team members will be assigned to review your pull requests. Once the pull re
 - Reviewers can request an automatic merge using `/merge` command. Auto-merge will be performed after all tests have passed and enough approvals are recollected for the PR.
 - Changes to `.github/workflows` will need to be merged manually by a reviewer with write permissions.
 
+### Code Ownership
+
+* Code ownership is tracked through the `CODEOWNERS` file. Users can be added if one of the following situations apply:
+  * When a project proposal is approved, the initial contributors become automatically code owner of the project folder.
+  * Developers who contribute or maintain a TFX Addons component, example, etc. can gain coder owner access to the project folders
+    if the initial contributors agree.
+  * In case, the initial contributors have abandoned the project or can't be reached, the TFX Addons core team can decide about the ownership reassignment.
+  * Requesting project code ownership requires a substantial contribution (e.g. update of a component to a newer TFX version).
 ### Development tips
 
 We use [pre-commit](https://pre-commit.com/) to validate our code before we push to the repository. We use push over commit to allow more flexibility.

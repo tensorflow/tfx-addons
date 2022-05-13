@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+"""Init module for feast examplegen"""
 
-from .version import __version__
+from tfx_addons.feast_examplegen.component import FeastExampleGen

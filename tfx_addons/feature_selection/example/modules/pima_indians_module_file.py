@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
-
-from .version import __version__
+"""Supplement for prima Indians Diabetics example with specifics feature modification.
+This module file will be used in the feature selection component example.
+"""
+NUM_PARAM = 3
+TARGET_FEATURE = 'Outcome'
