@@ -15,6 +15,7 @@
 """Init module for TFX."""
 
 from .version import __version__, _PKG_METADATA
+import importlib as _importlib
 
 _ACTIVE_MODULES = [
     "__version__",
@@ -25,5 +26,5 @@ def __getattr__(name):
     # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
     # for some subpackes
     if name in _ACTIVE_MODULES:
-         return importlib.import_module("." + name, __name__)
+         return _importlib.import_module("." + name, __name__)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
