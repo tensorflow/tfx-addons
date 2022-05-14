@@ -18,7 +18,62 @@ Follow either of the two links above to access the appropriate CLA and instructi
 
 ***NOTE***: Only original source code from you and other people that have signed the CLA can be accepted into the main repository.
 
-### Contributing code
+### SIG Membership
+
+We encourage any developers working in production ML environments, infrastructure, or applications to [join and participate in the activities of the SIG](http://goo.gle/tfx-addons-group). Whether you are working on advancing the platform, prototyping or building specific applications, or authoring new components, templates, libraries, and/or orchestrator support, we welcome your feedback on and contributions to TFX and its tooling, and are eager to hear about any downstream results, implementations, and extensions.
+
+### Project Maintainership 
+
+TFX Addons has been designed to compartmentalize submodules so 
+that they can be maintained by community users who have expertise, and a vested 
+interest in that component. We heavily encourage users to submit sign up to maintain a 
+submodule by submitting your username to the [CODEOWNERS](CODEOWNERS) file.
+
+Full write access will only be granted after substantial contribution 
+has been made in order to limit the number of users with write permission. 
+Contributions can come in the form of issue closings, bug fixes, documentation, 
+new code, or optimizing existing code. Submodule maintainership can be granted 
+with a lower barrier for entry as this will not include write permissions to 
+the repo.
+
+
+### Project proposals
+
+If you have a new project, you can contribute it to TFX Addons! Before doing so, make sure to submit a project proposal to 
+the repository under [proposals/](proposals/). Use [proposals/yyyymmdd-project_template.md](proposals/yyyymmdd-project_template.md) as a template to get started.
+
+1. Project proposals will be submitted to the SIG and published for open review and comment by SIG members for 2 weeks.
+2. Following review and approval by the Google TFX team, core team members will vote either in person or offline on whether to approve or reject project proposals.
+3. All projects must meet the following criteria:
+   - Team members must be named in the proposal
+   - All team members must have completed a [Contributor License Agreement](https://cla.developers.google.com/)
+   - The project must not violate the [TensorFlow Code of Conduct](https://github.com/tensorflow/tensorflow/blob/master/CODE_OF_CONDUCT.md), [Google AI Principles](https://ai.google/principles/) or [Responsible AI Practices](https://ai.google/responsibilities/responsible-ai-practices/).
+4. Projects must code to supported open interfaces only, and not reach into core TFX to make changes or rely on private classes, methods, properties, or interfaces.
+5. **Google retains the right to reject any proposal.**
+6. Projects must first be approved by the Google team.  Projects are then sent for approval to the core community team.  Projects will be approved with a minimum of three `+1` votes, but can be sent for changes and re-review with a single `-1` vote.
+
+
+
+### Periodic Evaluation of Components and Examples
+
+Components may become less and less useful to the community and TFX examples might become outdated as future TFX versions are released. In order to keep the repository sustainable, we'll be performing bi-annual reviews of our code to ensure everything still belongs within the repo. Contributing factors to this review will be:
+
+1. Number of active maintainers
+2. Amount of issues or bugs attributed to the code
+3. If a better solution is now available
+
+Functionality within TFX Addons can be categorized into three groups:
+
+* **Suggested**: well-maintained components and examples; use is encouraged.
+* **Discouraged**: a better alternative is available; the API is kept for historic reasons; or the components and examples require maintenance and is the waiting period to be deprecated.
+* **Deprecated**: use at your own risk; subject to be deleted.
+
+The status change between these three groups is: Suggested <-> Discouraged -> Deprecated.
+
+The period between an API being marked as deprecated and being deleted will be 90 days. The rationale being:
+In the event that TFX Addons releases monthly, there will be 2-3 releases before an API is deleted. The release notes could give user enough warning. 90 days gives maintainers ample time to fix their code.
+
+## Contributing code
 
 If you have improvements to TFX Addons, send us your pull requests! For those
 just getting started, Github has a [howto](https://help.github.com/articles/using-pull-requests/).
