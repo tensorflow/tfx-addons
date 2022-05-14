@@ -73,6 +73,9 @@ new code, or optimizing existing code. Submodule maintainership can be granted
 with a lower barrier for entry as this will not include write permissions to 
 the repo.
 
+Check out [CONTRIBUTING.md](CONTRIBUTING.md) to learn how to set up your development environment 
+for TFX Addons project.
+
 
 ### SIG Membership
 
@@ -121,3 +124,8 @@ In the event that TFX Addons releases monthly, there will be 2-3 releases before
 4. Projects must code to supported open interfaces only, and not reach into core TFX to make changes or rely on private classes, methods, properties, or interfaces.
 5. **Google retains the right to reject any proposal.**
 6. Projects must first be approved by the Google team.  Projects are then sent for approval to the core community team.  Projects will be approved with a minimum of three `+1` votes, but can be sent for changes and re-review with a single `-1` vote.
+
+
+### Package releases
+
+Check out [RELEASE.md](RELEASE.md) for insights into how TFX Addons is released.
