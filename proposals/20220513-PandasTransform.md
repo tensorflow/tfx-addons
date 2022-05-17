@@ -24,8 +24,12 @@ This will be implemented as a Python-function component, using Beam for processi
 **Caveats:** It's important to note that each invocation of their `preprocessing_fn` will only be supplied with part of their dataset, to enable distributed processing.  That means that full passes over their dataset by their user code will not be possible, so operations which require a full pass will not be supported in the first release.  A future release may or may not enable full pass operations, TBD. 
 
 ## Project Dependencies
-Please list any imports and dependencies that you plan to use.  Please
-highlight any dependencies which are not open-source.
+Apache Beam
+PyArrow
+Pandas
+TensorFlow
+TensorFlow Data Validation
+TFX
 
 ## Project Team
 Robert Crowe (rcrowe-google) robertcrowe--at--google--dot--com
