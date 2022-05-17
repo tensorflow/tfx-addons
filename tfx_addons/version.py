@@ -16,7 +16,7 @@
 
 # We follow Semantic Versioning (https://semver.org/)
 _MAJOR_VERSION = "0"
-_MINOR_VERSION = "1"
+_MINOR_VERSION = "2"
 _PATCH_VERSION = "0"
 
 # When building releases, we can update this value on the release branch to
@@ -37,6 +37,10 @@ _EXCLUSIVE_MAX_TFX_VERSION = "1.8.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
 
+# This is a list of officially  maintained projects with their dependencies.
+# Any project added here will be automatically picked up on release.
+# - Key: Project name that corresponds to  folder tfx_addons.{} namespace.
+# - Value: Python dependencies needed for project to work.
 _PKG_METADATA = {
     # Add dependencies here for your project. Avoid using install_requires.
     "mlmd_client": [
@@ -57,8 +61,8 @@ _PKG_METADATA = {
     "sampling": [f"tfx{_TFXVERSION_CONSTRAINT}", "tensorflow>=2.0.0"],
     "message_exit_handler": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "kfp>=1.8,<2",
-        "slackclient>=2.9.0",
-        "pydantic>=1.8.0",
+        "kfp>=1.8,<2.0",
+        "slackclient>=2.9.0,<3.0",
+        "pydantic>=1.8.0,<2.0",
     ],
 }
