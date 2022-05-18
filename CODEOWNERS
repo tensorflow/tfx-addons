@@ -4,6 +4,7 @@
 # Core team for reviews of project proposals and main distribution files
 /proposals/ @rcrowe-google
 /tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/tfx_addons/version.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 /setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 /pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 
