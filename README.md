@@ -9,7 +9,7 @@ SIG TFX-Addons is a community-led open source project. As such, the project depe
 
 ## Maintainership
 
-The maintainers of TensorFlow Addons can be found in the [CODEOWNERS](CODEOWNERS) file of the repo. If you would
+The maintainers of TensorFlow Addons can be found in the [CODEOWNERS](https://github.com/tensorflow/tfx-addons/blob/main/CODEOWNERS) file of the repo. If you would
 like to maintain something, please feel free to submit a PR. We encourage multiple 
 owners for all submodules.
 
@@ -45,15 +45,15 @@ tfxa.feast_examplegen.FeastExampleGen(...)
 
 ## TFX Addons projects
 
-* [tfxa.mlmd_client](tfx_addons/mlmd_client) 
-* [tfxa.schema_curation](tfx_addons/schema_curation) 
-* [tfxa.feast_examplegen](tfx_addons/feast_examplegen) 
-* [tfxa.xgboost_evaluator](tfx_addons/xgboost_evaluator)
-* [tfxa.sampling](tfx_addons/sampling)
-* [tfxa.message_exit_handler](tfx_addons/message_exit_handler) 
+* [tfxa.mlmd_client](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/mlmd_client) 
+* [tfxa.schema_curation](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/schema_curation) 
+* [tfxa.feast_examplegen](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/feast_examplegen) 
+* [tfxa.xgboost_evaluator](tfhttps://github.com/tensorflow/tfx-addons/tree/main/x_addons/xgboost_evaluator)
+* [tfxa.sampling](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/sampling)
+* [tfxa.message_exit_handler](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/message_exit_handler) 
 
 
-Check out [proposal](proposals) for a list of existing or upcoming projects proposal for TFX Addons
+Check out [proposals](https://github.com/tensorflow/tfx-addons/tree/main/proposals) for a list of existing or upcoming projects proposals for TFX Addons.
 
 
 ## Tutorials and examples
@@ -62,7 +62,7 @@ for end-to-end examples of various addons.
 
 ## Contributing
 
-TFX Addons is a community-led project. Please have a look at our contributing and development guides if you want to contribute to the project: [CONTRIBUTING.md](CONTRIBUTING.md)
+TFX Addons is a community-led project. Please have a look at our contributing and development guides if you want to contribute to the project: [CONTRIBUTING.md](https://github.com/tensorflow/tfx-addons/blob/main/CONTRIBUTING.md)
 
 ### Meeting cadence:
 
@@ -70,7 +70,7 @@ We meet bi-weekly on Wednesday. Check out our [Meeting notes](https://docs.googl
 
 ## Package releases
 
-Check out [RELEASE.md](RELEASE.md) to learn how TFX Addons is released.
+Check out [RELEASE.md](https://github.com/tensorflow/tfx-addons/blob/main/RELEASE.md) to learn how TFX Addons is released.
 
 ## Resources
 
