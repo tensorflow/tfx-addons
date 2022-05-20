@@ -48,7 +48,7 @@ tfxa.feast_examplegen.FeastExampleGen(...)
 * [tfxa.mlmd_client](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/mlmd_client) 
 * [tfxa.schema_curation](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/schema_curation) 
 * [tfxa.feast_examplegen](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/feast_examplegen) 
-* [tfxa.xgboost_evaluator](tfhttps://github.com/tensorflow/tfx-addons/tree/main/x_addons/xgboost_evaluator)
+* [tfxa.xgboost_evaluator](https://github.com/tensorflow/tfx-addons/tree/main/x_addons/xgboost_evaluator)
 * [tfxa.sampling](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/sampling)
 * [tfxa.message_exit_handler](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/message_exit_handler) 
 
