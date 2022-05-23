@@ -15,7 +15,7 @@ TFX Addons follows [Semantic Versioning 2.0](https://semver.org/) strategy.
 4. Create a new PR and merge an increase of `_MINOR_VERSION` number in `main` to get ready for next release.
 
 ## Patch releases
-1. Cherry-pick commits to `rX.Y` branch
+1. Cherry-pick commits to `rX.Y` branch. Release team can just port PR by commenting "/cherry-pick rX.Y" in a merged PR.
 2. Create new PR with increasing `_PATCH_VERSION` in `version.py` against `rX.Y` branch.
 	* Set the correct version and suffix in [version.py](https://github.com/tensorflow/tfx-addons/blob/master/tensorflow_addons/version.py).
 	* Ensure the proper minimum and maximum tested versions of TFX are set in [version.py](https://github.com/tensorflow/tfx-addons/blob/master/tfx_addons/version.py).
