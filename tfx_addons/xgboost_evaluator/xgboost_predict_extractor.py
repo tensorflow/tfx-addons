@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,10 +108,7 @@ class _TFMAPredictionDoFn(DoFnWithModels):
   def extract_model_specs(self):
     label_specs = {}
     for config in self._eval_config.model_specs:
-      if config.name:
-        label_specs[config.name] = config.label_key
-      else:  # if the input name to ModelSpec is None, ModelSpec doesn't save it and config.name resolves to ''.
-        label_specs[None] = config.label_key
+      label_specs[config.name] = config.label_key
     return label_specs
 
   def process(self, elem: tfma.Extracts) -> Iterable[tfma.Extracts]:
@@ -129,11 +126,22 @@ class _TFMAPredictionDoFn(DoFnWithModels):
     features = []
     labels = []
     result = copy.copy(elem)
-    for features_dict in result[tfma.FEATURES_KEY]:
-      features_row = [features_dict[key] for key in self._feature_keys]
-      features.append(np.concatenate(features_row))
-      labels.append(features_dict[self._label_key])
-    result[tfma.LABELS_KEY] = np.concatenate(labels)
+    features_key = result[tfma.FEATURES_KEY]
+    # ToDo(gcasassaez): Remove fork once we have TFMA stable release.
+    if isinstance(features_key, list):
+      for features_dict in features_key:
+        features_row = [features_dict[key] for key in self._feature_keys]
+        features.append(np.concatenate(features_row))
+        labels.append(features_dict[self._label_key])
+      result[tfma.LABELS_KEY] = np.concatenate(labels)
+    else:
+      for key in self._feature_keys:
+        for i, v in enumerate(features_key[key]):
+          if i >= len(features):
+            features.append([])
+          features[i].append(v)
+      result[tfma.LABELS_KEY] = features_key[self._label_key]
+
     features = xgb.DMatrix(pd.DataFrame(features, columns=self._feature_keys))
 
     # Generate predictions for each model.

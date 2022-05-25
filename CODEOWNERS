@@ -4,6 +4,7 @@
 # Core team for reviews of project proposals and main distribution files
 /proposals/ @rcrowe-google
 /tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/tfx_addons/version.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 /setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 /pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 
@@ -33,10 +34,15 @@
 /tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse @neelanpather
+/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse 
+/examples/fraud_feast @BACtaki @casassg @wihanbooyse
 
 # Feature Selection Component
 /tfx_addons/feature_selection @nirzu97 @pratishtha-abrol @FatimahAdwan @deutranium
 
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
+
+# Message Exit Handler
+/tfx_addons/message_exit_handler @hanneshapke
+

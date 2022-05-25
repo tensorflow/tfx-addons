@@ -12,21 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+""" Message provider interface for logging messages. """
 
-import importlib as _importlib
+from typing import Dict, Optional
 
-from .version import _PKG_METADATA, __version__
+from absl import logging
 
-_ACTIVE_MODULES = [
-    "__version__",
-] + list(_PKG_METADATA.keys())
+from tfx_addons.message_exit_handler.message_providers.base_provider import \
+    BaseProvider
 
 
-def __getattr__(name):  # pylint: disable=C0103
-  # PEP-562: Lazy loaded attributes on python modules
-  # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
-  # for some subpackes
-  if name in _ACTIVE_MODULES:
-    return _importlib.import_module("." + name, __name__)
-  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+class LoggingMessageProvider(BaseProvider):
+  """Logging message provider."""
+  def __init__(
+      self,
+      status: Dict,
+      log_level: Optional[int] = logging.INFO,
+  ) -> None:
+    super().__init__(status=status)
+    self._log_level = log_level
+
+  def send_message(self) -> None:
+    logging.log(self._log_level, f"MessageExitHandler: {self._message}")

@@ -12,21 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+""" Util functions to assist with the TFX Addons tests """
 
-import importlib as _importlib
-
-from .version import _PKG_METADATA, __version__
-
-_ACTIVE_MODULES = [
-    "__version__",
-] + list(_PKG_METADATA.keys())
+from typing import List
 
 
-def __getattr__(name):  # pylint: disable=C0103
-  # PEP-562: Lazy loaded attributes on python modules
-  # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
-  # for some subpackes
-  if name in _ACTIVE_MODULES:
-    return _importlib.import_module("." + name, __name__)
-  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+def get_tfx_version(version: str) -> List[int]:
+  """
+    Returns the TFX version as integers.
+    """
+  return tuple([int(x) for x in version.split(".")])  # pylint: disable=R1728

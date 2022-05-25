@@ -12,21 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Init module for TFX."""
+"""Tests for TFX Addons test util functions."""
 
-import importlib as _importlib
+import unittest
 
-from .version import _PKG_METADATA, __version__
+from tfx_addons.utils import test_utils
 
-_ACTIVE_MODULES = [
-    "__version__",
-] + list(_PKG_METADATA.keys())
+MESSAGE_FN_CALLED = "test_fn called"
+EXPECTED_WARNING_MESSAGE = (
+    "WARNING:absl:test_fn has been disabled due to incompatible TFX version.")
 
 
-def __getattr__(name):  # pylint: disable=C0103
-  # PEP-562: Lazy loaded attributes on python modules
-  # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
-  # for some subpackes
-  if name in _ACTIVE_MODULES:
-    return _importlib.import_module("." + name, __name__)
-  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+def test_fn():
+  return MESSAGE_FN_CALLED
+
+
+class TestUtilTest(unittest.TestCase):
+  def test_get_tfx_version(self):
+    tfx_version = "1.4.0"
+    self.assertEqual(test_utils.get_tfx_version(tfx_version), (1, 4, 0))
+
+
+if __name__ == "__main__":
+  unittest.main()
