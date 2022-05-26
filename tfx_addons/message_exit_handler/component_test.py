@@ -51,8 +51,7 @@ class ComponentTest(tf.test.TestCase):
 
   @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
                       reason="not supported version")
-  @mock.patch("tfx.v1.orchestration.experimental.exit_handler",
-              lambda x: x)
+  @mock.patch("tfx.v1.orchestration.experimental.exit_handler", lambda x: x)
   def test_component_fn(self):
 
     # import in function to pass TFX 1.4 tests
@@ -75,8 +74,7 @@ class ComponentTest(tf.test.TestCase):
   @mock.patch(
       "tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient"  # pylint: disable=line-too-long
   )
-  @mock.patch("tfx.v1.orchestration.experimental.exit_handler",
-              lambda x: x)
+  @mock.patch("tfx.v1.orchestration.experimental.exit_handler", lambda x: x)
   def test_component_slack(self, mock_web_client):
 
     # import in function to pass TFX 1.4 tests
@@ -100,8 +98,7 @@ class ComponentTest(tf.test.TestCase):
   @mock.patch(
       "tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient"  # pylint: disable=line-too-long
   )
-  @mock.patch("tfx.v1.orchestration.experimental.exit_handler",
-              lambda x: x)
+  @mock.patch("tfx.v1.orchestration.experimental.exit_handler", lambda x: x)
   def test_component_slack_decrypt(self, mock_web_client):
 
     # import in function to pass TFX 1.4 tests
