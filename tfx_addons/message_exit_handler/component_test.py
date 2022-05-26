@@ -51,7 +51,7 @@ class ComponentTest(tf.test.TestCase):
 
   @pytest.mark.skipif(get_tfx_version(tfx.__version__) < (1, 6, 0),
                       reason="not supported version")
-  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+  @mock.patch("tfx.v1.orchestration.experimental.exit_handler",
               lambda x: x)
   def test_component_fn(self):
 
@@ -75,7 +75,7 @@ class ComponentTest(tf.test.TestCase):
   @mock.patch(
       "tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient"  # pylint: disable=line-too-long
   )
-  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+  @mock.patch("tfx.v1.orchestration.experimental.exit_handler",
               lambda x: x)
   def test_component_slack(self, mock_web_client):
 
@@ -100,7 +100,7 @@ class ComponentTest(tf.test.TestCase):
   @mock.patch(
       "tfx_addons.message_exit_handler.message_providers.slack_provider.WebClient"  # pylint: disable=line-too-long
   )
-  @mock.patch("tfx.orchestration.kubeflow.v2.decorators.exit_handler",
+  @mock.patch("tfx.v1.orchestration.experimental.exit_handler",
               lambda x: x)
   def test_component_slack_decrypt(self, mock_web_client):
 
