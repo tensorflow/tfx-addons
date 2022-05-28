@@ -1,14 +1,16 @@
-# Current Version (Still in Development)
+# Current Version (v 1.0.0)
 
-### Last Update: 15 September 2021
+### Last Update: 16 March 2022
 
 ## Major Features and Improvements
 
-*   None at this time
+* Add feature selection functionality through custom or sklearn functions (to be accessed through a module file)
+* Compatible with any number of splits in the data
+* Returns two different artifacts - `updated_data` for the overall data processed and `feature_selection` for scores, p_values and selected features for reference
 
 ## Breaking Changes
 
-*   None at this time
+*   Error handling for data with missing/infinite/incompatible values
 
 ## Deprecations
 
@@ -20,4 +22,4 @@
 
 ## Documentation Updates
 
-*   None at this time
+*   TODO
