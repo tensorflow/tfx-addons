@@ -30,8 +30,8 @@ jobs:
       # NB(gcasassaez): We have to add tensorflow here to avoid issues on resolution.
       matrix:
         depconstraint: 
-          - "tfx~=1.4.0 tensorflow~=2.6.0"
-          - "tfx~=1.8.0 tensorflow~=2.8.0"
+          - "tfx~=1.4.0 tensorflow~=2.6.0  fsspec==2022.5.0"
+          - "tfx~=1.8.0 tensorflow~=2.8.0 fsspec==2022.5.0"
         extras: ["all, test"]
     steps:
     - uses: actions/checkout@v2
@@ -50,7 +50,7 @@ jobs:
           ${{ runner.os }}-pip-${{ matrix.depconstraint }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip==22.1.1 wheel
+        python -m pip install --upgrade pip wheel
         python -m pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
     - name: Run tests
       run: pytest tfx_addons
