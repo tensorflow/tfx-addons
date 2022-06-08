@@ -33,7 +33,7 @@ if _VERSION_SUFFIX:
 
 # Required TFX version [min, max), keep depconstraint in ci.yml in sync
 _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
-_EXCLUSIVE_MAX_TFX_VERSION = "1.8.0"
+_EXCLUSIVE_MAX_TFX_VERSION = "1.9.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
 
