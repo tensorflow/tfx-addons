@@ -41,14 +41,14 @@ def get_version():
   return context["__version__"]
 
 
-def get_tfx_bound_versions():
+def get_ci_constraints():
   # Version
   context = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
     exec(fp.read(), context)  # pylint: disable=exec-used
 
-  return context["_INCLUSIVE_MIN_TFX_VERSION"]
+  return context["_CI_MIN_CONSTRAINTS"], context["_CI_MAX_CONSTRAINTS"]
 
 
 def get_long_description():
@@ -66,10 +66,9 @@ EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
-TFX_MIN_VERSION = get_tfx_bound_versions()
-EXTRAS_REQUIRE["all_ci_min"] = EXTRAS_REQUIRE["all"] + [
-    f"tfx~={TFX_MIN_VERSION}"
-]
+CI_MIN_CONSTRAINTS, CI_MAX_CONSTRAINTS = get_ci_constraints()
+EXTRAS_REQUIRE["all_ci_min"] = EXTRAS_REQUIRE["all"] + CI_MIN_CONSTRAINTS
+EXTRAS_REQUIRE["all_ci_max"] = EXTRAS_REQUIRE["all"] + CI_MAX_CONSTRAINTS
 
 setup(
     name=PROJECT_NAME,

@@ -36,7 +36,15 @@ _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
 _EXCLUSIVE_MAX_TFX_VERSION = "1.9.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
-
+_SHARED_CONSTRAINT = [
+    # NB(gcasassaez): We need to limit this due to issue of feast compatibility w certain versions of google-common-protos
+    # https://github.com/feast-dev/feast/pull/2745
+    "google-api-core<2.8.1",
+]
+_CI_MAX_CONSTRAINTS = ["tfx~=1.8.0", "tensorflow~=2.8.0"] + _SHARED_CONSTRAINT
+_CI_MIN_CONSTRAINTS = [
+    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0"
+] + _SHARED_CONSTRAINT
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
 # - Key: Project name that corresponds to  folder tfx_addons.{} namespace.
