@@ -31,7 +31,7 @@ __version__ = ".".join([_MAJOR_VERSION, _MINOR_VERSION, _PATCH_VERSION])
 if _VERSION_SUFFIX:
   __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)
 
-# Required TFX version [min, max), keep depconstraint in ci.yml in sync
+# Required TFX version [min, max)
 _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
 _EXCLUSIVE_MAX_TFX_VERSION = "1.9.0"
 _TFXVERSION_CONSTRAINT = (

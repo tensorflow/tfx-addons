@@ -7,6 +7,7 @@ on:
       - '.github/workflows/ci.yml'
       - 'setup.py'
       - 'pyproject.toml'
+      - '.github/ci/deps/**'
     branches:
       - main
       - r*
@@ -16,6 +17,7 @@ on:
       - '.github/workflows/ci.yml'
       - 'setup.py'
       - 'pyproject.toml'
+      - '.github/ci/deps/**'
     branches:
       - main
       - r*
