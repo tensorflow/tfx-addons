@@ -1,0 +1,2 @@
+-e ".[all_ci_min, test]"
+protobuf==3.19.4

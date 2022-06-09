@@ -1,0 +1,2 @@
+-e ".[all,test]"
+protobuf==3.19.4

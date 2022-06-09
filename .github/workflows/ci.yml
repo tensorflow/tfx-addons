@@ -27,12 +27,10 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       # keep constraints in sync with version.py
-      # NB(gcasassaez): We have to add tensorflow here to avoid issues on resolution.
       matrix:
         depconstraint: 
-          - "tfx~=1.4.0 tensorflow~=2.6.0  fsspec==2022.5.0"
-          - "tfx~=1.8.0 tensorflow~=2.8.0 fsspec==2022.5.0"
-        extras: ["all, test"]
+          - .github/ci/deps/requirements_max.in
+          - .github/ci/deps/requirements_min.in
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
@@ -45,12 +43,12 @@ jobs:
         # Cache pip
         path: ~/.cache/pip
         # Look to see if there is a cache hit for the corresponding setup.py + TFX version
-        key: ${{ runner.os }}-pip-${{ matrix.depconstraint }}-${{ hashFiles('tfx_addons/version.py') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles(matrix.depconstraint) }}-${{ hashFiles('tfx_addons/version.py') }}
         restore-keys: |
-          ${{ runner.os }}-pip-${{ matrix.depconstraint }}
+          ${{ runner.os }}-pip-${{ hashFiles(matrix.depconstraint) }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        python -m pip install -e ".[${{ matrix.extras }}]" ${{ matrix.depconstraint }}
+        python -m pip install -f ${{ matrix.depconstrain }}
     - name: Run tests
       run: pytest tfx_addons
