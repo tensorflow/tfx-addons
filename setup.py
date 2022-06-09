@@ -40,14 +40,15 @@ def get_version():
 
   return context["__version__"]
 
-def get_bound_versions():
+
+def get_tfx_bound_versions():
   # Version
   context = {}
   base_dir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
     exec(fp.read(), context)  # pylint: disable=exec-used
 
-  return context["_INCLUSIVE_MIN_TFX_VERSION"], context["_EXCLUSIVE_MAX_TFX_VERSION"]
+  return context["_INCLUSIVE_MIN_TFX_VERSION"]
 
 
 def get_long_description():
@@ -56,15 +57,19 @@ def get_long_description():
     return fp.read()
 
 
-TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf", "pip-tools"]
+TESTS_REQUIRE = [
+    "pytest", "pylint", "pre-commit", "isort", "yapf", "pip-tools"
+]
 
 PKG_REQUIRES = get_pkg_metadata()
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()
 EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
-MIN_VERSION, MAX_VERSION = get_bound_versions()
-EXTRAS_REQUIRE["all_ci_min"] = EXTRAS_REQUIRE["all"] + [f"tfx~={MIN_VERSION}"]
+TFX_MIN_VERSION = get_tfx_bound_versions()
+EXTRAS_REQUIRE["all_ci_min"] = EXTRAS_REQUIRE["all"] + [
+    f"tfx~={TFX_MIN_VERSION}"
+]
 
 setup(
     name=PROJECT_NAME,
