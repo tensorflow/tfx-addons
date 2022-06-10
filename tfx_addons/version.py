@@ -36,12 +36,9 @@ _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
 _EXCLUSIVE_MAX_TFX_VERSION = "1.9.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
-_CI_MAX_CONSTRAINTS = [
-    "tfx~=1.8.0", "ml-pipelines-sdk~=1.8.0", "tensorflow~=2.8.0"
-]
+_CI_MAX_CONSTRAINTS = ["tfx~=1.8.0", "tensorflow~=2.8.0"]
 _CI_MIN_CONSTRAINTS = [
-    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}",
-    f"ml-pipelines-sdk~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0"
+    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0"
 ]
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
