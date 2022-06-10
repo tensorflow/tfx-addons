@@ -31,12 +31,15 @@ __version__ = ".".join([_MAJOR_VERSION, _MINOR_VERSION, _PATCH_VERSION])
 if _VERSION_SUFFIX:
   __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)
 
-# Required TFX version [min, max), keep depconstraint in ci.yml in sync
+# Required TFX version [min, max)
 _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
 _EXCLUSIVE_MAX_TFX_VERSION = "1.9.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
-
+_CI_MAX_CONSTRAINTS = ["tfx~=1.8.0", "tensorflow~=2.8.0"]
+_CI_MIN_CONSTRAINTS = [
+    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0"
+]
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
 # - Key: Project name that corresponds to  folder tfx_addons.{} namespace.
@@ -52,7 +55,8 @@ _PKG_METADATA = {
     ],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "feast>=0.16.0,<1.0.0",
+        # ToDo(gcasassaez): Use new version of feast once https://github.com/feast-dev/feast/pull/2745 gets released
+        "feast@git+https://github.com/feast-dev/feast.git",
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
