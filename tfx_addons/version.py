@@ -39,7 +39,7 @@ _TFXVERSION_CONSTRAINT = (
 _SHARED_CONSTRAINT = [
     # NB(gcasassaez): We need to limit this due to issue of feast compatibility w certain versions of google-common-protos
     # https://github.com/feast-dev/feast/pull/2745
-    "google-api-core==2.8.0",
+    "google-api-core[grpc,grpcgcp]==2.8.0",
     "protobuf==3.19.1",
 ]
 _CI_MAX_CONSTRAINTS = [
