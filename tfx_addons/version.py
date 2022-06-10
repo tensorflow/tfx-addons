@@ -40,6 +40,7 @@ _SHARED_CONSTRAINT = [
     # NB(gcasassaez): We need to limit this due to issue of feast compatibility w certain versions of google-common-protos
     # https://github.com/feast-dev/feast/pull/2745
     "google-api-core==2.8.0",
+    "protobuf==1.19.1",
 ]
 _CI_MAX_CONSTRAINTS = ["tfx~=1.8.0", "tensorflow~=2.8.0"] + _SHARED_CONSTRAINT
 _CI_MIN_CONSTRAINTS = [
