@@ -1,0 +1,2 @@
+google-api-core==2.8.0
+google-cloud-bigtable==2.9.0

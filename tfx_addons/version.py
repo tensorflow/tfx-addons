@@ -58,7 +58,7 @@ _PKG_METADATA = {
     ],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "feast>=0.16.0,<1.0.0",
+        "feast>=0.16.0,!=0.21.*,<1.0.0",
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
