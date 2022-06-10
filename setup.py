@@ -57,9 +57,7 @@ def get_long_description():
     return fp.read()
 
 
-TESTS_REQUIRE = [
-    "pytest", "pylint", "pre-commit", "isort", "yapf", "pip-tools"
-]
+TESTS_REQUIRE = ["pytest", "pylint", "pre-commit", "isort", "yapf"]
 
 PKG_REQUIRES = get_pkg_metadata()
 EXTRAS_REQUIRE = PKG_REQUIRES.copy()

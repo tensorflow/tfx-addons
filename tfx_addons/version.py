@@ -42,9 +42,12 @@ _SHARED_CONSTRAINT = [
     "google-api-core==2.8.0",
     "protobuf==3.19.1",
 ]
-_CI_MAX_CONSTRAINTS = ["tfx~=1.8.0", "tensorflow~=2.8.0"] + _SHARED_CONSTRAINT
+_CI_MAX_CONSTRAINTS = [
+    "tfx~=1.8.0", "ml-pipelines-sdk~=1.8.0", "tensorflow~=2.8.0"
+] + _SHARED_CONSTRAINT
 _CI_MIN_CONSTRAINTS = [
-    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0"
+    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}",
+    f"ml-pipelines-sdk~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0"
 ] + _SHARED_CONSTRAINT
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
