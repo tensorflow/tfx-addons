@@ -1,2 +1,1 @@
--e ".[all_ci_max,test]"
--c constrain.txt
+-e ".[ci_max,all,test]"

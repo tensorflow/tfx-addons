@@ -65,8 +65,8 @@ EXTRAS_REQUIRE["all"] = list(
     set(itertools.chain.from_iterable(list(PKG_REQUIRES.values()))))
 EXTRAS_REQUIRE["test"] = TESTS_REQUIRE
 CI_MIN_CONSTRAINTS, CI_MAX_CONSTRAINTS = get_ci_constraints()
-EXTRAS_REQUIRE["all_ci_min"] = EXTRAS_REQUIRE["all"] + CI_MIN_CONSTRAINTS
-EXTRAS_REQUIRE["all_ci_max"] = EXTRAS_REQUIRE["all"] + CI_MAX_CONSTRAINTS
+EXTRAS_REQUIRE["ci_min"] = CI_MIN_CONSTRAINTS
+EXTRAS_REQUIRE["ci_max"] = CI_MAX_CONSTRAINTS
 
 setup(
     name=PROJECT_NAME,

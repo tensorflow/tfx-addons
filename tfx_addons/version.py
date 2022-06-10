@@ -58,7 +58,8 @@ _PKG_METADATA = {
     ],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "feast>=0.16.0,!=0.21.*,<1.0.0",
+        # ToDo(gcasassaez): Use new version of feast once https://github.com/feast-dev/feast/pull/2745 gets released
+        "feast@git+https://github.com/feast-dev/feast.git",
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",

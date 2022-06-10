@@ -1,2 +1,1 @@
--e ".[all_ci_min, test]"
--c constrain.txt
+-e ".[ci_min,all,test]"
