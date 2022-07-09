@@ -26,7 +26,7 @@ from tensorflow_transform.tf_metadata import schema_utils
 from tfx import v1 as tfx
 from tfx.components.util import tfxio_utils
 from tfx.dsl.component.experimental.decorators import component
-from tfx.types import artifact_utils, system_executions
+from tfx.types import artifact_utils
 from tfx.types.standard_artifacts import Examples, ExampleStatistics, Schema
 from tfx.utils import import_utils, io_utils
 
