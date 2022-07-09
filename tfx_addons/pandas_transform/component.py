@@ -21,6 +21,7 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_data_validation as tfdv
 from absl import logging
+from packaging.version import Version, parse
 from tensorflow_transform.tf_metadata import schema_utils
 from tfx import v1 as tfx
 from tfx.components.util import tfxio_utils
@@ -29,10 +30,9 @@ from tfx.types import artifact_utils, system_executions
 from tfx.types.standard_artifacts import Examples, ExampleStatistics, Schema
 from tfx.utils import import_utils, io_utils
 
-try:
+if parse(tfx.__version__) >= Version('1.8.0'):
+  from tfx.types import system_executions
   from tfx.dsl.component.experimental.annotations import BeamComponentParameter
-except ImportError:
-  pass
 
 _TELEMETRY_DESCRIPTORS = ['PandasTransform']
 
@@ -109,7 +109,7 @@ class GetExamples(beam.DoFn):
       example = self.DictToExample(row_dict, ptypes)
       yield example.SerializeToString()
 
-try:
+if parse(tfx.__version__) >= Version('1.8.0'):
   @component(component_annotation=system_executions.Transform, use_beam=True)
   def PandasTransform(
       transformed_examples: tfx.dsl.components.OutputArtifact[Examples],
@@ -125,8 +125,8 @@ try:
                       transformed_examples=transformed_examples,
                       module_file=module_file,
                       beam_pipeline=beam_pipeline)
-except TypeError as ex:
-  logging.info('TFX < 1.7.0')
+else:
+  logging.info('TFX < 1.8.0')
   logging.info('Beam custom component not supported in this version of TFX.')
   logging.info('You might consider an upgrade.')
   @component
