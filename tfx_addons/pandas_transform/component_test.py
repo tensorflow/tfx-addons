@@ -45,16 +45,18 @@ class ComponentTest(tf.test.TestCase):
   def test_construct_from_module_file(self):
     module_file = './null_preprocessing.py'
     if parse(tfx.__version__) >= Version('1.8.0'):
-      pandas_transform = component.PandasTransform(examples=self.examples,
-                                                 schema=self.schema,
-                                                 statistics=self.statistics,
-                                                 module_file=module_file,
-                                                 beam_pipeline=beam.Pipeline())
+      pandas_transform = component.PandasTransform(
+          examples=self.examples,
+          schema=self.schema,
+          statistics=self.statistics,
+          module_file=module_file,
+          beam_pipeline=beam.Pipeline())
     else:
-      pandas_transform = component.PandasTransform(examples=self.examples,
-                                                 schema=self.schema,
-                                                 statistics=self.statistics,
-                                                 module_file=module_file)
+      pandas_transform = component.PandasTransform(
+          examples=self.examples,
+          schema=self.schema,
+          statistics=self.statistics,
+          module_file=module_file)
     self._verify_outputs(pandas_transform)
     self.assertEqual(
         module_file, pandas_transform.exec_properties[
@@ -63,16 +65,18 @@ class ComponentTest(tf.test.TestCase):
   def test_construct_with_parameter(self):
     module_file = data_types.RuntimeParameter(name='module-file', ptype=str)
     if parse(tfx.__version__) >= Version('1.8.0'):
-      pandas_transform = component.PandasTransform(examples=self.examples,
-                                                 schema=self.schema,
-                                                 statistics=self.statistics,
-                                                 module_file=module_file,
-                                                 beam_pipeline=beam.Pipeline())
+      pandas_transform = component.PandasTransform(
+          examples=self.examples,
+          schema=self.schema,
+          statistics=self.statistics,
+          module_file=module_file,
+          beam_pipeline=beam.Pipeline())
     else:
-      pandas_transform = component.PandasTransform(examples=self.examples,
-                                                 schema=self.schema,
-                                                 statistics=self.statistics,
-                                                 module_file=module_file)
+      pandas_transform = component.PandasTransform(
+          examples=self.examples,
+          schema=self.schema,
+          statistics=self.statistics,
+          module_file=module_file)
     self._verify_outputs(pandas_transform)
     self.assertJsonEqual(
         str(module_file),
