@@ -26,13 +26,13 @@ from tensorflow_transform.tf_metadata import schema_utils
 from tfx import v1 as tfx
 from tfx.components.util import tfxio_utils
 from tfx.dsl.component.experimental.decorators import component
-from tfx.types import (artifact_utils, system_executions)
-from tfx.types.standard_artifacts import (Examples, ExampleStatistics, Schema)
+from tfx.types import artifact_utils, system_executions
+from tfx.types.standard_artifacts import Examples, ExampleStatistics, Schema
 from tfx.utils import import_utils, io_utils
 
 try:
   from tfx.dsl.component.experimental.annotations import BeamComponentParameter
-except Exception:
+except TypeError:
   pass
 
 _TELEMETRY_DESCRIPTORS = ['PandasTransform']
@@ -53,7 +53,7 @@ class Arrow2PandasTypes(beam.DoFn):
     """
     if schema is None:
       raise ValueError('Arrow2PandasTypes: Schema is required')
-      sys.exit()
+
     for key, feature in element.items():
       try:
         for row in range(0, len(feature)):
@@ -67,7 +67,7 @@ class Arrow2PandasTypes(beam.DoFn):
       except BaseException as err:
         raise BaseException('Arrow2PandasTypes: {} had a problem\n  {}'.format(
             key, err))
-        sys.exit()
+
     yield element
 
 class GetExamples(beam.DoFn):
@@ -213,6 +213,7 @@ def DoPandasTransform(
     statistics: tfx.dsl.components.InputArtifact[ExampleStatistics],
     module_file: tfx.dsl.components.Parameter[str],
     beam_pipeline: beam.pipeline.Pipeline):
+  """The function where the actual transforms are done, for both signatures."""
   if not os.path.exists(module_file):
     raise ImportError(
         'DoPandasTransform: Module file not found: {}'.format(module_file))
@@ -307,20 +308,18 @@ def DoPandasTransform(
   # TODO: Replace beam.io.WriteToTFRecord with TFXIO write
   with beam_pipeline:
     for split, tfxio in split_and_tfxio:
-      input_split_dir = artifact_utils.get_split_uri([examples], split)
-      input_file = os.listdir(input_split_dir)[0]
       output_split_dir = artifact_utils.get_split_uri([transformed_examples],
                                                       split)
       output_path = os.path.join(output_split_dir, 'data_tfrecord')
 
-      result = (beam_pipeline
-                | 'TFXIORead[{}]'.format(split) >> tfxio.BeamSource()
-                | 'Map2Pandas[{}]'.format(split) >>
-                beam.Map(lambda record_batch: record_batch.to_pandas())
-                | 'Arrow2PandasTypes[{}]'.format(split) >> beam.ParDo(
-                    Arrow2PandasTypes(), schema=schema_dict)
-                | 'UserCode[{}]'.format(split) >> beam.ParDo(
-                    WrapUserCode, schema=schema_dict, statistics=stats_dict)
-                | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
-                | 'Write[{}]'.format(split) >> beam.io.WriteToTFRecord(
-                    output_path, file_name_suffix='.gz'))
+      _ = (beam_pipeline
+          | 'TFXIORead[{}]'.format(split) >> tfxio.BeamSource()
+          | 'Map2Pandas[{}]'.format(split) >>
+          beam.Map(lambda record_batch: record_batch.to_pandas())
+          | 'Arrow2PandasTypes[{}]'.format(split) >> beam.ParDo(
+              Arrow2PandasTypes(), schema=schema_dict)
+          | 'UserCode[{}]'.format(split) >> beam.ParDo(
+              WrapUserCode, schema=schema_dict, statistics=stats_dict)
+          | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
+          | 'Write[{}]'.format(split) >> beam.io.WriteToTFRecord(
+              output_path, file_name_suffix='.gz'))
