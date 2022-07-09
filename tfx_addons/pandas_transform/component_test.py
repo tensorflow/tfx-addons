@@ -13,10 +13,6 @@
 # limitations under the License.
 """Tests for tfx_addons.pandas_transform.component."""
 
-import json
-import logging
-import os
-
 import apache_beam as beam
 import tensorflow as tf
 from tfx.orchestration import data_types

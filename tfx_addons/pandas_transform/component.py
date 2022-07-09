@@ -14,7 +14,6 @@
 # ==============================================================================
 """PandasTransform TFX component.  Feature engineering in TFX using Pandas Dataframes."""
 
-import importlib
 import os
 import sys
 
@@ -23,20 +22,12 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_data_validation as tfdv
 from absl import logging
-from apache_beam.io.tfrecordio import WriteToTFRecord
-from numpy import empty
 from tensorflow_transform.tf_metadata import schema_utils
 from tfx import v1 as tfx
-from tfx.components.example_gen.utils import dict_to_example
 from tfx.components.util import tfxio_utils
-from tfx.dsl.component.experimental.annotations import (InputArtifact,
-                                                        OutputArtifact,
-                                                        OutputDict, Parameter)
 from tfx.dsl.component.experimental.decorators import component
-from tfx.types import (artifact_utils, channel_utils, standard_component_specs,
-                       system_executions)
-from tfx.types.standard_artifacts import (Examples, ExampleStatistics, Schema,
-                                          String)
+from tfx.types import (artifact_utils, system_executions)
+from tfx.types.standard_artifacts import (Examples, ExampleStatistics, Schema)
 from tfx.utils import import_utils, io_utils
 
 try:
@@ -84,7 +75,7 @@ class GetExamples(beam.DoFn):
   def __init__(self):
     pass
 
-  def dict_to_example(self, row, ptypes):
+  def DictToExample(self, row, ptypes):
     """Creates TF.train.Examples containing tf.train.Features from a dataframe
     Args:
       row: A dict containing a row from a dataframe
@@ -107,7 +98,7 @@ class GetExamples(beam.DoFn):
         feature[key] = tf.train.Feature(bytes_list=tf.train.BytesList(
             value=val))
       else:
-        raise ValueError('dict_to_example: Type {} was unhandled'.format(
+        raise ValueError('DictToExample: Type {} was unhandled'.format(
             ptypes[key]))
     return tf.train.Example(features=tf.train.Features(feature=feature))
 
@@ -120,7 +111,7 @@ class GetExamples(beam.DoFn):
     """
     ptypes = df.dtypes.apply(lambda x: x.name).to_dict()
     for row_dict in df.to_dict(orient='records'):
-      example = self.dict_to_example(row_dict, ptypes)
+      example = self.DictToExample(row_dict, ptypes)
       yield example.SerializeToString()
 
 try:
@@ -234,13 +225,13 @@ def DoPandasTransform(
   elif beam_pipeline is None:
     raise ValueError('DoPandasTransform: beam_pipeline cannot be None')
 
-  def _get_feature_stats(view, feature_name):
+  def GetFeatureStats(view, feature_name):
     return view.get_feature(tfdv.types.FeaturePath([feature_name])).proto()
 
-  def _get_raw_feature_spec(schema):
+  def GetRawFeatureSpec(schema):
     return schema_utils.schema_as_feature_spec(schema).feature_spec
 
-  def _wrap_user_code(df, schema=None, statistics=None):
+  def WrapUserCode(df, schema=None, statistics=None):
     yield user_code(df, schema, statistics)
 
   # Get input splits
@@ -272,7 +263,7 @@ def DoPandasTransform(
       artifact_utils.get_single_uri([schema]))
   schema_reader = io_utils.SchemaReader()
   tf_schema = schema_reader.read(schema_file)
-  fspec = _get_raw_feature_spec(tf_schema)
+  fspec = GetRawFeatureSpec(tf_schema)
 
   # Convert the statistics and schema to dictionaries
   schema_dict = {}
@@ -290,7 +281,7 @@ def DoPandasTransform(
       schema_dict['domains'][key] = [d for d in domain_values]
 
     if dtype in ['Int64', 'float32']:
-      feature = _get_feature_stats(stats_view, key)
+      feature = GetFeatureStats(stats_view, key)
       stats_dict[key] = {
           'min': feature.num_stats.min,
           'max': feature.num_stats.max,
@@ -329,7 +320,7 @@ def DoPandasTransform(
                 | 'Arrow2PandasTypes[{}]'.format(split) >> beam.ParDo(
                     Arrow2PandasTypes(), schema=schema_dict)
                 | 'UserCode[{}]'.format(split) >> beam.ParDo(
-                    _wrap_user_code, schema=schema_dict, statistics=stats_dict)
+                    WrapUserCode, schema=schema_dict, statistics=stats_dict)
                 | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
                 | 'Write[{}]'.format(split) >> beam.io.WriteToTFRecord(
                     output_path, file_name_suffix='.gz'))
