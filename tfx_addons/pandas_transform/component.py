@@ -31,7 +31,7 @@ from tfx.utils import import_utils, io_utils
 
 try:
   from tfx.dsl.component.experimental.annotations import BeamComponentParameter
-except TypeError:
+except ImportError:
   pass
 
 _TELEMETRY_DESCRIPTORS = ['PandasTransform']
@@ -54,18 +54,18 @@ class Arrow2PandasTypes(beam.DoFn):
       raise ValueError('Arrow2PandasTypes: Schema is required')
 
     for key, feature in element.items():
-      try:
-        for row in range(0, len(feature)):
-          if feature[row].size > 0:
-            feature[row] = feature[row][0]
-            if schema[key] == 'string':
-              feature[row] = feature[row].decode('utf8')
-          else:
-            feature[row] = None
-        element = element.astype({key: schema[key]}, copy=False)
-      except BaseException as err:
-        raise BaseException('Arrow2PandasTypes: {} had a problem\n  {}'.format(
-            key, err))
+      for idx, _ in enumerate(feature):
+        if feature[idx].size > 0:
+          feature[idx] = feature[idx][0]
+          if schema[key] == 'string':
+            feature[idx] = feature[idx].decode('utf8')
+        else:
+          feature[idx] = None
+
+    try:
+      element = element.astype({key:schema[key]}, copy=False)
+    except BaseException as err:
+      raise BaseException('Arrow2PandasTypes: {} had a problem\n  {}'.format(key, err)) from err
 
     yield element
 
