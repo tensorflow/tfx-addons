@@ -13,35 +13,31 @@
 # limitations under the License.
 """Tests for tfx_addons.pandas_transform.component."""
 
-import json, os
+import json
 import logging
-import apache_beam as beam
+import os
 
+import apache_beam as beam
 import tensorflow as tf
-from tfx_addons.pandas_transform import component
 from tfx.orchestration import data_types
-from tfx.types import artifact_utils
-from tfx.types import channel_utils
-from tfx.types import standard_artifacts
-from tfx.types import standard_component_specs
-from tfx.utils import proto_utils
+from tfx.types import (artifact_utils, channel_utils, standard_artifacts,
+                       standard_component_specs)
+
+from tfx_addons.pandas_transform import component
 
 
 class ComponentTest(tf.test.TestCase):
-
   def setUp(self):
     super().setUp()
     examples_artifact = standard_artifacts.Examples()
     examples_artifact.split_names = artifact_utils.encode_split_names(
         ['train', 'eval'])
     self.examples = channel_utils.as_channel([examples_artifact])
-    self.schema = channel_utils.as_channel(
-        [standard_artifacts.Schema()])
+    self.schema = channel_utils.as_channel([standard_artifacts.Schema()])
     statistics_artifact = standard_artifacts.ExampleStatistics()
     statistics_artifact.split_names = artifact_utils.encode_split_names(
         ['train', 'eval'])
-    self.statistics = channel_utils.as_channel(
-        [statistics_artifact])
+    self.statistics = channel_utils.as_channel([statistics_artifact])
 
   def _verify_outputs(self, pandas_transform):
     self.assertEqual(
@@ -50,27 +46,23 @@ class ComponentTest(tf.test.TestCase):
 
   def test_construct_from_module_file(self):
     module_file = './null_preprocessing.py'
-    pandas_transform = component.PandasTransform(
-        examples=self.examples,
-        schema=self.schema,
-        statistics=self.statistics,
-        module_file=module_file,
-        beam_pipeline=beam.Pipeline()
-    )
+    pandas_transform = component.PandasTransform(examples=self.examples,
+                                                 schema=self.schema,
+                                                 statistics=self.statistics,
+                                                 module_file=module_file,
+                                                 beam_pipeline=beam.Pipeline())
     self._verify_outputs(pandas_transform)
     self.assertEqual(
-        module_file,
-        pandas_transform.exec_properties[standard_component_specs.MODULE_FILE_KEY])
+        module_file, pandas_transform.exec_properties[
+            standard_component_specs.MODULE_FILE_KEY])
 
   def test_construct_with_parameter(self):
     module_file = data_types.RuntimeParameter(name='module-file', ptype=str)
-    pandas_transform = component.PandasTransform(
-        examples=self.examples,
-        schema=self.schema,
-        statistics=self.statistics,
-        module_file=module_file,
-        beam_pipeline=beam.Pipeline()
-    )
+    pandas_transform = component.PandasTransform(examples=self.examples,
+                                                 schema=self.schema,
+                                                 statistics=self.statistics,
+                                                 module_file=module_file,
+                                                 beam_pipeline=beam.Pipeline())
     self._verify_outputs(pandas_transform)
     self.assertJsonEqual(
         str(module_file),
@@ -93,3 +85,4 @@ class ComponentTest(tf.test.TestCase):
 
 if __name__ == '__main__':
   tf.test.main()
+  

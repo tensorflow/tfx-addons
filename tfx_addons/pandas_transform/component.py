@@ -14,41 +14,31 @@
 # ==============================================================================
 """PandasTransform TFX component.  Feature engineering in TFX using Pandas Dataframes."""
 
-import pdb
-import apache_beam as beam
 import importlib
 import os
-from numpy import empty
-import pandas as pd
-import pyarrow
 import sys
+
+import apache_beam as beam
+import pandas as pd
 import tensorflow as tf
 import tensorflow_data_validation as tfdv
 
 from absl import logging
 from apache_beam.io.tfrecordio import WriteToTFRecord
-from packaging import version
-from tfx import v1 as tfx
-from tfx.dsl.component.experimental.annotations import InputArtifact
-from tfx.dsl.component.experimental.annotations import OutputArtifact
-from tfx.dsl.component.experimental.annotations import OutputDict
-from tfx.dsl.component.experimental.annotations import Parameter
-from tfx.dsl.component.experimental.decorators import component
-from tfx.components.util import tfxio_utils
-from tfx.components.example_gen.utils import dict_to_example
-from tfx.types import artifact_utils
-from tfx.types import channel_utils
-from tfx.types import standard_component_specs
-from tfx.types import system_executions
-from tfx.utils import import_utils
-from tfx.utils import io_utils
-
-from tfx.types.standard_artifacts import Examples
-from tfx.types.standard_artifacts import Schema
-from tfx.types.standard_artifacts import ExampleStatistics
-from tfx.types.standard_artifacts import String
-
+from numpy import empty
 from tensorflow_transform.tf_metadata import schema_utils
+from tfx import v1 as tfx
+from tfx.components.example_gen.utils import dict_to_example
+from tfx.components.util import tfxio_utils
+from tfx.dsl.component.experimental.annotations import (InputArtifact,
+                                                        OutputArtifact,
+                                                        OutputDict, Parameter)
+from tfx.dsl.component.experimental.decorators import component
+from tfx.types import (artifact_utils, channel_utils, standard_component_specs,
+                       system_executions)
+from tfx.types.standard_artifacts import (Examples, ExampleStatistics, Schema,
+                                          String)
+from tfx.utils import import_utils, io_utils
 
 try:
   from tfx.dsl.component.experimental.annotations import BeamComponentParameter
@@ -83,9 +73,10 @@ class Arrow2PandasTypes(beam.DoFn):
               feature[row] = feature[row].decode('utf8')
           else:
             feature[row] = None
-        element = element.astype({key:schema[key]}, copy=False)
+        element = element.astype({key: schema[key]}, copy=False)
       except BaseException as err:
-        raise BaseException('Arrow2PandasTypes: {} had a problem\n  {}'.format(key, err))
+        raise BaseException('Arrow2PandasTypes: {} had a problem\n  {}'.format(
+          key, err))
         sys.exit()
     yield element
 
@@ -106,18 +97,19 @@ class GetExamples(beam.DoFn):
     for key, val in row.items():
       val = [] if pd.isna(val) else [val]
       if ptypes[key] == 'Int64':
-        feature[key] = tf.train.Feature(
-            int64_list=tf.train.Int64List(value=val))
+        feature[key] = tf.train.Feature(int64_list=tf.train.Int64List(
+            value=val))
       elif ptypes[key] in ['float32', 'Float64']:
-        feature[key] = tf.train.Feature(
-            float_list=tf.train.FloatList(value=val))
+        feature[key] = tf.train.Feature(float_list=tf.train.FloatList(
+            value=val))
       elif ptypes[key] in ['string', 'object']:
         if val != []:
           val = [val[0].encode('utf8')]
-        feature[key] = tf.train.Feature(
-            bytes_list=tf.train.BytesList(value=val))
+        feature[key] = tf.train.Feature(bytes_list=tf.train.BytesList(
+            value=val))
       else:
-        raise ValueError('dict_to_example: Type {} was unhandled'.format(ptypes[key]))
+        raise ValueError('dict_to_example: Type {} was unhandled'.format(
+            ptypes[key]))
     return tf.train.Example(features=tf.train.Features(feature=feature))
   
   def process(self, df):
@@ -141,15 +133,13 @@ try:
       statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
       module_file: tfx.dsl.components.Parameter[str] = None,
       beam_pipeline: BeamComponentParameter[beam.Pipeline] = None,
-      ) -> None:
-      DoPandasTransform(
-          examples=examples,
-          schema=schema,
-          statistics=statistics,
-          transformed_examples=transformed_examples,
-          module_file=module_file,
-          beam_pipeline=beam_pipeline
-          )
+  ) -> None:
+    DoPandasTransform(examples=examples,
+                      schema=schema,
+                      statistics=statistics,
+                      transformed_examples=transformed_examples,
+                      module_file=module_file,
+                      beam_pipeline=beam_pipeline)
 except TypeError as ex:
   logging.info('TFX < 1.7.0')
   logging.info('Beam custom component not supported in this version of TFX.')
@@ -161,14 +151,12 @@ except TypeError as ex:
       schema: tfx.dsl.components.InputArtifact[Schema] = None,
       statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
       module_file: tfx.dsl.components.Parameter[str] = None) -> None:
-      DoPandasTransform(
-          examples=examples,
-          schema=schema,
-          statistics=statistics,
-          transformed_examples=transformed_examples,
-          module_file=module_file,
-          beam_pipeline=beam.Pipeline()
-          )
+    DoPandasTransform(examples=examples,
+                      schema=schema,
+                      statistics=statistics,
+                      transformed_examples=transformed_examples,
+                      module_file=module_file,
+                      beam_pipeline=beam.Pipeline())
 
 PandasTransform.__doc__ = """The PandasTransform TFX component.
   PandasTransform enables users to perform feature engineering in dataframes, using
@@ -234,10 +222,10 @@ def DoPandasTransform(
     schema: tfx.dsl.components.InputArtifact[Schema],
     statistics: tfx.dsl.components.InputArtifact[ExampleStatistics],
     module_file: tfx.dsl.components.Parameter[str],
-    beam_pipeline: beam.pipeline.Pipeline
-    ):
+    beam_pipeline: beam.pipeline.Pipeline):
   if not os.path.exists(module_file):
-    raise ImportError('DoPandasTransform: Module file not found: {}'.format(module_file))
+    raise ImportError(
+        'DoPandasTransform: Module file not found: {}'.format(module_file))
   elif examples is None:
     raise ValueError('DoPandasTransform: examples cannot be None')
   elif schema is None:
@@ -258,25 +246,31 @@ def DoPandasTransform(
 
   # Get input splits
   input_examples = artifact_utils.get_single_instance([examples])
-  examples_split_names = artifact_utils.decode_split_names(input_examples.split_names)
+  examples_split_names = artifact_utils.decode_split_names(
+      input_examples.split_names)
 
   # Init output splits
-  transformed_examples = artifact_utils.get_single_instance([transformed_examples])
-  transformed_examples.split_names = artifact_utils.encode_split_names(examples_split_names)
+  transformed_examples = artifact_utils.get_single_instance(
+      [transformed_examples])
+  transformed_examples.split_names = artifact_utils.encode_split_names(
+      examples_split_names)
   for split in examples_split_names:
     os.mkdir(os.path.join(transformed_examples.uri, 'Split-{}'.format(split)))
   
   # Get the preprocessing_fn from the module file
-  user_code = import_utils.import_func_from_source(module_file, 'preprocessing_fn')
+  user_code = import_utils.import_func_from_source(module_file,
+                                                   'preprocessing_fn')
 
   # Get statistics
   stats_artifact = artifact_utils.get_single_instance([statistics])
-  stats_uri = io_utils.get_only_uri_in_dir(artifact_utils.get_split_uri([stats_artifact], 'train'))
+  stats_uri = io_utils.get_only_uri_in_dir(
+      artifact_utils.get_split_uri([stats_artifact], 'train'))
   stats = tfdv.load_stats_binary(stats_uri)
   stats_view = tfdv.utils.stats_util.DatasetListView(stats).get_default_slice()
 
   # Get the schema
-  schema_file = io_utils.get_only_uri_in_dir(artifact_utils.get_single_uri([schema]))
+  schema_file = io_utils.get_only_uri_in_dir(
+      artifact_utils.get_single_uri([schema]))
   schema_reader = io_utils.SchemaReader()
   tf_schema = schema_reader.read(schema_file)
   fspec = _get_raw_feature_spec(tf_schema)
@@ -325,18 +319,18 @@ def DoPandasTransform(
     for split, tfxio in split_and_tfxio:
       input_split_dir = artifact_utils.get_split_uri([examples], split)
       input_file = os.listdir(input_split_dir)[0]
-      output_split_dir = artifact_utils.get_split_uri([transformed_examples], split)
+      output_split_dir = artifact_utils.get_split_uri([transformed_examples],
+                                                      split)
       output_path = os.path.join(output_split_dir, 'data_tfrecord')
 
-      result = (beam_pipeline | 'TFXIORead[{}]'.format(split) >> tfxio.BeamSource()
-                  | 'Map2Pandas[{}]'.format(split) >>
-                      beam.Map(lambda record_batch: record_batch.to_pandas())
-                  | 'Arrow2PandasTypes[{}]'.format(split) >> 
-                      beam.ParDo(Arrow2PandasTypes(), schema=schema_dict)
-                  | 'UserCode[{}]'.format(split) >> 
-                      beam.ParDo(_wrap_user_code,
-                                schema=schema_dict,
-                                statistics=stats_dict)
-                  | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
-                  | 'Write[{}]'.format(split) >>
-                      beam.io.WriteToTFRecord(output_path, file_name_suffix='.gz'))
+      result = (beam_pipeline
+                | 'TFXIORead[{}]'.format(split) >> tfxio.BeamSource()
+                | 'Map2Pandas[{}]'.format(split) >>
+                beam.Map(lambda record_batch: record_batch.to_pandas())
+                | 'Arrow2PandasTypes[{}]'.format(split) >> beam.ParDo(
+                    Arrow2PandasTypes(), schema=schema_dict)
+                | 'UserCode[{}]'.format(split) >> beam.ParDo(
+                    _wrap_user_code, schema=schema_dict, statistics=stats_dict)
+                | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
+                | 'Write[{}]'.format(split) >> beam.io.WriteToTFRecord(
+                    output_path, file_name_suffix='.gz'))
