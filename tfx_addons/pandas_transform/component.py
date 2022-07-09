@@ -61,11 +61,7 @@ class Arrow2PandasTypes(beam.DoFn):
             feature[idx] = feature[idx].decode('utf8')
         else:
           feature[idx] = None
-
-    try:
-      element = element.astype({key:schema[key]}, copy=False)
-    except BaseException as err:
-      raise BaseException('Arrow2PandasTypes: {} had a problem\n  {}'.format(key, err)) from err
+      feature = feature.astype(schema[key], copy=False)
 
     yield element
 
