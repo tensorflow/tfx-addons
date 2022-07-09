@@ -15,6 +15,8 @@
 
 import apache_beam as beam
 import tensorflow as tf
+from packaging.version import Version, parse
+from tfx import v1 as tfx
 from tfx.orchestration import data_types
 from tfx.types import (artifact_utils, channel_utils, standard_artifacts,
                        standard_component_specs)
@@ -42,11 +44,17 @@ class ComponentTest(tf.test.TestCase):
 
   def test_construct_from_module_file(self):
     module_file = './null_preprocessing.py'
-    pandas_transform = component.PandasTransform(examples=self.examples,
+    if parse(tfx.__version__) >= Version('1.8.0'):
+      pandas_transform = component.PandasTransform(examples=self.examples,
                                                  schema=self.schema,
                                                  statistics=self.statistics,
                                                  module_file=module_file,
                                                  beam_pipeline=beam.Pipeline())
+    else:
+      pandas_transform = component.PandasTransform(examples=self.examples,
+                                                 schema=self.schema,
+                                                 statistics=self.statistics,
+                                                 module_file=module_file)
     self._verify_outputs(pandas_transform)
     self.assertEqual(
         module_file, pandas_transform.exec_properties[
@@ -54,7 +62,14 @@ class ComponentTest(tf.test.TestCase):
 
   def test_construct_with_parameter(self):
     module_file = data_types.RuntimeParameter(name='module-file', ptype=str)
-    pandas_transform = component.PandasTransform(examples=self.examples,
+    if parse(tfx.__version__) >= Version('1.8.0'):
+      pandas_transform = component.PandasTransform(examples=self.examples,
+                                                 schema=self.schema,
+                                                 statistics=self.statistics,
+                                                 module_file=module_file,
+                                                 beam_pipeline=beam.Pipeline())
+    else:
+      pandas_transform = component.PandasTransform(examples=self.examples,
                                                  schema=self.schema,
                                                  statistics=self.statistics,
                                                  module_file=module_file,
