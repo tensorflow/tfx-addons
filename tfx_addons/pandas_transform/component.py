@@ -273,12 +273,11 @@ def DoPandasTransform(
     schema_dict[key] = dtype
     feature = tfdv.utils.schema_util.get_feature(tf_schema, key)
     if tfdv.utils.schema_util.is_categorical_feature(feature):
-      domain_values = tfdv.utils.schema_util.get_domain(tf_schema, key).value
-      schema_dict['domains'][key] = [d for d in domain_values]
+      schema_dict['domains'][key] = list(
+          tfdv.utils.schema_util.get_domain(tf_schema, key).value)
 
     if dtype in ['Int64', 'float32']:
       feature = GetFeatureStats(stats_view, key)
-      # pylint: disable=unnecessary-comprehension
       stats_dict[key] = {
           'min': feature.num_stats.min,
           'max': feature.num_stats.max,
