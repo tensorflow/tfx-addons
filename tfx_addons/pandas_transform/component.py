@@ -278,6 +278,7 @@ def DoPandasTransform(
 
     if dtype in ['Int64', 'float32']:
       feature = GetFeatureStats(stats_view, key)
+      # pylint: disable=unnecessary-comprehension
       stats_dict[key] = {
           'min': feature.num_stats.min,
           'max': feature.num_stats.max,
