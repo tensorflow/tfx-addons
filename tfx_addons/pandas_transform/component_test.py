@@ -72,8 +72,7 @@ class ComponentTest(tf.test.TestCase):
       pandas_transform = component.PandasTransform(examples=self.examples,
                                                  schema=self.schema,
                                                  statistics=self.statistics,
-                                                 module_file=module_file,
-                                                 beam_pipeline=beam.Pipeline())
+                                                 module_file=module_file)
     self._verify_outputs(pandas_transform)
     self.assertJsonEqual(
         str(module_file),
