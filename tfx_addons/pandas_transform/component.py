@@ -15,7 +15,6 @@
 """PandasTransform TFX component.  Feature engineering in TFX using Pandas Dataframes."""
 
 import os
-import sys
 
 import apache_beam as beam
 import pandas as pd
@@ -313,13 +312,13 @@ def DoPandasTransform(
       output_path = os.path.join(output_split_dir, 'data_tfrecord')
 
       _ = (beam_pipeline
-          | 'TFXIORead[{}]'.format(split) >> tfxio.BeamSource()
-          | 'Map2Pandas[{}]'.format(split) >>
-          beam.Map(lambda record_batch: record_batch.to_pandas())
-          | 'Arrow2PandasTypes[{}]'.format(split) >> beam.ParDo(
-              Arrow2PandasTypes(), schema=schema_dict)
-          | 'UserCode[{}]'.format(split) >> beam.ParDo(
-              WrapUserCode, schema=schema_dict, statistics=stats_dict)
-          | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
-          | 'Write[{}]'.format(split) >> beam.io.WriteToTFRecord(
-              output_path, file_name_suffix='.gz'))
+           | 'TFXIORead[{}]'.format(split) >> tfxio.BeamSource()
+           | 'Map2Pandas[{}]'.format(split) >>
+           beam.Map(lambda record_batch: record_batch.to_pandas())
+           | 'Arrow2PandasTypes[{}]'.format(split) >> beam.ParDo(
+               Arrow2PandasTypes(), schema=schema_dict)
+           | 'UserCode[{}]'.format(split) >> beam.ParDo(
+               WrapUserCode, schema=schema_dict, statistics=stats_dict)
+           | 'GetExamples[{}]'.format(split) >> beam.ParDo(GetExamples())
+           | 'Write[{}]'.format(split) >> beam.io.WriteToTFRecord(
+               output_path, file_name_suffix='.gz'))
