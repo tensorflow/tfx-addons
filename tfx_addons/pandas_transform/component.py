@@ -31,8 +31,8 @@ from tfx.types.standard_artifacts import Examples, ExampleStatistics, Schema
 from tfx.utils import import_utils, io_utils
 
 if parse(tfx.__version__) >= Version('1.8.0'):
-  from tfx.types import system_executions
   from tfx.dsl.component.experimental.annotations import BeamComponentParameter
+  from tfx.types import system_executions
 
 _TELEMETRY_DESCRIPTORS = ['PandasTransform']
 
