@@ -52,11 +52,10 @@ class ComponentTest(tf.test.TestCase):
           module_file=module_file,
           beam_pipeline=beam.Pipeline())
     else:
-      pandas_transform = component.PandasTransform(
-          examples=self.examples,
-          schema=self.schema,
-          statistics=self.statistics,
-          module_file=module_file)
+      pandas_transform = component.PandasTransform(examples=self.examples,
+                                                   schema=self.schema,
+                                                   statistics=self.statistics,
+                                                   module_file=module_file)
     self._verify_outputs(pandas_transform)
     self.assertEqual(
         module_file, pandas_transform.exec_properties[
@@ -72,11 +71,10 @@ class ComponentTest(tf.test.TestCase):
           module_file=module_file,
           beam_pipeline=beam.Pipeline())
     else:
-      pandas_transform = component.PandasTransform(
-          examples=self.examples,
-          schema=self.schema,
-          statistics=self.statistics,
-          module_file=module_file)
+      pandas_transform = component.PandasTransform(examples=self.examples,
+                                                   schema=self.schema,
+                                                   statistics=self.statistics,
+                                                   module_file=module_file)
     self._verify_outputs(pandas_transform)
     self.assertJsonEqual(
         str(module_file),
