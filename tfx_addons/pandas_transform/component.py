@@ -120,17 +120,18 @@ if parse(tfx.__version__) >= Version('1.8.0'):
       beam_pipeline_args: tfx.dsl.components.Parameter[str] = None,
       beam_pipeline: BeamComponentParameter[beam.Pipeline] = None,
   ) -> None:
+    """Placeholder Docstring"""
     if beam_pipeline_args is not None:
-      _beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
+      this_beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
     else:
-      _beam_pipeline = beam_pipeline
+      this_beam_pipeline = beam_pipeline
     
     DoPandasTransform(examples=examples,
                       schema=schema,
                       statistics=statistics,
                       transformed_examples=transformed_examples,
                       module_file=module_file,
-                      beam_pipeline=_beam_pipeline)
+                      beam_pipeline=this_beam_pipeline)
 else:
   logging.info('TFX < 1.8.0')
   logging.info('Beam custom component not supported in this version of TFX.')
@@ -143,17 +144,18 @@ else:
       statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
       module_file: tfx.dsl.components.Parameter[str] = None,
       beam_pipeline_args: tfx.dsl.components.Parameter[str] = None) -> None:
+    """Placeholder Docstring"""
     if beam_pipeline_args is not None:
-      _beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
+      this_beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
     else:
-      _beam_pipeline = beam.Pipeline()
+      this_beam_pipeline = beam.Pipeline()
 
     DoPandasTransform(examples=examples,
                       schema=schema,
                       statistics=statistics,
                       transformed_examples=transformed_examples,
                       module_file=module_file,
-                      beam_pipeline=_beam_pipeline)
+                      beam_pipeline=this_beam_pipeline)
 
 PandasTransform.__doc__ = """The PandasTransform TFX component.
   PandasTransform enables users to perform feature engineering in dataframes, using
