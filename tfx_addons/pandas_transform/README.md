@@ -17,6 +17,36 @@ This is implemented as a Python-function component, using Beam for processing.  
 
 Note that PandasTransform is designed to be backward compatible, and for TFX releases >= 1.8.0 PandasTransform will take advantage of the `use_beam` property in the `@component` decorator to subclass `BaseBeamComponent`, which honors the TFX-pipeline-wise shared configuration, including `beam_pipeline_args`.  When used with earlier releases of TFX it will subclass `BaseComponent`.
 
+```
+def PandasTransform(
+      transformed_examples: tfx.dsl.components.OutputArtifact[Examples],
+      examples: tfx.dsl.components.InputArtifact[Examples] = None,
+      schema: tfx.dsl.components.InputArtifact[Schema] = None,
+      statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
+      module_file: tfx.dsl.components.Parameter[str] = None,
+      beam_pipeline_args: tfx.dsl.components.Parameter[str] = None) -> None
+"""
+Args:
+    examples: A TFX input channel containing a dataset artifact
+    schema: A TFX input channel containing a schema artifact
+    statistics: A TFX input channel containing a statistics artifact
+    transformed_examples: A TFX output channel which will be used to output the resulting
+    dataset artifact
+    module_file: A component parameter containing a file path to a Python file which
+    contains the user code, in a function named 'preprocessing_fn'.
+    beam_pipeline_args: A string with the argv options for creating a Beam pipeline.
+    Note that this is a string, not a list.  It will be split on spaces to create
+    a list. If running TFX >= 1.8.0, if beam_pipeline_args are specified they will
+    override the pipeline beam args.
+
+
+  Returns:
+    The resulting dataset artifact after processing by the user code.
+
+  Raises:
+    ImportError - When the module file is not found.
+"""
+```
 ### Notes & Caveats
 * It's important to note that each invocation of your `preprocessing_fn` will only be supplied with part of your dataset, to enable distributed processing.  That means that full passes over your dataset by your user code will not be possible, so operations which require a full pass will not be supported in the first release.  A future release may or may not enable full pass operations, TBD.
 * Unlike the standard Transform component, this PandasTransform component does not output the modified schema and statistics for the altered dataset.  To generate a schema and statistics which reflect any changes that you've made to your dataset, you should follow the PandasTransform component with StatisticsGen and SchemaGen components in your pipeline.

@@ -117,14 +117,20 @@ if parse(tfx.__version__) >= Version('1.8.0'):
       schema: tfx.dsl.components.InputArtifact[Schema] = None,
       statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
       module_file: tfx.dsl.components.Parameter[str] = None,
+      beam_pipeline_args: tfx.dsl.components.Parameter[str] = None,
       beam_pipeline: BeamComponentParameter[beam.Pipeline] = None,
   ) -> None:
+    if beam_pipeline_args is not None:
+      _beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
+    else:
+      _beam_pipeline = beam_pipeline
+    
     DoPandasTransform(examples=examples,
                       schema=schema,
                       statistics=statistics,
                       transformed_examples=transformed_examples,
                       module_file=module_file,
-                      beam_pipeline=beam_pipeline)
+                      beam_pipeline=_beam_pipeline)
 else:
   logging.info('TFX < 1.8.0')
   logging.info('Beam custom component not supported in this version of TFX.')
@@ -135,13 +141,19 @@ else:
       examples: tfx.dsl.components.InputArtifact[Examples] = None,
       schema: tfx.dsl.components.InputArtifact[Schema] = None,
       statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
-      module_file: tfx.dsl.components.Parameter[str] = None) -> None:
+      module_file: tfx.dsl.components.Parameter[str] = None,
+      beam_pipeline_args: tfx.dsl.components.Parameter[str] = None) -> None:
+    if beam_pipeline_args is not None:
+      _beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
+    else:
+      _beam_pipeline = beam.Pipeline()
+
     DoPandasTransform(examples=examples,
                       schema=schema,
                       statistics=statistics,
                       transformed_examples=transformed_examples,
                       module_file=module_file,
-                      beam_pipeline=beam.Pipeline())
+                      beam_pipeline=_beam_pipeline)
 
 PandasTransform.__doc__ = """The PandasTransform TFX component.
   PandasTransform enables users to perform feature engineering in dataframes, using
@@ -166,6 +178,11 @@ PandasTransform.__doc__ = """The PandasTransform TFX component.
     dataset artifact
     module_file: A component parameter containing a file path to a Python file which
     contains the user code, in a function named 'preprocessing_fn'.
+    beam_pipeline_args: A string with the argv options for creating a Beam pipeline.
+    Note that this is a string, not a list.  It will be split on spaces to create
+    a list. If running TFX >= 1.8.0, if beam_pipeline_args are specified they will
+    override the pipeline beam args.
+
 
   Returns:
     The resulting dataset artifact after processing by the user code.
@@ -191,11 +208,16 @@ PandasTransform.__doc__ = """The PandasTransform TFX component.
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         return df[numeric_cols].apply(zscore, stats=statistics)
 
+    _beam_pipeline_args = [
+      '--direct_running_mode=in_memory',
+      '--direct_num_workers=1']
+
     panda = PandasTransform(
         examples=example_gen.outputs['examples'],
         schema=schema_gen.outputs['schema'],
         statistics=statistics_gen.outputs['statistics'],
-        module_file = os.path.abspath(module_file)
+        module_file = os.path.abspath(module_file),
+        beam_pipeline_args=' '.join(_beam_pipeline_args)
         )
     context.run(panda, enable_cache=False) # Assuming interactive context
   """
