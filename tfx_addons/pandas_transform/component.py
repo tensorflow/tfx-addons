@@ -153,6 +153,10 @@ PandasTransform.__doc__ = """The PandasTransform TFX component.
   Transform instead.  However, since PandasTransform is designed to receive a dict of the
   summary statistics which are created by StatisticsGen (or other tooling) then you
   can often use those values to avoid making a full pass over the data.
+  **Important Note:** Unlike TensorFlow Transform, PandasTransform does not create a
+  preprocessing TensorFlow graph to be prepended to your trained model.  That means
+  that you **MUST** perform the equivalent preprocessing in your serving client or
+  a similar location in your system.
 
   Args:
     examples: A TFX input channel containing a dataset artifact
@@ -170,12 +174,7 @@ PandasTransform.__doc__ = """The PandasTransform TFX component.
     ImportError - When the module file is not found.
 
   Example:
-    !git clone https://github.com/tensorflow/tfx-addons.git
-    import sys
-    sys.path.append('./tfx-addons')
-    from tfx_addons.pandas_transform.component import PandasTransform
-
-    (or pip install)
+    from tfx_addons.pandas_transform import PandasTransform
 
     module_file = 'my_module_file.py'
     %%writefile {module_file} # Assuming a Jupyter notebook, otherwise a file
