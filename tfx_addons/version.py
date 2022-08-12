@@ -53,6 +53,9 @@ _PKG_METADATA = {
     "schema_curation": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
     ],
+    "feature_selection": [
+        f"tfx{_TFXVERSION_CONSTRAINT}",
+    ],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
         "feast>=0.21.3,<1.0.0",
