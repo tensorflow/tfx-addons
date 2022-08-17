@@ -81,6 +81,7 @@ class ComponentTest(tf.test.TestCase):
         str(pandas_transform.exec_properties[
             standard_component_specs.MODULE_FILE_KEY]))
 
+
 #   NOTE: This test is not currently working because
 #         Python-function components don't currently
 #         propagate exceptions correctly.  b/238368874
