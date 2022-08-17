@@ -55,7 +55,7 @@ def _make_sklearn_predict_extractor(
 @beam.typehints.with_output_types(tfma.Extracts)
 class _TFMAPredictionDoFn(tfma.utils.DoFnWithModels):
   """A DoFn that loads the models and predicts."""
-  def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel]):
+  def __init__(self, eval_shared_models: Dict[Text, tfma.EvalSharedModel]):
     super(_TFMAPredictionDoFn, self).__init__(
         {k: v.model_loader
          for k, v in eval_shared_models.items()})
