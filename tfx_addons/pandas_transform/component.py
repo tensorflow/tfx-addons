@@ -125,7 +125,7 @@ if parse(tfx.__version__) >= Version('1.8.0'):
       this_beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
     else:
       this_beam_pipeline = beam_pipeline
-    
+
     DoPandasTransform(examples=examples,
                       schema=schema,
                       statistics=statistics,

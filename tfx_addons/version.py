@@ -68,8 +68,5 @@ _PKG_METADATA = {
         "slackclient>=2.9.0,<3.0",
         "pydantic>=1.8.0,<2.0",
     ],
-    "pandas_transform": [
-        f"tfx{_TFXVERSION_CONSTRAINT}",
-        "pandas>=1.0.0"
-    ],
+    "pandas_transform": [f"tfx{_TFXVERSION_CONSTRAINT}", "pandas>=1.0.0"],
 }
