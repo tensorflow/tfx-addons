@@ -106,9 +106,7 @@ class _TFMAPredictionDoFn(tfma.utils.DoFnWithModels):
       if len(self._loaded_models) == 1:
         result[tfma.PREDICTIONS_KEY] = preds
       elif tfma.PREDICTIONS_KEY not in result:
-        result[tfma.PREDICTIONS_KEY] = [{
-            model_name: pred
-        } for pred in preds]
+        result[tfma.PREDICTIONS_KEY] = [{model_name: pred} for pred in preds]
       else:
         for i, pred in enumerate(preds):
           result[tfma.PREDICTIONS_KEY][i][model_name] = pred
