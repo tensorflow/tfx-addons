@@ -241,7 +241,7 @@ def DoPandasTransform(
   """The function where the actual transforms are done, for both signatures."""
   if not os.path.exists(module_file):
     raise ImportError(
-        'DoPandasTransform: Module file not found: {}'.format(module_file))
+        f'DoPandasTransform: Module file not found: {module_file}')
   elif examples is None:
     raise ValueError('DoPandasTransform: examples cannot be None')
   elif schema is None:
