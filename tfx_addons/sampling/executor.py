@@ -163,11 +163,13 @@ def _generate_elements(example, label):
 def sample_data(_,
                 val,
                 sampling_strategy=spec.SamplingStrategy.UNDERSAMPLE,
+                percentage=0.0,
                 side=0):
   """Function called in a Beam pipeline that performs sampling using Python's
   random module on an input key:value pair, where the key is the class label
   and the values are the data points to sample. Note that the key is discarded."""
-
+  if percentage:
+    side = int(percentage * len(val))
   if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
     random_sample_data = random.sample(val, side)
   elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
@@ -230,7 +232,7 @@ def read_tfexamples(p, uri, label):
   return data
 
 
-def sample_examples(data, null_classes, sampling_strategy):
+def sample_examples(data, null_classes, sampling_strategy, percentage=0.0):
   """Function that performs the sampling given a label-mapped dataset."""
 
   # Finds the minimum frequency of all classes in the input label.
@@ -262,9 +264,11 @@ def sample_examples(data, null_classes, sampling_strategy):
          | "GroupBylabel" >> beam.GroupByKey()
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
-         | "Sample" >> beam.FlatMapTuple(sample_data,
-                                         sampling_strategy=sampling_strategy,
-                                         side=beam.pvalue.AsSingleton(val)))
+         | "Sample" >> beam.FlatMapTuple(
+             sample_data,
+             sampling_strategy=sampling_strategy,
+             side=beam.pvalue.AsSingleton(val),
+             percentage=beam.pvalue.AsSingleton(percentage)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data
