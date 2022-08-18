@@ -8,7 +8,9 @@ from typing import Any, Dict, List
 
 logging.getLogger().setLevel(logging.INFO)
 
-RUN_ALL_FILES = ["tfx_addons/version.py", "setup.py"]
+RUN_ALL_FILES = [
+    "tfx_addons/version.py", "setup.py", ".github/workflows/ci.yml"
+]
 
 
 def _get_pkg_metadata():
@@ -50,7 +52,8 @@ def _get_affected_components(affected_files_manifest: str,
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("file_manifest")
+
   args = parser.parse_args()
   affected_components = _get_affected_components(args.file_manifest,
                                                  _get_pkg_metadata())
-  print(f"::set-output name=components::{json.dumps(affected_components)}")
+  print(json.dumps(affected_components))
