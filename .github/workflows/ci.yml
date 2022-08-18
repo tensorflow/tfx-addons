@@ -42,7 +42,7 @@ jobs:
     - name: Find affected components
       id: set-matrix
       run: |
-        ./.github/workflows/generate_components.py $HOME/files.json
+        python ./.github/workflows/generate_components.py $HOME/files.json
 
   ci:
     runs-on: ubuntu-latest
