@@ -74,6 +74,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        python -m pip install -e .[${{ matrix.component }}, ${{ matrix.depconstraint }}, test]
+        python -m pip install -e ".[${{ matrix.component }}, ${{ matrix.depconstraint }}, test]"
     - name: Run tests
       run: pytest tfx_addons/${{ matrix.component }}

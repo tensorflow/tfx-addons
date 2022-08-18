@@ -8,6 +8,8 @@ from typing import Any, Dict, List
 
 logging.getLogger().setLevel(logging.INFO)
 
+RUN_ALL_FILES = ["tfx_addons/version.py", "setup.py"]
+
 
 def _get_pkg_metadata():
   # Version
@@ -26,7 +28,11 @@ def _get_affected_components(affected_files_manifest: str,
   with open(affected_files_manifest) as f:
     affected_files: List[str] = json.load(f)
   logging.info("Found affected files: %s", affected_files)
-
+  for run_all_file in RUN_ALL_FILES:
+    if run_all_file in RUN_ALL_FILES:
+      logging.warning("Found change in %s, running all components",
+                      run_all_file)
+      return list(pkg_metadata.keys())
   components_to_run = set()
   for f in affected_files:
     if f.startswith("tfx_addons"):
