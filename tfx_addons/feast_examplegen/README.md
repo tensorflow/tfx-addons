@@ -1,5 +1,4 @@
 # tfx-addons-feast-examplegen
-
 Examplegen for Feast Feature Store
 
 ## (WIP) Setup
