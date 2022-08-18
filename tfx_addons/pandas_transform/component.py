@@ -124,7 +124,7 @@ if parse(tfx.__version__) >= Version('1.8.0'):
       beam_pipeline_args: tfx.dsl.components.Parameter[str] = None,
       beam_pipeline: BeamComponentParameter[beam.Pipeline] = None,
   ) -> None:
-    """Placeholder Docstring"""
+    """This docstring will be replaced by the shared docstring below"""
     if beam_pipeline_args is not None:
       this_beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
     else:
@@ -149,7 +149,7 @@ else:
       statistics: tfx.dsl.components.InputArtifact[ExampleStatistics] = None,
       module_file: tfx.dsl.components.Parameter[str] = None,
       beam_pipeline_args: tfx.dsl.components.Parameter[str] = None) -> None:
-    """Placeholder Docstring"""
+    """This docstring will be replaced by the shared docstring below"""
     if beam_pipeline_args is not None:
       this_beam_pipeline = beam.Pipeline(argv=beam_pipeline_args.split(' '))
     else:
@@ -239,7 +239,8 @@ def DoPandasTransform(
     module_file: tfx.dsl.components.Parameter[str],
     beam_pipeline: beam.pipeline.Pipeline):
   """The function where the actual transforms are done, for both signatures."""
-  if not os.path.exists(module_file):
+  local_module_file = io_utils.ensure_local(module_file)
+  if not os.path.exists(local_module_file):
     raise ImportError(
         f'DoPandasTransform: Module file not found: {module_file}')
   elif examples is None:

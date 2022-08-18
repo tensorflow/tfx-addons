@@ -1,4 +1,4 @@
-# Current Version  - 1.0
+# Current Version  - 1.0.0
 
 ### Last Update: 12 August 2022
 

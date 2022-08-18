@@ -16,4 +16,4 @@
 
 from tfx_addons.pandas_transform.component import PandasTransform
 
-__version__ = '0.1dev'
+__version__ = '1.0.0'
