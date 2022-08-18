@@ -73,4 +73,3 @@ _PKG_METADATA = {
         "pydantic>=1.8.0,<2.0",
     ],
 }
-_PKG_TESTABLE = {**_PKG_METADATA}

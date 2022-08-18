@@ -1,52 +1,70 @@
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """Internal script to parse changed files and potential pkgs and returns the overlap"""
 
 import argparse
 import json
 import logging
 import os
-from typing import Any, Dict, List
+from typing import List
 
 logging.getLogger().setLevel(logging.INFO)
 
+# NB(casassg): Files that if changed should trigger running CI for all projects.
+# This are files which are core and we want to avoid causing outages
+# because of them
 RUN_ALL_FILES = [
     "tfx_addons/version.py", "setup.py", ".github/workflows/ci.yml"
 ]
 
 
-def _get_pkg_metadata():
-  # Version
+def _get_testable_projects() -> List[str]:
+  """Get _PKG_METADATA from version.py which contains what projects are active
+  """
   context = {}
   base_dir = os.path.dirname(
       os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
     exec(fp.read(), context)  # pylint: disable=exec-used
 
-  return context["_PKG_TESTABLE"]
+  return list(context["_PKG_METADATA"].keys())
 
 
-def _get_affected_components(affected_files_manifest: str,
-                             pkg_metadata: Dict[str, Any]) -> List[str]:
+def _get_affected_projects(affected_files: List[str],
+                           testable_projects: List[str]) -> List[str]:
+  """Given a list of affected files, and  projects that can be tested,
+  find what projects should CI run"""
 
-  with open(affected_files_manifest) as f:
-    affected_files: List[str] = json.load(f)
   logging.info("Found affected files: %s", affected_files)
   for run_all_file in RUN_ALL_FILES:
     if run_all_file in RUN_ALL_FILES:
-      logging.warning("Found change in %s, running all components",
-                      run_all_file)
-      return list(pkg_metadata.keys())
-  components_to_run = set()
-  for f in affected_files:
-    if f.startswith("tfx_addons"):
-      file_component = f.replace("tfx_addons/", "").split("/", maxsplit=1)[0]
-      if file_component in pkg_metadata:
+      logging.warning("Found change in %s, running all projects", run_all_file)
+      return testable_projects
+  projects_to_test = set()
+  for file in affected_files:
+    if file.startswith("tfx_addons"):
+      file_component = file.replace("tfx_addons/", "").split("/",
+                                                             maxsplit=1)[0]
+      if file_component in testable_projects:
         logging.info("Package %s is marked for testing", file_component)
-        components_to_run.add(file_component)
+        projects_to_test.add(file_component)
       else:
         logging.warning(
             "Package %s is not in _PKG_TESTABLE variable for version.py",
             file_component)
-  return list(components_to_run)
+  return list(projects_to_test)
 
 
 if __name__ == "__main__":
@@ -54,6 +72,8 @@ if __name__ == "__main__":
   parser.add_argument("file_manifest")
 
   args = parser.parse_args()
-  affected_components = _get_affected_components(args.file_manifest,
-                                                 _get_pkg_metadata())
+
+  with open(args.file_manifest, "r") as f:
+    affected_components = _get_affected_projects(json.load(f),
+                                                 _get_testable_projects())
   print(json.dumps(affected_components))
