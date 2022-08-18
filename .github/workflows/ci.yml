@@ -21,7 +21,9 @@ on:
     branches:
       - main
       - r*
-
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   filter_projects:
     runs-on: ubuntu-latest
