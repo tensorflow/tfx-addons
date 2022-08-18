@@ -9,7 +9,8 @@ from typing import Any, Dict, List
 def _get_pkg_metadata():
   # Version
   context = {}
-  base_dir = os.path.dirname(os.path.abspath(__file__))
+  base_dir = os.path.dirname(
+      os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
   with open(os.path.join(base_dir, "tfx_addons", "version.py")) as fp:
     exec(fp.read(), context)  # pylint: disable=exec-used
 
