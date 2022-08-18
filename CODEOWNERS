@@ -46,3 +46,5 @@
 # Message Exit Handler
 /tfx_addons/message_exit_handler @hanneshapke
 
+# PandasTransform Component
+/tfx_addons/pandas_transform @rcrowe-google
