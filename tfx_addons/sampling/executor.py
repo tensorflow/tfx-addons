@@ -83,6 +83,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     copy_others = exec_properties[spec.SAMPLER_COPY_KEY]
     shards = exec_properties[spec.SAMPLER_SHARDS_KEY]
     null_classes = json_utils.loads(exec_properties[spec.SAMPLER_CLASSES_KEY])
+    batch_size = exec_properties.get(spec.BATCH_SIZE, 100)
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict[spec.SAMPLER_INPUT_KEY])
@@ -121,7 +122,8 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
           data = read_tfexamples(p, uri, label)
-          merged = sample_examples(data, null_classes, sampling_strategy)
+          merged = sample_examples(data, null_classes, sampling_strategy,
+                                   batch_size)
           write_tfexamples(merged, shards, split_dir)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
@@ -160,22 +162,16 @@ def _generate_elements(example, label):
   return (class_label, parsed)
 
 
-def sample_data(_,
-                val,
-                sampling_strategy=spec.SamplingStrategy.UNDERSAMPLE,
-                percentage=0.0,
-                side=0):
+def sample_data(key, val, key_counts=None, goal_count=0):
   """Function called in a Beam pipeline that performs sampling using Python's
   random module on an input key:value pair, where the key is the class label
   and the values are the data points to sample. Note that the key is discarded."""
-  if percentage:
-    side = int(percentage * len(val))
-  if sampling_strategy == spec.SamplingStrategy.UNDERSAMPLE:
-    random_sample_data = random.sample(val, side)
-  elif sampling_strategy == spec.SamplingStrategy.OVERSAMPLE:
-    random_sample_data = random.choices(val, k=side)
-  else:
-    raise ValueError("Invalid value for sampling_strategy variable!")
+  count = goal_count
+  if key_counts:
+    class_count = key_counts[key]
+    count = round((goal_count / class_count) * len(val))
+
+  random_sample_data = random.choices(val, k=count)
 
   for item in random_sample_data:
     yield item
@@ -232,7 +228,7 @@ def read_tfexamples(p, uri, label):
   return data
 
 
-def sample_examples(data, null_classes, sampling_strategy, percentage=0.0):
+def sample_examples(data, null_classes, sampling_strategy, batch_size):
   """Function that performs the sampling given a label-mapped dataset."""
 
   # Finds the minimum frequency of all classes in the input label.
@@ -251,24 +247,23 @@ def sample_examples(data, null_classes, sampling_strategy, percentage=0.0):
   else:
     raise ValueError("Invalid value for sampling_strategy variable!")
 
-  val = (data
-         | "CountPerKey" >> beam.combiners.Count.PerKey()
-         | "FilterNullCount" >>
-         beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
-         | "Values" >> beam.Values()
-         | "GetSample" >> beam.CombineGlobally(sample_fn))
+  key_counts = (data | "CountPerKey" >> beam.combiners.Count.PerKey())
+  goal_count = (key_counts
+                | "FilterNullCount" >>
+                beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
+                | "Values" >> beam.Values()
+                | "GetSample" >> beam.CombineGlobally(sample_fn))
 
   # Actually performs the undersampling functionality.
   # Output format is a K-V PCollection: {class_label: TFRecord in string format}
   res = (data
-         | "GroupBylabel" >> beam.GroupByKey()
+         | "GroupByLabelIntoBatch" >> beam.GroupIntoBatches(batch_size)
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
          | "Sample" >> beam.FlatMapTuple(
              sample_data,
-             sampling_strategy=sampling_strategy,
-             side=beam.pvalue.AsSingleton(val),
-             percentage=beam.pvalue.AsSingleton(percentage)))
+             goal_count=beam.pvalue.AsSingleton(goal_count),
+             key_counts=beam.pvalue.AsSingleton(key_counts)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data

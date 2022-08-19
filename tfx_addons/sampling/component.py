@@ -73,7 +73,8 @@ class Sampler(base_beam_component.BaseBeamComponent):
       copy_others: Optional[bool] = True,
       shards: Optional[int] = 0,
       null_classes: Optional[List[Text]] = None,
-      sampling_strategy: SamplingStrategy = SamplingStrategy.UNDERSAMPLE):
+      sampling_strategy: SamplingStrategy = SamplingStrategy.UNDERSAMPLE,
+      batch_size: int = 100):
     """Construct a SamplerComponent.
 
     Args:
@@ -89,6 +90,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
       shards: The number of files that each sampled split should
         contain. Default 0 is Beam's tfrecordio function's default.
       null_classes: A list determining which classes that we should not sample.
+      batch_size: Internal size to batch process the samples.
     """
 
     if not output_data:
@@ -104,6 +106,7 @@ class Sampler(base_beam_component.BaseBeamComponent):
         shards=shards,
         null_classes=json_utils.dumps(null_classes),
         sampling_strategy=sampling_strategy,
+        batch_size=batch_size,
     )
 
     super().__init__(spec=spec)
