@@ -253,7 +253,7 @@ def sample_examples(data, null_classes, sampling_strategy, batch_size):
                 beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
                 | "Values" >> beam.Values()
                 | "GetSample" >> beam.CombineGlobally(sample_fn))
-
+  key_counts_dict = (key_counts | beam.combiners.ToDict())
   # Actually performs the undersampling functionality.
   # Output format is a K-V PCollection: {class_label: TFRecord in string format}
   res = (data
@@ -263,7 +263,7 @@ def sample_examples(data, null_classes, sampling_strategy, batch_size):
          | "Sample" >> beam.FlatMapTuple(
              sample_data,
              goal_count=beam.pvalue.AsSingleton(goal_count),
-             key_counts=beam.pvalue.AsSingleton(key_counts)))
+             key_counts=beam.pvalue.AsSingleton(key_counts_dict)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data
