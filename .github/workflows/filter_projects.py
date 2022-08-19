@@ -49,7 +49,7 @@ def _get_affected_projects(affected_files: List[str],
 
   logging.info("Found affected files: %s", affected_files)
   for run_all_file in RUN_ALL_FILES:
-    if run_all_file in RUN_ALL_FILES:
+    if run_all_file in affected_files:
       logging.warning("Found change in %s, running all projects", run_all_file)
       return testable_projects
   projects_to_test = set()
