@@ -5,6 +5,7 @@ on:
     paths:
       - 'tfx_addons/**'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/filter_projects.py'
       - 'setup.py'
       - 'pyproject.toml'
       - '.github/ci/deps/**'
@@ -15,6 +16,7 @@ on:
     paths:
       - 'tfx_addons/**'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/filter_projects.py'
       - 'setup.py'
       - 'pyproject.toml'
       - '.github/ci/deps/**'
