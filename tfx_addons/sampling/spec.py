@@ -28,7 +28,7 @@ SAMPLER_NAME_KEY = 'name'
 SAMPLER_SPLIT_KEY = 'splits'
 SAMPLER_COPY_KEY = 'copy_others'
 SAMPLER_SHARDS_KEY = 'shards'
-BATCH_SIZE = 'batch_size'
+MAX_BATCH_SIZE = 'max_batch_size'
 SAMPLER_CLASSES_KEY = 'null_classes'
 SAMPLER_SAMPLE_KEY = 'sampling_strategy'
 
@@ -50,7 +50,7 @@ class SamplerSpec(types.ComponentSpec):
       SAMPLER_SHARDS_KEY: ExecutionParameter(type=int, optional=True),
       SAMPLER_CLASSES_KEY: ExecutionParameter(type=str, optional=True),
       SAMPLER_SAMPLE_KEY: ExecutionParameter(type=int, optional=True),
-      BATCH_SIZE: ExecutionParameter(type=int, optional=True)
+      MAX_BATCH_SIZE: ExecutionParameter(type=int, optional=True)
   }
   INPUTS = {
       SAMPLER_INPUT_KEY: ChannelParameter(type=standard_artifacts.Examples),

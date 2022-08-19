@@ -231,11 +231,26 @@ class ExecutorTest(absltest.TestCase):
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor.sample_examples(data, None,
-                                        spec.SamplingStrategy.UNDERSAMPLE)
+      merged = executor.sample_examples(data,
+                                        None,
+                                        spec.SamplingStrategy.UNDERSAMPLE,
+                                        max_batch_size=3)
       assert_that(merged, equal_to(expected))
 
   def testPipelineMax(self):
+    random.seed(0)
+    dataset = [(str(e), e) for k in range(10) for e in range(k)]
+    expected = [e % 10 for e in range(10 * 10)]
+
+    with beam.Pipeline() as p:
+      data = p | beam.Create(dataset)
+      merged = executor.sample_examples(data,
+                                        None,
+                                        spec.SamplingStrategy.OVERSAMPLE,
+                                        max_batch_size=8)
+      assert_that(merged, equal_to(expected))
+
+  def testPipelineBatch(self):
     random.seed(0)
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2),
                ("2", 2), ("3", 3), ("3", 3), ("", 0)]
@@ -243,8 +258,10 @@ class ExecutorTest(absltest.TestCase):
 
     with beam.Pipeline() as p:
       data = p | beam.Create(dataset)
-      merged = executor.sample_examples(data, None,
-                                        spec.SamplingStrategy.OVERSAMPLE)
+      merged = executor.sample_examples(data,
+                                        None,
+                                        spec.SamplingStrategy.OVERSAMPLE,
+                                        max_batch_size=3)
       assert_that(merged, equal_to(expected))
 
   def testMinimum(self):

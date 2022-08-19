@@ -83,7 +83,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     copy_others = exec_properties[spec.SAMPLER_COPY_KEY]
     shards = exec_properties[spec.SAMPLER_SHARDS_KEY]
     null_classes = json_utils.loads(exec_properties[spec.SAMPLER_CLASSES_KEY])
-    batch_size = exec_properties.get(spec.BATCH_SIZE, 100)
+    batch_size = exec_properties.get(spec.MAX_BATCH_SIZE, 10)
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict[spec.SAMPLER_INPUT_KEY])
@@ -162,13 +162,14 @@ def _generate_elements(example, label):
   return (class_label, parsed)
 
 
-def sample_data(key, val, key_counts=None, goal_count=0):
+def sample_data(key, val, key_counts_dict=None, goal_count=0):
   """Function called in a Beam pipeline that performs sampling using Python's
   random module on an input key:value pair, where the key is the class label
   and the values are the data points to sample. Note that the key is discarded."""
   count = goal_count
-  if key_counts:
-    class_count = key_counts[key]
+
+  if key_counts_dict:
+    class_count = key_counts_dict[key]
     count = round((goal_count / class_count) * len(val))
 
   random_sample_data = random.choices(val, k=count)
@@ -200,7 +201,6 @@ def filter_null(item, keep_null=False, null_vals=None):
     None or the inputted item, depending on if the item is False/in null_vals,
       and then depending on the value of keep_null.
   """
-
   if item[0] == 0:
     keep = True
   else:
@@ -228,7 +228,7 @@ def read_tfexamples(p, uri, label):
   return data
 
 
-def sample_examples(data, null_classes, sampling_strategy, batch_size):
+def sample_examples(data, null_classes, sampling_strategy, max_batch_size=10):
   """Function that performs the sampling given a label-mapped dataset."""
 
   # Finds the minimum frequency of all classes in the input label.
@@ -253,17 +253,17 @@ def sample_examples(data, null_classes, sampling_strategy, batch_size):
                 beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
                 | "Values" >> beam.Values()
                 | "GetSample" >> beam.CombineGlobally(sample_fn))
-  key_counts_dict = (key_counts | beam.combiners.ToDict())
   # Actually performs the undersampling functionality.
   # Output format is a K-V PCollection: {class_label: TFRecord in string format}
   res = (data
-         | "GroupByLabelIntoBatch" >> beam.GroupIntoBatches(batch_size)
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
+         |
+         "GroupIntoBatches" >> beam.GroupIntoBatches(batch_size=max_batch_size)
          | "Sample" >> beam.FlatMapTuple(
              sample_data,
              goal_count=beam.pvalue.AsSingleton(goal_count),
-             key_counts=beam.pvalue.AsSingleton(key_counts_dict)))
+             key_counts_dict=beam.pvalue.AsDict(key_counts)))
 
   # Take out all the null values from the beginning and put them back in the pipeline
   null = (data
