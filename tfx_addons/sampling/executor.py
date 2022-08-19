@@ -83,7 +83,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     copy_others = exec_properties[spec.SAMPLER_COPY_KEY]
     shards = exec_properties[spec.SAMPLER_SHARDS_KEY]
     null_classes = json_utils.loads(exec_properties[spec.SAMPLER_CLASSES_KEY])
-    batch_size = exec_properties.get(spec.MAX_BATCH_SIZE, 10)
 
     input_artifact = artifact_utils.get_single_instance(
         input_dict[spec.SAMPLER_INPUT_KEY])
@@ -122,8 +121,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         split_dir = os.path.join(output_dir, f"Split-{split}")
         with self._CreatePipeline(split_dir) as p:
           data = read_tfexamples(p, uri, label)
-          merged = sample_examples(data, null_classes, sampling_strategy,
-                                   batch_size)
+          merged = sample_examples(data, null_classes, sampling_strategy)
           write_tfexamples(merged, shards, split_dir)
       elif copy_others:  # Copy the other split if copy_others is True
         input_dir = uri
@@ -166,15 +164,17 @@ def sample_data(key, val, key_counts_dict=None, goal_count=0):
   """Function called in a Beam pipeline that performs sampling using Python's
   random module on an input key:value pair, where the key is the class label
   and the values are the data points to sample. Note that the key is discarded."""
-  count = goal_count
+  class_count = key_counts_dict[key]
+  proportion = goal_count / class_count
+  count = int(proportion)
 
-  if key_counts_dict:
-    class_count = key_counts_dict[key]
-    count = round((goal_count / class_count) * len(val))
-
-  random_sample_data = random.choices(val, k=count)
-
-  for item in random_sample_data:
+  data = [val] * count
+  rand = random.random()
+  if rand < (proportion % 1):
+    data.append(val)
+  # Uncomment below to debug behaviour when testing
+  # print(f"Returning {data} from {proportion} ({goal_count} / {class_count}) -> {rand} < {proportion % 1}")
+  for item in data:
     yield item
 
 
@@ -228,7 +228,7 @@ def read_tfexamples(p, uri, label):
   return data
 
 
-def sample_examples(data, null_classes, sampling_strategy, max_batch_size=10):
+def sample_examples(data, null_classes, sampling_strategy):
   """Function that performs the sampling given a label-mapped dataset."""
 
   # Finds the minimum frequency of all classes in the input label.
@@ -258,8 +258,6 @@ def sample_examples(data, null_classes, sampling_strategy, max_batch_size=10):
   res = (data
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
-         |
-         "GroupIntoBatches" >> beam.GroupIntoBatches(batch_size=max_batch_size)
          | "Sample" >> beam.FlatMapTuple(
              sample_data,
              goal_count=beam.pvalue.AsSingleton(goal_count),

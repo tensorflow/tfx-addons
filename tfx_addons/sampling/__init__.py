@@ -13,8 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Sampling component"""
-__all__ = [
-    "Sampler",
-]
+__all__ = ["Sampler", "SamplingStrategy"]
 
 from .component import Sampler
+from .spec import SamplingStrategy
