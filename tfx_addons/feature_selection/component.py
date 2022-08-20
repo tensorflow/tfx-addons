@@ -98,13 +98,23 @@ def FeatureSelection(  # pylint: disable=C0103
     updated_data: OutputArtifact[Examples],
     module_file: Parameter[str] = None,
     module_path: Parameter[str] = None,):
-  """Feature Selection component
-    Args (from the module file):
+  """Runs a user-specified feature selection algorithm on an `Examples` artifact
+    Args:
+      - orig_examples: An `Examples` input artifact with the data to be processed
+      - module_file: module name of the file to be used for configuration (refer below for configuration). Example: `modules_files.module_file_a`
+        Exactly one of `module_file` and `module_path` should be passed. If both are used, module_file would be preferred
+      - module_path: path to the file being used as a module_file. Example: `absolute_path/module_files/module_file_a.py` or `./module_files/module_file_a.py`
+        Exactly one of `module_file` and `module_path` should be passed. If both are used, module_file would be preferred
+
+    Module file configuration:
     - SELECTOR_PARAMS: Parameters for SelectorFunc in the form of
       a kwargs dictionary
+      Example:
+       {"score_func": chi2, "k": 2}
+      Here, `chi2` has been imported from sklearn.feature_selection
     - TARGET_FEATURE: Name of the feature containing target data
     - SelectorFunc: Selector function for univariate feature selection
-      example: SelectKBest, SelectPercentile from sklearn.feature_selection
+      example: SelectKBest, SelectPercentile from sklearn.feature_selection 
   """
 
   # importing the required functions and variables from the module file
