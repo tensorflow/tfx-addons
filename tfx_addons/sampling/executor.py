@@ -176,19 +176,19 @@ def sample_data(class_key, val, key_counts_dict=None, goal_count=0):
   """
 
   class_count = key_counts_dict[class_key]
-  percetage = goal_count / class_count
+  percentage = goal_count / class_count
 
   # Deterministic number of times value should be returned (used when oversampling)
-  count = int(percetage)
+  count = int(percentage)
   data = [val] * count
 
   # Randomly return value based on percentage of class should be returned overall
   rand = random.random()
-  if rand < (percetage % 1):
+  if rand < (percentage % 1):
     data.append(val)
 
   # Uncomment below to debug behaviour when testing
-  # print(f"Returning {data} from {proportion} ({goal_count} / {class_count}) -> {rand} < {proportion % 1}")
+  # print(f"Returning {data} from {percentage} ({goal_count} / {class_count}) -> {rand} < {percentage % 1}")
   for item in data:
     yield item
 
