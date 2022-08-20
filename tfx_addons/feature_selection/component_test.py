@@ -15,34 +15,12 @@
 """Tests for tfx_addons.feature_selection.component"""
 
 import os
-import tempfile
-# import urllib
-
-
-# from tensorflow import test
-# from tfx.components import CsvExampleGen
-# from tfx.orchestration.experimental.interactive.interactive_context import \
-    # InteractiveContext
-# from tfx.types import standard_artifacts
-# from tfx.dsl import Pipeline
 from tfx.orchestration import metadata
 from typing import Text, Optional, List
 import tfx
 import tensorflow as tf
 
 from tfx_addons.feature_selection import component
-
-
-import ml_metadata as mlmd
-from ml_metadata.metadata_store import metadata_store
-from ml_metadata.proto import metadata_store_pb2
-
-
-# getting the dataset
-_data_root = tempfile.mkdtemp(prefix='tfx-data')
-# DATA_PATH = 'https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv'
-# DATA_PATH = os.path.join("test", "iris.csv")
-
 
 def _create_pipeline(
     pipeline_name: Text, 
@@ -89,8 +67,6 @@ class FeatureSelectionTest(tf.test.TestCase):
         
         self._metadata_path = os.path.join(self._test_dir, 'tfx', 'metadata',
                                        self._pipeline_name, 'metadata.db')
-        
-        # self.connection_config = metadata_store_pb2.ConnectionConfig()
 
     def assertExecutedOnce(self, component: Text) -> None:
         """Check the component is executed exactly once."""
@@ -108,10 +84,6 @@ class FeatureSelectionTest(tf.test.TestCase):
 
 
     def testFeatureSelectionPipelineLocal(self):
-
-        # self.connection_config.fake_database.SetInParent() # Sets an empty fake database proto.
-
-
         tfx.v1.orchestration.LocalDagRunner().run(
             _create_pipeline(
                 pipeline_name=self._pipeline_name,
@@ -120,14 +92,16 @@ class FeatureSelectionTest(tf.test.TestCase):
                 module_path=self._module_path,
                 metadata_path=self._metadata_path,))
 
-        expected_execution_count = 6
+        expected_execution_count = 2
 
-        # store = metadata_store.MetadataStore(self.connection_config)
-
-        # artifact_count = len(store.get_artifacts())
-        # execution_count = len(store.get_executions())
-        # self.assertGreaterEqual(artifact_count, execution_count)
-        # self.assertEqual(expected_execution_count, execution_count)
+        metadata_config = (
+            tfx.orchestration.metadata.sqlite_metadata_connection_config(
+                self._metadata_path))
+        with metadata.Metadata(metadata_config) as m:
+            artifact_count = len(m.store.get_artifacts())
+            execution_count = len(m.store.get_executions())
+            self.assertGreaterEqual(artifact_count, execution_count)
+            self.assertEqual(expected_execution_count, execution_count)
 
         self.assertPipelineExecution()
 
@@ -135,7 +109,7 @@ class FeatureSelectionTest(tf.test.TestCase):
 
 if __name__ == '__main__':
 
-#   tf.compat.v1.enable_v2_behavior()
+  tf.compat.v1.enable_v2_behavior()
   tf.test.main()
 
 # _disabled pylint warning W0212: Access to a protected member till an alternate way is found
