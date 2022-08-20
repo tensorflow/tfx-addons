@@ -160,18 +160,33 @@ def _generate_elements(example, label):
   return (class_label, parsed)
 
 
-def sample_data(key, val, key_counts_dict=None, goal_count=0):
+def sample_data(class_key, val, key_counts_dict=None, goal_count=0):
   """Function called in a Beam pipeline that performs sampling using Python's
-  random module on an input key:value pair, where the key is the class label
-  and the values are the data points to sample. Note that the key is discarded."""
-  class_count = key_counts_dict[key]
-  proportion = goal_count / class_count
-  count = int(proportion)
+  random over each row of data.
 
+  Args:
+    class_key: Class key for the current row.
+    val: TFExample value for current row.
+    key_counts_dict: Dictionary containing element count for each class key.
+    goal_count: How many elements should each class have at the end of
+      execution.
+
+  Returns:
+    Iterator of TFExample
+  """
+
+  class_count = key_counts_dict[class_key]
+  percetage = goal_count / class_count
+
+  # Deterministic number of times value should be returned (used when oversampling)
+  count = int(percetage)
   data = [val] * count
+
+  # Randomly return value based on percentage of class should be returned overall
   rand = random.random()
-  if rand < (proportion % 1):
+  if rand < (percetage % 1):
     data.append(val)
+
   # Uncomment below to debug behaviour when testing
   # print(f"Returning {data} from {proportion} ({goal_count} / {class_count}) -> {rand} < {proportion % 1}")
   for item in data:
@@ -233,7 +248,6 @@ def sample_examples(data, null_classes, sampling_strategy):
 
   # Finds the minimum frequency of all classes in the input label.
   # Output is a singleton PCollection with the minimum # of examples.
-
   def find_minimum(elements):
     return min(elements or [0])
 
@@ -246,15 +260,18 @@ def sample_examples(data, null_classes, sampling_strategy):
     sample_fn = find_maximum
   else:
     raise ValueError("Invalid value for sampling_strategy variable!")
-
+  # Dictionary containing count of elements per class
   key_counts = (data | "CountPerKey" >> beam.combiners.Count.PerKey())
+
+  # Calculate how many elements should be in each class in the end
   goal_count = (key_counts
                 | "FilterNullCount" >>
                 beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
                 | "Values" >> beam.Values()
                 | "GetSample" >> beam.CombineGlobally(sample_fn))
-  # Actually performs the undersampling functionality.
-  # Output format is a K-V PCollection: {class_label: TFRecord in string format}
+
+  # Actually performs the sampling functionality.
+  # Output is a PCollection of TFExample
   res = (data
          | "FilterNull" >>
          beam.Filter(lambda x: filter_null(x, null_vals=null_classes))
