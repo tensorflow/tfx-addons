@@ -47,11 +47,12 @@ tfxa.feast_examplegen.FeastExampleGen(...)
 
 * [tfxa.mlmd_client](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/mlmd_client) 
 * [tfxa.schema_curation](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/schema_curation) 
+* [tfxa.feature_selection](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/feature_selection) 
 * [tfxa.feast_examplegen](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/feast_examplegen) 
 * [tfxa.xgboost_evaluator](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/xgboost_evaluator)
 * [tfxa.sampling](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/sampling)
 * [tfxa.message_exit_handler](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/message_exit_handler) 
-
+* [tfxa.pandas_transform](https://github.com/tensorflow/tfx-addons/tree/main/tfx_addons/message_exit_handler) 
 
 Check out [proposals](https://github.com/tensorflow/tfx-addons/tree/main/proposals) for a list of existing or upcoming projects proposals for TFX Addons.
 
