@@ -66,7 +66,7 @@ class FeatureSelectionTest(tf.test.TestCase):
     self._metadata_path = os.path.join(self._test_dir, 'tfx', 'metadata',
                                        self._pipeline_name, 'metadata.db')
 
-  def assertExecutedOnce(self, component: Text) -> None:
+  def assertExecutedOnce(self, component: Text) -> None:  # pylint: disable=W0621
     """Check the component is executed exactly once."""
     component_path = os.path.join(self._pipeline_root, component)
     self.assertTrue(tfx.dsl.io.fileio.exists(component_path))
@@ -95,6 +95,9 @@ class FeatureSelectionTest(tf.test.TestCase):
     with metadata.Metadata(metadata_config) as m:
       artifact_count = len(m.store.get_artifacts())
       execution_count = len(m.store.get_executions())
+      self.assertEqual(1,
+                       len(m.store.get_artifacts_by_type("Feature Selection")))
+      self.assertEqual(2, len(m.store.get_artifacts_by_type("Examples")))
       self.assertGreaterEqual(artifact_count, execution_count)
       self.assertEqual(expected_execution_count, execution_count)
 
@@ -104,3 +107,5 @@ class FeatureSelectionTest(tf.test.TestCase):
 if __name__ == '__main__':
   tf.compat.v1.enable_v2_behavior()
   tf.test.main()
+
+# _disabled pylint warning W0621: Access to a protected member till an alternate way is found
