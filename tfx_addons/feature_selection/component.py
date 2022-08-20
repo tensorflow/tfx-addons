@@ -93,9 +93,11 @@ def _get_file_list(dir_path):
 
 @component
 def FeatureSelection(  # pylint: disable=C0103
-    module_file: Parameter[str], orig_examples: InputArtifact[Examples],
+    orig_examples: InputArtifact[Examples],
     feature_selection: OutputArtifact[FeatureSelectionArtifact],
-    updated_data: OutputArtifact[Examples]):
+    updated_data: OutputArtifact[Examples],
+    module_file: Parameter[str] = None,
+    module_path: Parameter[str] = None,):
   """Feature Selection component
     Args (from the module file):
     - SELECTOR_PARAMS: Parameters for SelectorFunc in the form of
@@ -106,7 +108,16 @@ def FeatureSelection(  # pylint: disable=C0103
   """
 
   # importing the required functions and variables from the module file
-  modules = importlib.import_module(module_file)
+
+  if module_file:
+    modules = importlib.import_module(module_file)
+  elif module_path:
+    module_spec = importlib.util.spec_from_file_location("all_modules", module_path)
+    modules = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(modules)
+
+
+
   mod_names = ["SELECTOR_PARAMS", "TARGET_FEATURE", "SelectorFunc"]
   selector_params, target_feature, selector_func = [
       getattr(modules, i) for i in mod_names

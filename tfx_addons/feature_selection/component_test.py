@@ -25,7 +25,7 @@ import tempfile
     # InteractiveContext
 # from tfx.types import standard_artifacts
 # from tfx.dsl import Pipeline
-# from tfx.orchestration import metadata
+from tfx.orchestration import metadata
 from typing import Text, Optional, List
 import tfx
 import tensorflow as tf
@@ -48,9 +48,8 @@ def _create_pipeline(
     pipeline_name: Text, 
     pipeline_root: Text, 
     data_root: Text, 
-    module_file: Text,
-    metadata_connection_config: Optional[
-    metadata_store_pb2.ConnectionConfig] = None,
+    module_path: Text,
+    metadata_path: Text,
     beam_pipeline_args: Optional[List[Text]] = None
 ) -> tfx.v1.dsl.Pipeline:
 
@@ -59,7 +58,7 @@ def _create_pipeline(
     # creating and executing the FeatureSelection artifact
     feature_selection = component.FeatureSelection(
         orig_examples=example_gen.outputs['examples'],
-        module_file=module_file)
+        module_path=module_path)
 
     components = [
         example_gen,
@@ -69,8 +68,8 @@ def _create_pipeline(
     return tfx.v1.dsl.Pipeline(
         pipeline_name=pipeline_name, 
         pipeline_root=pipeline_root, 
-        components=components, 
-        metadata_connection_config=metadata_connection_config,
+        components=components,
+        metadata_connection_config=metadata.sqlite_metadata_connection_config(metadata_path),
         beam_pipeline_args=beam_pipeline_args)
 
 
@@ -84,11 +83,14 @@ class FeatureSelectionTest(tf.test.TestCase):
 
         self._pipeline_name = 'feature_selection'
         self._data_root = os.path.join(self._feature_selection_root, 'test')
-        self._module_file = os.path.join(self._feature_selection_root, 'example', 'modules', 'iris_module_file.py')
+        self._module_path = os.path.join(self._feature_selection_root, 'example', 'modules', 'iris_module_file.py')
         self._pipeline_root = os.path.join(self._test_dir, 'tfx', 'pipelines',
                                         self._pipeline_name)
         
-        self.connection_config = metadata_store_pb2.ConnectionConfig()
+        self._metadata_path = os.path.join(self._test_dir, 'tfx', 'metadata',
+                                       self._pipeline_name, 'metadata.db')
+        
+        # self.connection_config = metadata_store_pb2.ConnectionConfig()
 
     def assertExecutedOnce(self, component: Text) -> None:
         """Check the component is executed exactly once."""
@@ -107,7 +109,7 @@ class FeatureSelectionTest(tf.test.TestCase):
 
     def testFeatureSelectionPipelineLocal(self):
 
-        self.connection_config.fake_database.SetInParent() # Sets an empty fake database proto.
+        # self.connection_config.fake_database.SetInParent() # Sets an empty fake database proto.
 
 
         tfx.v1.orchestration.LocalDagRunner().run(
@@ -115,8 +117,8 @@ class FeatureSelectionTest(tf.test.TestCase):
                 pipeline_name=self._pipeline_name,
                 pipeline_root=self._pipeline_root,
                 data_root=self._data_root,
-                module_file=self._module_file,
-                metadata_connection_config=self.connection_config))
+                module_path=self._module_path,
+                metadata_path=self._metadata_path,))
 
         expected_execution_count = 6
 
