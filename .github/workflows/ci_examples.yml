@@ -6,6 +6,7 @@ on:
       - 'tfx_addons/**'
       - 'examples/**'
       - '.github/workflows/ci_examples.yml'
+      - '.github/workflows/filter_examples.py'
       - 'setup.py'
       - 'pyproject.toml'
     branches:
@@ -16,6 +17,7 @@ on:
       - 'tfx_addons/**'
       - 'examples/**'
       - '.github/workflows/ci_examples.yml'
+      - '.github/workflows/filter_examples.py'
       - 'setup.py'
       - 'pyproject.toml'
     branches:
