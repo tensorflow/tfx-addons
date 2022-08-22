@@ -39,7 +39,6 @@ GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
 # because of them
 RUN_ALL_FILES = [
     ".github/workflows/ci_examples.yml",
-    ".github/workflows/filter_examples.yml"
 ]
 
 
