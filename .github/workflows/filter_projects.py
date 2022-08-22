@@ -29,6 +29,9 @@ RUN_ALL_FILES = [
     "tfx_addons/version.py", "setup.py", ".github/workflows/ci.yml",
     "pyproject.toml"
 ]
+
+# Get event that triggered workflow
+# See: https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
 GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
 
 

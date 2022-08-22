@@ -32,6 +32,8 @@ from workflows import filter_projects  # pylint: disable=wrong-import-position
 
 logging.getLogger().setLevel(logging.INFO)
 
+# Get event that triggered workflow
+# See: https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
 GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
 
 # NB(casassg): Files that if changed should trigger running CI for all examples.
