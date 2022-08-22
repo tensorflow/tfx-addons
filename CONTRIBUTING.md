@@ -99,7 +99,7 @@ SIG team members will be assigned to review your pull requests. Once the pull re
 
 Each project specifies it's own Python dependencies depending on what folder it lives under:
 
-- **examples/ projects**: Those need to provide a `requirements.txt` in the root of their folder. Example: `examples/xgboost_penguins/requirements.txt`. If you want your example to be executed as part of CI, you will also need to modify [ci_examples.yml](https://github.com/tensorflow/tfx-addons/blob/main/.github/workflows/ci_examples.yml#L31) and add the name of your `examples/{project_name}` to the `projects` array. You can depend on a `tfx_addons` project by using `../..[project_name]` in your `requirements.txt` file.
+- **examples/ projects**: Those need to provide a `requirements.txt` in the root of their folder. Example: `examples/xgboost_penguins/requirements.txt`. You can depend on a `tfx_addons` project by using `../..[project_name]` in your `requirements.txt` file.
 - **tfx_addons/ projects**: In order for project to be included in release and be tested, you will need to specify dependencies in [tfx_addons/version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py) `_PKG_METADATA` where key is the project name (aka tfx_addons/{project_name}) and value is a list of requirements strings needed for your component. Once added, this will automatically be picked up by CI and will automatically include your project into the tfx-addons release. In addition, your project will be added to the `tfx_addons.{project_name}` namespace, such that it can be used:
 
 ```python

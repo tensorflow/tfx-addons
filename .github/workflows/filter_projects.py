@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ logging.getLogger().setLevel(logging.INFO)
 # This are files which are core and we want to avoid causing outages
 # because of them
 RUN_ALL_FILES = [
-    "tfx_addons/version.py", "setup.py", ".github/workflows/ci.yml"
+    "tfx_addons/version.py", "setup.py", ".github/workflows/ci.yml",
+    "pyproject.toml"
 ]
 
 
@@ -42,12 +43,12 @@ def _get_testable_projects() -> List[str]:
   return list(context["_PKG_METADATA"].keys())
 
 
-def _get_affected_projects(affected_files: List[str],
-                           testable_projects: List[str]) -> List[str]:
+def get_affected_projects(affected_files: List[str]) -> List[str]:
   """Given a list of affected files, and  projects that can be tested,
   find what projects should CI run"""
 
   logging.info("Found affected files: %s", affected_files)
+  testable_projects = _get_testable_projects()
   for run_all_file in RUN_ALL_FILES:
     if run_all_file in affected_files:
       logging.warning("Found change in %s, running all projects", run_all_file)
@@ -74,6 +75,5 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   with open(args.file_manifest, "r") as f:
-    affected_components = _get_affected_projects(json.load(f),
-                                                 _get_testable_projects())
+    affected_components = get_affected_projects(json.load(f))
   print(json.dumps(affected_components))

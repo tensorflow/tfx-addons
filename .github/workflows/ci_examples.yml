@@ -23,12 +23,36 @@ on:
       - r*
 
 jobs:
-  ci-examples:
+  filter_examples:
+    # Dynamic matrix trick inspired by https://www.cynkra.com/blog/2020-12-23-dynamic-gha/
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    outputs:
+      projects: ${{ steps.set-matrix.outputs.projects }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Get Changed Files
+      id: changed_files
+      uses: trilom/file-changes-action@v1.2.3
+      with:
+        output: json
+    - name: Filter example projects
+      id: set-matrix
+      run: |
+        echo "::set-output name=projects::$(python ./.github/workflows/filter_examples.py $HOME/files.json)"
+  ci-examples:
+    runs-on: ubuntu-latest
+    needs: filter_examples
+    timeout-minutes: 60
     strategy:
+      # Test for each project in parallel using ci_max and ci_min to ensure 
+      # tested in range of tfx/tensorflow supported versions
       matrix:
-        project: [sklearn_penguins, xgboost_penguins]
+        project: ${{fromJson(needs.filter_examples.outputs.projects)}}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
