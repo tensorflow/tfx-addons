@@ -2,6 +2,8 @@
 
 TFX Addons follows [Semantic Versioning 2.0](https://semver.org/) strategy.
 
+* See the [Release Notes](https://github.com/tensorflow/tfx-addons/releases) for current and past releases.
+
 ## Major/Minor releases
 
 1. Create new `rX.Y` branch on https://github.com/tensorflow/tfx-addons from `main`.
