@@ -29,6 +29,7 @@ RUN_ALL_FILES = [
     "tfx_addons/version.py", "setup.py", ".github/workflows/ci.yml",
     "pyproject.toml"
 ]
+GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
 
 
 def _get_testable_projects() -> List[str]:
@@ -49,6 +50,9 @@ def get_affected_projects(affected_files: List[str]) -> List[str]:
 
   logging.info("Found affected files: %s", affected_files)
   testable_projects = _get_testable_projects()
+  if GH_EVENT_NAME == "push":
+    logging.info("Found %s event name, running all projects", GH_EVENT_NAME)
+    return testable_projects
   for run_all_file in RUN_ALL_FILES:
     if run_all_file in affected_files:
       logging.warning("Found change in %s, running all projects", run_all_file)

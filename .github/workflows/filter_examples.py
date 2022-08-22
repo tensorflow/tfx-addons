@@ -32,6 +32,8 @@ from workflows import filter_projects  # pylint: disable=wrong-import-position
 
 logging.getLogger().setLevel(logging.INFO)
 
+GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
+
 # NB(casassg): Files that if changed should trigger running CI for all examples.
 # This are files which are core and we want to avoid causing outages
 # because of them
@@ -67,6 +69,9 @@ def _get_affected_examples(affected_files: List[str]) -> List[str]:
   logging.info("Found affected files: %s", affected_files)
   testable_examples = _get_testable_examples()
   logging.info("Found %s testable example folders", testable_examples)
+  if GH_EVENT_NAME == "push":
+    logging.info("Found %s event name, running all projects", GH_EVENT_NAME)
+    return testable_examples
   for run_all_file in RUN_ALL_FILES:
     if run_all_file in affected_files:
       logging.warning("Found change in %s, running all projects", run_all_file)
