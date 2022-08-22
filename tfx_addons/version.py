@@ -55,7 +55,7 @@ _PKG_METADATA = {
         f"tfx{_TFXVERSION_CONSTRAINT}",
     ],
     "feature_selection":
-    [f"tfx{_TFXVERSION_CONSTRAINT}", "scikit_learn>=1.0.2", "tfx_bsl>=1.0.0"],
+    [f"tfx{_TFXVERSION_CONSTRAINT}", "scikit_learn>=1.0.2,<2.0.0"],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
         "feast>=0.21.3,<1.0.0",
