@@ -47,8 +47,14 @@ def _get_testable_examples() -> List[str]:
 
   projects = []
   for project in os.listdir(os.path.join(BASE_DIR, "examples")):
-    if os.path.exists(
+    if not os.path.exists(
         os.path.join(BASE_DIR, "examples", project, "requirements.txt")):
+      continue
+    test_files = [
+        f for f in os.listdir(os.path.join(BASE_DIR, "examples", project))
+        if 'test' in f and f.endswith(".py")
+    ]
+    if test_files:
       projects.append(project)
 
   return projects
