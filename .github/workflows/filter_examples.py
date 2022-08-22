@@ -34,7 +34,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 # Get event that triggered workflow
 # See: https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
+GH_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "unknown")
 
 # NB(casassg): Files that if changed should trigger running CI for all examples.
 # This are files which are core and we want to avoid causing outages
@@ -71,8 +71,12 @@ def _get_affected_examples(affected_files: List[str]) -> List[str]:
   testable_examples = _get_testable_examples()
   logging.info("Found %s testable example folders", testable_examples)
   if GH_EVENT_NAME == "push":
-    logging.info("Found %s event name, running all projects", GH_EVENT_NAME)
+    logging.info("GitHub Action trigger is %s, running all projects",
+                 GH_EVENT_NAME)
     return testable_examples
+  else:
+    logging.info("GitHub Action trigger is %s, filtering projects",
+                 GH_EVENT_NAME)
   for run_all_file in RUN_ALL_FILES:
     if run_all_file in affected_files:
       logging.warning("Found change in %s, running all projects", run_all_file)
