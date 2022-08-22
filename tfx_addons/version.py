@@ -31,12 +31,16 @@ __version__ = ".".join([_MAJOR_VERSION, _MINOR_VERSION, _PATCH_VERSION])
 if _VERSION_SUFFIX:
   __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)
 
-# Required TFX version [min, max), keep depconstraint in ci.yml in sync
+# Required TFX version [min, max)
 _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
-_EXCLUSIVE_MAX_TFX_VERSION = "1.8.0"
+_EXCLUSIVE_MAX_TFX_VERSION = "1.10.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
-
+_CI_MAX_CONSTRAINTS = ["tfx~=1.9.0", "tensorflow~=2.9.0"]
+_CI_MIN_CONSTRAINTS = [
+    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0",
+    "apache-beam[gcp]<2.35"
+]
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
 # - Key: Project name that corresponds to  folder tfx_addons.{} namespace.
@@ -50,9 +54,12 @@ _PKG_METADATA = {
     "schema_curation": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
     ],
+    "feature_selection": [
+        f"tfx{_TFXVERSION_CONSTRAINT}",
+    ],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "feast>=0.16.0,<1.0.0",
+        "feast>=0.21.3,<1.0.0",
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
@@ -65,4 +72,5 @@ _PKG_METADATA = {
         "slackclient>=2.9.0,<3.0",
         "pydantic>=1.8.0,<2.0",
     ],
+    "pandas_transform": [f"tfx{_TFXVERSION_CONSTRAINT}", "pandas>=1.0.0<2.0"],
 }

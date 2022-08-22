@@ -143,17 +143,12 @@ Include a license at the top of new files.
 
 * [Python license example](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/nn.py#L1)
 
-Pre-commit will add the files for you if installed.
-
-```bash
-pre-commit run --hook-stage push --files tfx_addons/__init__.py
-```
-
 #### Testing your code
 
 We use pytest to run tests. You can run tests locally using:
 
 - Create virtual environemnt: `python3 -m venv env`
-- Activate virtual environment: `source env/bin/activate`
-- Install test packages: `pip install -e ".[all,test]"`
-- Run tests: `pytest`
+- Activate virtual environment: `source env/bin/activate && pip install --upgrade pip`
+- Choose component to develop: `export COMPONENT_NAME=mlmd_client` (replace with the component you will be developing)
+- Install test packages: `pip install -e ".[$COMPONENT_NAME,test]"`
+- Run tests: `python -m pytest tfx_addons/$COMPONENT_NAME`

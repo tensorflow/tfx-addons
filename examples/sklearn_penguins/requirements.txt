@@ -1,3 +1,4 @@
 scikit-learn==0.23.2
 tensorflow==2.5.3
 tfx[kfp]~=1.2.0
+apache-beam<2.40
