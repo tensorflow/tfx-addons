@@ -99,8 +99,8 @@ SIG team members will be assigned to review your pull requests. Once the pull re
 
 Each project specifies it's own Python dependencies depending on what folder it lives under:
 
-- **examples/ projects**: Those need to provide a `requirements.txt` in the root of their folder. Example: `examples/xgboost_penguins/requirements.txt`. You can depend on a `tfx_addons` project by using `../..[project_name]` in your `requirements.txt` file.
-- **tfx_addons/ projects**: In order for project to be included in release and be tested, you will need to specify dependencies in [tfx_addons/version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py) `_PKG_METADATA` where key is the project name (aka tfx_addons/{project_name}) and value is a list of requirements strings needed for your component. Once added, this will automatically be picked up by CI and will automatically include your project into the tfx-addons release. In addition, your project will be added to the `tfx_addons.{project_name}` namespace, such that it can be used:
+* **Projects in `examples/`**: Those need to provide a `requirements.txt` in the root of their folder. Example: `examples/xgboost_penguins/requirements.txt`. You can depend on a `tfx_addons` project by using `../..[project_name]` in your `requirements.txt` file.
+* **Projects in `tfx_addons/`**: In order for project to be included in release and be tested, you will need to specify dependencies in [tfx_addons/version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py) `_PKG_METADATA` where key is the project name (aka tfx_addons/{project_name}) and value is a list of requirements strings needed for your component. Once added, this will automatically be picked up by CI and will automatically include your project into the tfx-addons release. In addition, your project will be added to the `tfx_addons.{project_name}` namespace, such that it can be used:
 
 ```python
 
@@ -109,6 +109,7 @@ import tfx_addons as tfxa
 tfxa.project_name
 ```
 
+Note that CI runs on `pytest`, see _Testing your code_ below to check how to create tests for your code.
 
 ### Development tips
 
@@ -168,3 +169,5 @@ We use pytest to run tests. You can run tests locally using:
 - Choose component to develop: `export COMPONENT_NAME=mlmd_client` (replace with the component you will be developing)
 - Install test packages: `pip install -e ".[$COMPONENT_NAME,test]"`
 - Run tests: `python -m pytest tfx_addons/$COMPONENT_NAME`
+
+Note that only files that end with `_test.py` will be recognized as test. Learn more on writing pytest tests in [pytest docs](https://docs.pytest.org/en/latest/getting-started.html#create-your-first-test).
