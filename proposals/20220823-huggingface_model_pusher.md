@@ -35,7 +35,7 @@ HFModelPusher(
     model_blessing: Optional[types.Channel] = None,    
 )
 ```
-- `username` : the username of the HuggingFace Hub
+- `username` : username of the HuggingFace user (can be an individual user or an organization)
 - `huggingface_access_token` : access token value of the HuggingFace Hug user. 
 - `repo_name` : the repository name to push the current version of the model to. The default value is same as the TFX pipeline name
 - `model` : the model artifact from the upstream TFX component such as `Trainer`
