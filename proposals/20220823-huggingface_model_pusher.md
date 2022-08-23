@@ -7,7 +7,7 @@
 
 **Your email:** deep.diver.csp@gmail.com
 
-**Your company/organization:** Individual(ML GDE)
+**Your company/organization:** Individual ([ML GDE](https://developers.google.com/community/experts/directory/profile/profile-chansung-park))
 
 **Project name:** HuggingFace Model Pusher
 
