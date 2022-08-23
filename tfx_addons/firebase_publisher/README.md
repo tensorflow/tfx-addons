@@ -57,7 +57,7 @@ FirebasePublisher(
   
   - Download the model from the upstream TFX component if the model is blessed. Unfortunately, Firebase ML only lets us upload/host a model from the local storage, so this step is required. Along the way, if the model is `TFLite` format, local flag `is_tfile` will be marked as `True`
   
-  - If the model is `SavedModel` (which can be determined if `is_tflite` is set to `False`), `TFLiteGCSModelSource.from_saved_model(model_path)` is called. This function will convert `SavedModel` to `TFLite` and stores it in the GCS bucket specified in `storage_bucket`. Otherwise, `TFLiteGCSModelSource.from_tflite_model_file(model_path)` is used to directly upload the given `TFLite` model file
+  - The model format can be either of `SavedModel` or `TFLite`. It searches for the `*.tflite` file during the downloading/copying process. When it is found, `TFLiteGCSModelSource.from_tflite_model_file(model_path)` function will be used to store the model into the GCS bucket specified in `storage_bucket`. If any `*.tflite` is not found, `TFLiteGCSModelSource.from_saved_model(model_path)` is used instead. `from_saved_model()` function internally converts `SavedModel` to `TFLite`, then the rest of the process is the same as `from_tflite_model_file`.
 
   - Search the list of models whose name is same to the `display_name`. If the list is empty, a new model will be created and hosted. If the list is non-empty, the existing modell will be updated. 
     - In any cases, tags will be updated with the `tags`. Plus, additional tag information of the model version will be automatically added.
