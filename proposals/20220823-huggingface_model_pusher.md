@@ -20,7 +20,7 @@ Component
 ## Project Use-Case(s)
 The HuggingFace Model Hub lets us have [Git-LFS](https://git-lfs.github.com) enabled repositories in public and private modes. Supported models hosted on the HuggingFace Model Hub can be directly loaded/used with APIs provided by [transformers](https://huggingface.co/docs/transformers/index) package. However, it is not limited. We can host arbitrary types of models too. 
 
-Plus, HuggingFace Model Hub is easy to manage model versions, especially who is familar with Git.
+HuggingFace Model Hub is easy to manage model versions, especially for those familiar with Git.
 
 ## Project Implementation
 HFModelPusher is a class-based TFX component, and it inherits from TFX standard `Pusher` component.
