@@ -34,7 +34,7 @@ def deploy_model_for_firebase_ml(
     options["storageBucket"] = storage_bucket
     tags.append(model_version)
 
-    firebase_admin.initialize_app(credential, options)
+    firebase_admin.initialize_app(credential=credential, options=options)
     logging.info("firebase app initialization is completed")
     
     tmp_model_path = os.path.join(tmp_dir, "model")
@@ -76,6 +76,6 @@ def deploy_model_for_firebase_ml(
         new_model = ml.create_model(model)
         ml.publish_model(new_model.model_id)
 
-        logging.info("model doesn exists, so it is created")
+        logging.info("model didn't exist, so it is created")
 
     return ""
