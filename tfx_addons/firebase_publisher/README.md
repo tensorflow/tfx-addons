@@ -21,7 +21,7 @@ This project helps users to publish trained models directly from TFX Pusher comp
 With Firebase ML, we can guarantee that mobile devices can be equipped with the latest ML model without explicitly embedding binary in the project compiling stage. We can even A/B test different versions of a model with Google Analytics when the model is published on Firebase ML.
 
 ## Project Implementation
-Firebase ML Publisher component will be implemented as Python class-based component. You can find the [actual source code](https://github.com/deep-diver/complete-mlops-system-workflow/tree/feat/firebase-publisher/training_pipeline/pipeline/components/pusher/FirebasePublisher) in my personal project. 
+Firebase ML Publisher component will be implemented as a Python class-based component. You can find the [actual source code](https://github.com/deep-diver/complete-mlops-system-workflow/tree/feat/firebase-publisher/training_pipeline/pipeline/components/pusher/FirebasePublisher) in my personal project. 
 
 The implementation details
 - This component behaves similar to [Pusher](https://www.tensorflow.org/tfx/api_docs/python/tfx/v1/components/Pusher) component, but it pushes/hosts model to Firebase ML instead. To this end, FirebasePublisher interits Pusher, and it gets the following inputs
