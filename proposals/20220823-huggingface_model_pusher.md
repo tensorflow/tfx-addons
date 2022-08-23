@@ -51,7 +51,7 @@ It gives the follwing outputs:
 The behaviour of the component:
 1. It pushes the model when the model is blessed or when the `model_blessing` parameter is set to `None`
 2. Creates HuggingFace Hub Repository object using the `huggingface-hub` package. It will clone one if there is already an existing repository.
-3. Checkout a new branch with the name as `pushed_version`.
+3. Checks out a new branch with the name as `pushed_version`.
 4. Copy all the model related files into a temporary directory in a local file system. All the model related files produced by the upstream component such as `Trainer`. They could be stored in GCS bucket, so `tf.io.gfile` module is a good choice since it handles files in location agnostic manner (GCS or local). 
 5. Add & commit the current status
 6. Pushes the commit to the remote HuggingFace Model Repository
