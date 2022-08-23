@@ -1,12 +1,38 @@
 from typing import Any, Dict, Optional
 
 from tfx import types
-from tfx.components.pusher import component as pusher_component
+from tfx.types import standard_artifacts
+from tfx.types.component_spec import ChannelParameter, ExecutionParameter
 from tfx.dsl.components.base import executor_spec
 
 from tfx_addons.firebase_publisher import executor
 
-class FirebasePublisher(pusher_component.Pusher):
+MODEL_KEY = 'model'
+PUSHED_MODEL_KEY = 'pushed_model'
+MODEL_BLESSING_KEY = 'model_blessing'
+
+class FirebasePublisherSpec(types.ComponentSpec):
+  """ComponentSpec for TFX FirebasePublisher Component."""
+
+  PARAMETERS = {
+      'display_name': ExecutionParameter(type=str),
+      'storage_bucket': ExecutionParameter(type=str),
+      'tags': ExecutionParameter(type=List, optional=True),
+      'options': ExecutionParameter(type=Dict, optional=True),
+      'credential_path': ExecutionParameter(type=str, optional=True),
+  }
+  INPUTS = {
+      MODEL_KEY:
+          ChannelParameter(type=standard_artifacts.Model, optional=True),
+      MODEL_BLESSING_KEY:
+          ChannelParameter(
+              type=standard_artifacts.ModelBlessing, optional=True),
+  }
+  OUTPUTS = {
+      PUSHED_MODEL_KEY: ChannelParameter(type=standard_artifacts.PushedModel),
+  }
+
+class FirebasePublisher(types.ComponentSpec):
     """Component for pushing model to Firebase ML"""
 
     EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
@@ -14,12 +40,12 @@ class FirebasePublisher(pusher_component.Pusher):
     def __init__(
         self,
         display_name: str,
-        tags: List[str],
         storage_bucket: str,
-        model: Optional[types.BaseChannel] = None,
-        model_blessing: Optional[types.BaseChannel] = None,        
+        tags: Optional[List[str]] = None,
         options: Optional[Dict] = None,
         credential_path: Optional[str] = None,
+        model: Optional[types.BaseChannel] = None,
+        model_blessing: Optional[types.BaseChannel] = None,        
     ):
         """Construct a FirebasePublisher component.
         Args:
@@ -39,8 +65,8 @@ class FirebasePublisher(pusher_component.Pusher):
             display_name=display_name,
             tags=tags,
             storage_bucket=storage_bucket,
-            model=model,
-            model_blessing=model_blessing,            
             options=options,
             credential_path=credential_path,
+            model=model,
+            model_blessing=model_blessing,            
         )
