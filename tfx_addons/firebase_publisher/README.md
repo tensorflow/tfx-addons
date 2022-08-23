@@ -28,33 +28,24 @@ The implementation details
 
 ```python
 FirebasePublisher(
+  display_name: str,
+  tags: List[str],
+  storage_bucket: str,
   model: types.BaseChannel = None,
+  options: Optional[Dict] = None,
+  credential_path: Optional[str] = None,
   model_blessing: Optional[types.BaseChannel] = None,
-  custom_config: Optional[Dict[str, Any]] = None,
 )
 ```
 
 - Each inputs:
   - `model` : the model from the upstream TFX component such as [Trainer](https://www.tensorflow.org/tfx/api_docs/python/tfx/v1/components/Trainer)
   - `model_blessing` : the output of `blessing` from the Evaluator component to indicate if the given `model` is good enough to be pushed
-  - `custom_config` : additional information to initialize and configure [Firebase Admin SDK](https://firebase.google.com/docs/reference/admin/python). `FIREBASE_ML_MODEL_NAME` and `FIREBASE_ML_MODEL_TAGS` correspond to the `display_name` and `tags` respectively of the Firebase hosted model. `FIREBASE_CREDENTIALS` is a optional parameter, and it indicates GCS location where a Service Account Key (JSON) file is stored. If this parameter is not given, [Application Default Credentials](https://cloud.google.com/docs/authentication/production) will be used in GCP environment
-
-    ```python
-    FIREBASE_ML_ARGS = {
-        "FIREBASE_ML": {
-            "FIREBASE_CREDENTIALS": ...,
-            "FIREBASE_ML_MODEL_NAME": ...,
-            "FIREBASE_ML_MODEL_TAGS": ["tag1", ... ],
-            "OPTIONS": { 
-                # to be passed directly into the options argument of firebase_admin.initialize_app. 
-                # The mandatory option is storageBucket where Firebase ML stores model
-                # https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app
-
-                "storageBucket": ...,
-            },
-        }
-    }
-    ```
+  - `display_name` : display name to appear in Firebase ML. This should be a unique value since it will be used to search a existing model to update
+  - `tags` : tags to appear in Firebase ML
+  - `storage_bucket` : GCS bucket where the hosted model is stored. `gs://` should not be included
+  - `credential_path` : an optional parameter, and it indicates GCS or local location where a Service Account Key (JSON) file is stored. If this parameter is not given, [Application Default Credentials](https://cloud.google.com/docs/authentication/production) will be used in GCP environment
+  - `options` : additional configurations to be passed to initialize Firebase app
 
 - It outputs the following information by the method [`_MarkPushed`](https://github.com/tensorflow/tfx/blob/3b5290aa77c2df52a4791715cfd761be7696fe81/tfx/components/pusher/executor.py#L222) from Pusher component
   - `pushed` : indicator if the model is pushed without any issue or if the model is blessed.
@@ -62,14 +53,14 @@ FirebasePublisher(
   - `pushed_version` : version string of the pushed model. This is determined in the same manner as Pusher by `str(int(time.time()))`
 
 - The detailed behaviour of this component
-  - Initialize Firebase App with `firebase_admin.initialize_app` from [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup). It uses the inputs passed in `custom_config`. When `FIREBASE_CREDENTIALS` is given, it first downloads the credential file. Otherwise, all the values in `OPTIONS` will be passed to the `options` parameter
+  - Initialize Firebase App with `firebase_admin.initialize_app` from [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup). When `credential_path` is given, it first downloads the credential file and uses it in the `creds` argument of the `initialize_app()`. When `options` parameter of this component is not `None`, it will be passed to the `options` argument of the `initialize_app()`.
   
   - Download the model from the upstream TFX component if the model is blessed. Unfortunately, Firebase ML only lets us upload/host a model from the local storage, so this step is required. Along the way, if the model is `TFLite` format, local flag `is_tfile` will be marked as `True`
   
-  - If the model is `SavedModel` (which can be determined if `is_tflite` is set to `False`), `TFLiteGCSModelSource.from_saved_model(model_path)` is called. This function will convert `SavedModel` to `TFLite` and stores it in the GCS bucket specified in `storageBucket` of `custom_config`. Otherwise, `TFLiteGCSModelSource.from_tflite_model_file(model_path)` is used to directly upload the given `TFLite` model file
+  - If the model is `SavedModel` (which can be determined if `is_tflite` is set to `False`), `TFLiteGCSModelSource.from_saved_model(model_path)` is called. This function will convert `SavedModel` to `TFLite` and stores it in the GCS bucket specified in `storage_bucket`. Otherwise, `TFLiteGCSModelSource.from_tflite_model_file(model_path)` is used to directly upload the given `TFLite` model file
 
-  - Search the list of models whose `display_name` is same to the `FIREBASE_ML_MODEL_NAME` in `custom_config`. If the list is empty, a new model will be created and hosted. If the list is non-empty, the existing modell will be updated. 
-    - In any cases, tags will be updated with the `FIREBASE_ML_MODEL_TAGS` in `custom_config`. Plus, additional tag information of the model version will be automatically added.
+  - Search the list of models whose name is same to the `display_name`. If the list is empty, a new model will be created and hosted. If the list is non-empty, the existing modell will be updated. 
+    - In any cases, tags will be updated with the `tags`. Plus, additional tag information of the model version will be automatically added.
 
 ## Project Dependencies
 The implementation will use the following libraries.
