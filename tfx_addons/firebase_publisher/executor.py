@@ -1,13 +1,13 @@
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from absl import logging
 from tfx import types
 from tfx.types import artifact_utils, standard_component_specs
 
 from tfx.components.pusher import executor as tfx_pusher_executor
 from tfx_addons.firebase_publisher import runner
 
+_APP_NAME_KEY = "app_name"
 _DISPLAY_NAME_KEY = "display_name"
 _STORAGE_BUCKET_KEY = "storage_bucket"
 _TAGS_KEY = "tags"
@@ -23,7 +23,7 @@ class Executor(tfx_pusher_executor.Executor):
       output_dict: Dict[str, List[types.Artifact]],
       exec_properties: Dict[str, Any],
   ):
-    """Overrides the tfx_pusher_executor.
+    """Overrides the tfx_pusher_executor to leverage some of utility costs methods
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
         - model_export: exported model from trainer.
@@ -31,10 +31,23 @@ class Executor(tfx_pusher_executor.Executor):
       output_dict: Output dict from key to a list of artifacts, including:
         - model_push: A list of 'ModelPushPath' artifact of size one. It will
           include the model in this push execution if the model was pushed.
-      exec_properties: ...
+      exec_properties: An optional dict of execution properties, including:
+        - display_name: display name to appear in Firebase ML. this should be
+          a unique value since it will be used to search a existing model to
+          update
+        - storage_bucket: GCS bucket where the hosted model is stored.
+        - app_name: the name of Firebase app to determin the scope
+        - tags: tags to be attached to the hosted ML model
+        - credential_path: an optional parameter, and it indicates GCS or local
+          location where a Service Account Key file is stored. If this parameter
+          is not given, Application Default Credentials will be used in GCP
+          environment
+        - options: additional configurations to be passed to initialize Firebase
+          app. refer to the official document about the [`initialize_app()`](
+          https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app)
     Raises:
-      ValueError: ...
-      RuntimeError: if the job fails.
+      ValueError: when the each item in tags has disallowed characters
+      RuntimeError: when the size of model exceeds 40mb
     """
     self._log_startup(input_dict, output_dict, exec_properties)
 
@@ -48,6 +61,7 @@ class Executor(tfx_pusher_executor.Executor):
     model_version_name = f"v{int(time.time())}"
 
     pushed_model_path = runner.deploy_model_for_firebase_ml(
+      app_name=exec_properties.get(_APP_NAME_KEY, '[DEFAULT]'),
       display_name=exec_properties.get(_DISPLAY_NAME_KEY),
       storage_bucket=exec_properties.get(_STORAGE_BUCKET_KEY),
       credential_path=exec_properties.get(_CREDENTIAL_PATH_KEY, None),
