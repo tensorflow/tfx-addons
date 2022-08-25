@@ -2,9 +2,9 @@ import time
 from typing import Any, Dict, List
 
 from tfx import types
+from tfx.components.pusher import executor as tfx_pusher_executor
 from tfx.types import artifact_utils, standard_component_specs
 
-from tfx.components.pusher import executor as tfx_pusher_executor
 from tfx_addons.firebase_publisher import runner
 
 _APP_NAME_KEY = "app_name"
@@ -14,9 +14,9 @@ _TAGS_KEY = "tags"
 _OPTIONS_KEY = "options"
 _CREDENTIAL_PATH_KEY = "credential_path"
 
+
 class Executor(tfx_pusher_executor.Executor):
   """Push a model to Firebase ML"""
-
   def Do(
       self,
       input_dict: Dict[str, List[types.Artifact]],
@@ -52,8 +52,7 @@ class Executor(tfx_pusher_executor.Executor):
     self._log_startup(input_dict, output_dict, exec_properties)
 
     model_push = artifact_utils.get_single_instance(
-        output_dict[standard_component_specs.PUSHED_MODEL_KEY]
-    )
+        output_dict[standard_component_specs.PUSHED_MODEL_KEY])
     if not self.CheckBlessing(input_dict):
       self._MarkNotPushed(model_push)
       return
@@ -61,16 +60,14 @@ class Executor(tfx_pusher_executor.Executor):
     model_version_name = f"v{int(time.time())}"
 
     pushed_model_path = runner.deploy_model_for_firebase_ml(
-      app_name=exec_properties.get(_APP_NAME_KEY, '[DEFAULT]'),
-      display_name=exec_properties.get(_DISPLAY_NAME_KEY),
-      storage_bucket=exec_properties.get(_STORAGE_BUCKET_KEY),
-      credential_path=exec_properties.get(_CREDENTIAL_PATH_KEY, None),
-      tags=exec_properties.get(_TAGS_KEY, []),
-      options=exec_properties.get(_OPTIONS_KEY, {}),
-      model_path=model_path,      
-      model_version=model_version_name,
+        app_name=exec_properties.get(_APP_NAME_KEY, '[DEFAULT]'),
+        display_name=exec_properties.get(_DISPLAY_NAME_KEY),
+        storage_bucket=exec_properties.get(_STORAGE_BUCKET_KEY),
+        credential_path=exec_properties.get(_CREDENTIAL_PATH_KEY, None),
+        tags=exec_properties.get(_TAGS_KEY, []),
+        options=exec_properties.get(_OPTIONS_KEY, {}),
+        model_path=model_path,
+        model_version=model_version_name,
     )
 
-    self._MarkPushed(
-      model_push, 
-      pushed_destination=pushed_model_path)
+    self._MarkPushed(model_push, pushed_destination=pushed_model_path)
