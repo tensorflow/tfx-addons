@@ -1,3 +1,8 @@
+"""Firebase Publisher TFX Component.
+
+The FirebasePublisher is used to deploy model to Firebase ML.
+"""
+
 from typing import Dict, List, Optional
 
 from pipeline.components.pusher.FirebasePublisher import executor

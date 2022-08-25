@@ -1,3 +1,9 @@
+"""Firebase Publisher TFX Component Executor.
+
+The Firebase Publisher Executor calls the workflow handler
+runner.deploy_model_for_firebase_ml()
+"""
+
 import time
 from typing import Any, Dict, List
 

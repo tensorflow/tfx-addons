@@ -1,3 +1,8 @@
+"""Firebase Publisher runner module.
+
+This module handles the workflow to publish
+machine learning model to Firebase ML
+"""
 import glob
 import os
 import tempfile
@@ -66,8 +71,8 @@ def _check_model_size(source: TFLiteModelSource):
   if file_size_in_mb > _SIZE_LIMIT_MB:
     fileio.remove(gcs_path_for_uploaded_file)
     raise RuntimeError(
-        f"the file size {file_size_in_mb} exceeds the limit of {_SIZE_LIMIT_MB}. Uploaded file is removed."
-    )
+        f"the file size {file_size_in_mb} exceeds"
+        f"the limit of {_SIZE_LIMIT_MB}. Uploaded file is removed.")
 
 
 def _model_exist(model_list: ListModelsPage):
@@ -119,49 +124,49 @@ def deploy_model_for_firebase_ml(
     credential_path: str,
 ) -> str:
   """This executes ML model deployment workflow to Firebase ML
-       Refer to the FirebasePublisher component in component.py 
+       Refer to the FirebasePublisher component in component.py
        for generic description of each parameter. This docstring
        only explains how the workflow works.
 
        Step #1.
-       workflow begins by initializing firebase app with the 
+       workflow begins by initializing firebase app with the
        given app_name, storage_bucket, options, and credentials.
-       currently, Firebase ML only let us host/upload ML model 
+       currently, Firebase ML only let us host/upload ML model
        from the local filesystem, so it downloads a model from
        the upstream components to a temporary directory.
-       
+
        Step #2.
        search the list of hosted models with display_name. this
-       has to be done before uploading/hosting any ML models. 
+       has to be done before uploading/hosting any ML models.
        otherwise, the number of hosted models is greater than 0,
        hence it will try to update the existing model even though
        it has to create a new model.
-       
+
        Step #3.
        get the model path of the downloaded model in the local
        filesystem. along the way, it searches for any files whose
        extension is '*.tflite'. when it finds tflite model file,
        is_tflite flag is marked and the file path is obtained.
-       Otherwise (in case of SavedModel), the directory of the 
+       Otherwise (in case of SavedModel), the directory of the
        SavedModel is obtained.
-       
+
        step #4.
        upload/host the ML model to the designated gcs_storage bucket.
        along the way, if the given model is SavedModel, it will be
        directly converted to TFLite format before uploading
-       
+
        step #5.
-       check the size of the uploaded TFLite model. currently, 
+       check the size of the uploaded TFLite model. currently,
        Firebase ML allows us to host a model whose size is under 40mb.
-       if the given TFLite model's size exceeds 40mb, then the 
-       uploaded model files will be deleted (rollback), and 
+       if the given TFLite model's size exceeds 40mb, then the
+       uploaded model files will be deleted (rollback), and
        RuntimeError exceptioin will be raised.
-       
+
        step #6.
        update the existing model. the existing tags will be replaced.
-       while keeping the given tags are reserved, newly granted 
+       while keeping the given tags are reserved, newly granted
        model_version will be appended to the list.
-       
+
        step #7.
        create a new model.
 
