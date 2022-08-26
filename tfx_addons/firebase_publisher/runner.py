@@ -20,8 +20,10 @@ _SIZE_LIMIT_MB = 80
 
 
 def prepare_fb_download_model(app_name: str, credential_path: str,
-                               storage_bucket: str, model_path: str,
-                               options: Dict[str, Any]) -> str:
+                              storage_bucket: str, model_path: str,
+                              options: Dict[str, Any]) -> str:
+  """initialize Firebase app, and download the
+     target model to a temporary directory"""
   tmp_dir = tempfile.gettempdir()
   credential = None
 
@@ -47,6 +49,7 @@ def prepare_fb_download_model(app_name: str, credential_path: str,
 
 
 def get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
+  """get model path and flag if the model is TFLite"""
   tflite_files = glob.glob(f"{tmp_model_path}/**/*.tflite")
   is_tflite = len(tflite_files) > 0
   model_path = tflite_files[0] if is_tflite else tmp_model_path
@@ -55,6 +58,8 @@ def get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
 
 
 def upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
+  """upload model to GCS. If SavedModel, it will be
+     converted to TFLite under the hood"""
   if is_tflite:
     source = ml.TFLiteGCSModelSource.from_tflite_model_file(model_path)
   else:
@@ -64,6 +69,8 @@ def upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
 
 
 def check_model_size(source: TFLiteModelSource):
+  """the model size to be hosted in Firebase ML is limited
+      to 40mb max. if the size exceeds, RuntimeError is raised"""
   gcs_path_for_uploaded_file = source.as_dict().get('gcsTfliteUri')
   with tf.io.gfile.GFile(gcs_path_for_uploaded_file) as f:
     file_size_in_mb = f.size() / (1 << 20)
@@ -80,7 +87,8 @@ def model_exist(model_list: ListModelsPage):
 
 
 def update_model(model_list: ListModelsPage, source: TFLiteModelSource,
-                  tags: List[str], model_version: str):
+                 tags: List[str], model_version: str):
+  """update existing model"""
   tags.append(model_version)
 
   # get the first match model
@@ -95,8 +103,9 @@ def update_model(model_list: ListModelsPage, source: TFLiteModelSource,
   logging.info("model exists, so it is updated")
 
 
-def create_model(display_name: str, source: TFLiteModelSource,
-                  tags: List[str], model_version: str):
+def create_model(display_name: str, source: TFLiteModelSource, tags: List[str],
+                 model_version: str):
+  """create a new model"""
   tags.append(model_version)
 
   tflite_format = ml.TFLiteFormat(model_source=source)
@@ -175,8 +184,8 @@ def deploy_model_for_firebase_ml(
     """
   # Step 1
   tmp_model_path = prepare_fb_download_model(app_name, credential_path,
-                                              storage_bucket, model_path,
-                                              options)
+                                             storage_bucket, model_path,
+                                             options)
 
   # Step 2
   model_list = ml.list_models(list_filter=f"display_name={display_name}")

@@ -1,7 +1,7 @@
 """Tests for tfx_addons.firebase_publisher.runner."""
 
 from unittest import mock
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import tensorflow as tf
 
@@ -9,9 +9,6 @@ from tfx_addons.firebase_publisher import runner
 
 
 class RunnerTest(tf.test.TestCase):
-  def setUp(self):
-    super().setUp()
-
   def testModelExistancy(self):
     model_list = Mock()
     model_list.models = ['model1']
