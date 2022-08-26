@@ -19,7 +19,7 @@ from tfx.utils import io_utils
 _SIZE_LIMIT_MB = 80
 
 
-def _prepare_fb_download_model(app_name: str, credential_path: str,
+def prepare_fb_download_model(app_name: str, credential_path: str,
                                storage_bucket: str, model_path: str,
                                options: Dict[str, Any]) -> str:
   tmp_dir = tempfile.gettempdir()
@@ -46,7 +46,7 @@ def _prepare_fb_download_model(app_name: str, credential_path: str,
   return tmp_model_path
 
 
-def _get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
+def get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
   tflite_files = glob.glob(f"{tmp_model_path}/**/*.tflite")
   is_tflite = len(tflite_files) > 0
   model_path = tflite_files[0] if is_tflite else tmp_model_path
@@ -54,7 +54,7 @@ def _get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
   return is_tflite, model_path
 
 
-def _upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
+def upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
   if is_tflite:
     source = ml.TFLiteGCSModelSource.from_tflite_model_file(model_path)
   else:
@@ -63,7 +63,7 @@ def _upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
   return source
 
 
-def _check_model_size(source: TFLiteModelSource):
+def check_model_size(source: TFLiteModelSource):
   gcs_path_for_uploaded_file = source.as_dict().get('gcsTfliteUri')
   with tf.io.gfile.GFile(gcs_path_for_uploaded_file) as f:
     file_size_in_mb = f.size() / (1 << 20)
@@ -75,11 +75,11 @@ def _check_model_size(source: TFLiteModelSource):
         f"the limit of {_SIZE_LIMIT_MB}. Uploaded file is removed.")
 
 
-def _model_exist(model_list: ListModelsPage):
+def model_exist(model_list: ListModelsPage):
   return len(model_list.models) > 0
 
 
-def _update_model(model_list: ListModelsPage, source: TFLiteModelSource,
+def update_model(model_list: ListModelsPage, source: TFLiteModelSource,
                   tags: List[str], model_version: str):
   tags.append(model_version)
 
@@ -95,7 +95,7 @@ def _update_model(model_list: ListModelsPage, source: TFLiteModelSource,
   logging.info("model exists, so it is updated")
 
 
-def _create_model(display_name: str, source: TFLiteModelSource,
+def create_model(display_name: str, source: TFLiteModelSource,
                   tags: List[str], model_version: str):
   tags.append(model_version)
 
@@ -174,7 +174,7 @@ def deploy_model_for_firebase_ml(
         str: the GCS storage bucket path where the actual model is hosted
     """
   # Step 1
-  tmp_model_path = _prepare_fb_download_model(app_name, credential_path,
+  tmp_model_path = prepare_fb_download_model(app_name, credential_path,
                                               storage_bucket, model_path,
                                               options)
 
@@ -182,20 +182,20 @@ def deploy_model_for_firebase_ml(
   model_list = ml.list_models(list_filter=f"display_name={display_name}")
 
   # Step 3
-  is_tflite, model_path = _get_model_path_and_type(tmp_model_path)
+  is_tflite, model_path = get_model_path_and_type(tmp_model_path)
 
   # Step 4
-  source = _upload_model(is_tflite, model_path)
+  source = upload_model(is_tflite, model_path)
 
   # Step 5
-  _check_model_size(source)
+  check_model_size(source)
 
-  if _model_exist(model_list.models):
+  if model_exist(model_list.models):
     # Step 6
-    _update_model(model_list, source, tags, model_version)
+    update_model(model_list, source, tags, model_version)
   else:
     # Step 7
-    _create_model(display_name, source, tags, model_version)
+    create_model(display_name, source, tags, model_version)
 
   # Step 8
   return source.as_dict().get('gcsTfliteUri')
