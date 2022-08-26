@@ -35,8 +35,8 @@ class Executor(tfx_pusher_executor.Executor):
         - model_export: exported model from trainer.
         - model_blessing: model blessing path from evaluator.
       output_dict: Output dict from key to a list of artifacts, including:
-        - model_push: A list of 'ModelPushPath' artifact of size one. It will
-          include the model in this push execution if the model was pushed.
+        - pushed_model: A 'PushedModel' artifact. It will contain a pushed
+          destination information.
       exec_properties: An optional dict of execution properties, including:
         - display_name: display name to appear in Firebase ML. this should be
           a unique value since it will be used to search a existing model to

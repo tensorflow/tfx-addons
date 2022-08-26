@@ -5,11 +5,12 @@ The FirebasePublisher is used to deploy model to Firebase ML.
 
 from typing import Dict, List, Optional
 
-from pipeline.components.pusher.FirebasePublisher import executor
 from tfx import types
 from tfx.dsl.components.base import base_component, executor_spec
 from tfx.types import standard_artifacts
 from tfx.types.component_spec import ChannelParameter, ExecutionParameter
+
+from tfx_addons.firebase_publisher import executor
 
 MODEL_KEY = "model"
 PUSHED_MODEL_KEY = "pushed_model"
@@ -20,9 +21,9 @@ class FirebasePublisherSpec(types.ComponentSpec):
   """ComponentSpec for TFX FirebasePublisher Component."""
 
   PARAMETERS = {
-      "app_name": ExecutionParameter(type=str),
       "display_name": ExecutionParameter(type=str),
       "storage_bucket": ExecutionParameter(type=str),
+      "app_name": ExecutionParameter(type=str, optional=True),
       "tags": ExecutionParameter(type=List, optional=True),
       "options": ExecutionParameter(type=Dict, optional=True),
       "credential_path": ExecutionParameter(type=str, optional=True),
