@@ -86,10 +86,6 @@ class FirebasePublisher(base_component.BaseComponent):
       model: Optional[types.BaseChannel] = None,
       model_blessing: Optional[types.BaseChannel] = None,
   ):
-    """Construct a FirebasePublisher component.
-
-        """
-
     pushed_model = types.Channel(type=standard_artifacts.PushedModel)
 
     spec = FirebasePublisherSpec(app_name=app_name,
