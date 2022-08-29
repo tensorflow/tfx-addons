@@ -22,7 +22,7 @@ _CREDENTIAL_PATH_KEY = "credential_path"
 
 
 class Executor(tfx_pusher_executor.Executor):
-  """Push a model to Firebase ML"""
+  """Pushes a model to Firebase ML."""
   def Do(
       self,
       input_dict: Dict[str, List[types.Artifact]],
