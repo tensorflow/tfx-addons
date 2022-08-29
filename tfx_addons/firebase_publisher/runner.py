@@ -88,10 +88,12 @@ def is_model_present(model_list: ListModelsPage):
 
 def update_model(model_list: ListModelsPage, source: TFLiteModelSource,
                  tags: List[str], model_version: str):
-  """update existing model"""
+  """update existing model in Firebase ML with the latest version"""
   tags.append(model_version)
 
-  # get the first match model
+  # get the first match model. if there are multiple models
+  # with the same name, only the first match will be selected.
+  # so, the model should be named unique
   model = model_list.models[0]
 
   model.tags = tags
