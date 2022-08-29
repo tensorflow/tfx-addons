@@ -139,21 +139,21 @@ def deploy_model_for_firebase_ml(
        for generic description of each parameter. This docstring
        only explains how the workflow works.
 
-       Step #1.
+       step #1.
        workflow begins by initializing firebase app with the
        given app_name, storage_bucket, options, and credentials.
        currently, Firebase ML only let us host/upload ML model
        from the local filesystem, so it downloads a model from
        the upstream components to a temporary directory.
 
-       Step #2.
+       step #2.
        search the list of hosted models with display_name. this
        has to be done before uploading/hosting any ML models.
        otherwise, the number of hosted models is greater than 0,
        hence it will try to update the existing model even though
        it has to create a new model.
 
-       Step #3.
+       step #3.
        get the model path of the downloaded model in the local
        filesystem. along the way, it searches for any files whose
        extension is '*.tflite'. when it finds tflite model file,
@@ -184,29 +184,29 @@ def deploy_model_for_firebase_ml(
     Returns:
         str: the GCS storage bucket path where the actual model is hosted
     """
-  # Step 1
+  # step 1
   tmp_model_path = prepare_fb_download_model(app_name, credential_path,
                                              storage_bucket, model_path,
                                              options)
 
-  # Step 2
+  # step 2
   model_list = ml.list_models(list_filter=f"display_name={display_name}")
 
-  # Step 3
+  # step 3
   is_tflite, model_path = get_model_path_and_type(tmp_model_path)
 
-  # Step 4
+  # step 4
   source = upload_model_to_gcs(is_tflite, model_path)
 
-  # Step 5
+  # step 5
   check_model_size(source)
 
   if is_model_present(model_list.models):
-    # Step 6
+    # step 6
     update_model(model_list, source, tags, model_version)
   else:
-    # Step 7
+    # step 7
     create_model(display_name, source, tags, model_version)
 
-  # Step 8
+  # step 8
   return source.as_dict().get('gcsTfliteUri')
