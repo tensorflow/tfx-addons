@@ -69,8 +69,8 @@ def upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
 
 
 def check_model_size(source: TFLiteModelSource):
-  """the model size to be hosted in Firebase ML is limited
-      to 40mb max. if the size exceeds, RuntimeError is raised"""
+  """Checks model size and if it exceeds 40 MB (Firebase limit)
+     a RuntimeError is raised."""
   gcs_path_for_uploaded_file = source.as_dict().get('gcsTfliteUri')
   with tf.io.gfile.GFile(gcs_path_for_uploaded_file) as f:
     file_size_in_mb = f.size() / (1 << 20)
