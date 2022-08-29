@@ -82,7 +82,7 @@ def check_model_size(source: TFLiteModelSource):
         f"the limit of {_SIZE_LIMIT_MB}. Uploaded file is removed.")
 
 
-def model_exist(model_list: ListModelsPage):
+def is_model_present(model_list: ListModelsPage):
   return len(model_list.models) > 0
 
 
@@ -199,7 +199,7 @@ def deploy_model_for_firebase_ml(
   # Step 5
   check_model_size(source)
 
-  if model_exist(model_list.models):
+  if is_model_present(model_list.models):
     # Step 6
     update_model(model_list, source, tags, model_version)
   else:
