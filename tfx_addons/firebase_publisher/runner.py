@@ -132,7 +132,7 @@ def deploy_model_for_firebase_ml(
     model_version: str,
     credential_path: str,
 ) -> str:
-  """This executes ML model deployment workflow to Firebase ML
+  """Executes ML model deployment workflow to Firebase ML.
        Refer to the FirebasePublisher component in component.py
        for generic description of each parameter. This docstring
        only explains how the workflow works.
