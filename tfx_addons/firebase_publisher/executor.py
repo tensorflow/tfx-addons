@@ -30,6 +30,7 @@ class Executor(tfx_pusher_executor.Executor):
       exec_properties: Dict[str, Any],
   ):
     """Overrides the tfx_pusher_executor to leverage some of utility costs methods
+
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
         - model_export: exported model from trainer.
@@ -51,6 +52,7 @@ class Executor(tfx_pusher_executor.Executor):
         - options: additional configurations to be passed to initialize Firebase
           app. refer to the official document about the [`initialize_app()`](
           https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app).
+
     Raises:
       ValueError: when the each item in tags has disallowed characters.
       RuntimeError: when the size of model exceeds 40mb.

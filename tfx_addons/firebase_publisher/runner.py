@@ -121,7 +121,8 @@ def create_model(display_name: str, source: TFLiteModelSource, tags: List[str],
   new_model = ml.create_model(model)
   ml.publish_model(new_model.model_id)
 
-  logging.info("TFLite model didn't exist, so it will be first created and pushed.")
+  logging.info(
+      "TFLite model didn't exist, so it will be first created and pushed.")
 
 
 def deploy_model_for_firebase_ml(

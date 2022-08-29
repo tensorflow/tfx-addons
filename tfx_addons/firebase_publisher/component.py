@@ -41,7 +41,7 @@ class FirebasePublisherSpec(types.ComponentSpec):
 
 class FirebasePublisher(base_component.BaseComponent):
   """Component for pushing model to Firebase ML.
-  
+
   The `FirebasePublisher` is a [TFX
   Component](https://www.tensorflow.org/tfx/guide/understanding_tfx_pipelines#component)
   that pushes a model to Firebase ML.
@@ -52,7 +52,7 @@ class FirebasePublisher(base_component.BaseComponent):
   applications that need to consume them. To find more about Firebase ML,
   please refer to the official
   [webpage](https://firebase.google.com/products/ml).
-  
+
   It only publishes a model when it is blessed, and the "blessness" is
   determined by the upstream `Evaluator` component. If Evaluator is not
   specified, the input model will always be published.
