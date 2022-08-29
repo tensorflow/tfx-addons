@@ -1,7 +1,7 @@
 """Firebase Publisher runner module.
 
 This module handles the workflow to publish
-machine learning model to Firebase ML
+machine learning model to Firebase ML.
 """
 import glob
 import os

@@ -1,7 +1,7 @@
 """Firebase Publisher TFX Component Executor.
 
 The Firebase Publisher Executor calls the workflow handler
-runner.deploy_model_for_firebase_ml()
+runner.deploy_model_for_firebase_ml().
 """
 
 import time
@@ -40,20 +40,20 @@ class Executor(tfx_pusher_executor.Executor):
       exec_properties: An optional dict of execution properties, including:
         - display_name: display name to appear in Firebase ML. this should be
           a unique value since it will be used to search a existing model to
-          update
+          update.
         - storage_bucket: GCS bucket where the hosted model is stored.
-        - app_name: the name of Firebase app to determin the scope
-        - tags: tags to be attached to the hosted ML model
+        - app_name: the name of Firebase app to determin the scope.
+        - tags: tags to be attached to the hosted ML model.
         - credential_path: an optional parameter, and it indicates GCS or local
           location where a Service Account Key file is stored. If this parameter
           is not given, Application Default Credentials will be used in GCP
-          environment
+          environment.
         - options: additional configurations to be passed to initialize Firebase
           app. refer to the official document about the [`initialize_app()`](
-          https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app)
+          https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app).
     Raises:
-      ValueError: when the each item in tags has disallowed characters
-      RuntimeError: when the size of model exceeds 40mb
+      ValueError: when the each item in tags has disallowed characters.
+      RuntimeError: when the size of model exceeds 40mb.
     """
     self._log_startup(input_dict, output_dict, exec_properties)
 
