@@ -57,7 +57,7 @@ def get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
   return is_tflite, model_path
 
 
-def upload_model(is_tflite: bool, model_path: str) -> TFLiteModelSource:
+def upload_model_to_gcs(is_tflite: bool, model_path: str) -> TFLiteModelSource:
   """upload model to GCS. If SavedModel, it will be
      converted to TFLite under the hood"""
   if is_tflite:
@@ -194,7 +194,7 @@ def deploy_model_for_firebase_ml(
   is_tflite, model_path = get_model_path_and_type(tmp_model_path)
 
   # Step 4
-  source = upload_model(is_tflite, model_path)
+  source = upload_model_to_gcs(is_tflite, model_path)
 
   # Step 5
   check_model_size(source)
