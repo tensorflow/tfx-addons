@@ -65,7 +65,7 @@ class FirebasePublisher(base_component.BaseComponent):
   fb_publisher = FirebasePublisher(
     display_name="model_on_firebase",
     storage_bucket="firebase_ml", # only the bucket name without gs://
-    credential_path="gs://....json",
+    credential_path="gs://abc.json",
     model=trainer.outputs["model"],
     model_blessing=evaluator.outputs["blessing"]
   )
