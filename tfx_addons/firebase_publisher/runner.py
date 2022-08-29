@@ -22,8 +22,8 @@ _SIZE_LIMIT_MB = 80
 def prepare_fb_download_model(app_name: str, credential_path: str,
                               storage_bucket: str, model_path: str,
                               options: Dict[str, Any]) -> str:
-  """initialize Firebase app, and download the
-     target model to a temporary directory"""
+  """Initializes a Firebase app, and download the
+     target model to a temporary directory."""
   tmp_dir = tempfile.gettempdir()
   credential = None
 
