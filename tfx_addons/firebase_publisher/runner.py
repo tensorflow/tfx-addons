@@ -49,7 +49,7 @@ def prepare_fb_download_model(app_name: str, credential_path: str,
 
 
 def get_model_path_and_type(tmp_model_path) -> Tuple[bool, str]:
-  """get model path and flag if the model is TFLite"""
+  """Fetches model path and flag if the model is TFLite."""
   tflite_files = glob.glob(f"{tmp_model_path}/**/*.tflite")
   is_tflite = len(tflite_files) > 0
   model_path = tflite_files[0] if is_tflite else tmp_model_path
