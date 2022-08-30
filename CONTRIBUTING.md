@@ -120,7 +120,7 @@ Here's how to install it locally:
 - Activate virtual environment: `source env/bin/activate`
 - Upgrade pip: `pip install --upgrade pip`
 - Install test packages: `pip install -e ".[test]"`
-- Install pre-commit hooks for push hooks: `pre-commit install pre-push`
+- Install pre-commit hooks for push hooks: `pre-commit install --hook-type pre-push`
 - Change and commit files. pre-commit will run the tests and linting before you push. You can also manually trigger the tests and linting with `pre-commit run --hook-stage push --all-files`
 
 Note that pre-commit will be run via GitHub Action automatically for new PRs.
