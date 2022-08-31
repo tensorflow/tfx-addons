@@ -12,10 +12,10 @@ class RunnerTest(tf.test.TestCase):
   def testModelExistancy(self):
     model_list = Mock()
     model_list.models = ['model1']
-    self.assertTrue(runner.model_exist(model_list))
+    self.assertTrue(runner.is_model_present(model_list))
 
     model_list.models = []
-    self.assertFalse(runner.model_exist(model_list))
+    self.assertFalse(runner.is_model_present(model_list))
 
   @mock.patch('tfx_addons.firebase_publisher.runner.glob.glob')
   def testModelPathAndType(self, mock_glob):
