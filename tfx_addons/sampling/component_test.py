@@ -47,7 +47,6 @@ class ComponentTest(absltest.TestCase):
     params = {
         spec.SAMPLER_INPUT_KEY: channel_utils.as_channel([examples]),
         spec.SAMPLER_LABEL_KEY: 'test_label',
-        spec.SAMPLER_NAME_KEY: 'test_name',
         spec.SAMPLER_SPLIT_KEY: ['train', 'eval'],
         spec.SAMPLER_COPY_KEY: False,
         spec.SAMPLER_SHARDS_KEY: 10,
@@ -60,8 +59,6 @@ class ComponentTest(absltest.TestCase):
                      under.outputs[spec.SAMPLER_OUTPUT_KEY].type_name)
     self.assertEqual(under.spec.exec_properties[spec.SAMPLER_LABEL_KEY],
                      'test_label')
-    self.assertEqual(under.spec.exec_properties[spec.SAMPLER_NAME_KEY],
-                     'test_name')
     self.assertEqual(under.spec.exec_properties[spec.SAMPLER_SPLIT_KEY],
                      json_utils.dumps(['train', 'eval']))
     self.assertEqual(under.spec.exec_properties[spec.SAMPLER_COPY_KEY], False)

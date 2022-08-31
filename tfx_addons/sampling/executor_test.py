@@ -16,8 +16,8 @@
 
 import filecmp
 import os
-import random
 import tempfile
+from unittest.mock import MagicMock, patch
 
 import apache_beam as beam
 import tensorflow as tf
@@ -102,8 +102,6 @@ class ExecutorTest(absltest.TestCase):
     exec_properties = {
         spec.SAMPLER_LABEL_KEY:
         'label',
-        spec.SAMPLER_NAME_KEY:
-        'undersampling',
         spec.SAMPLER_SPLIT_KEY:
         json_utils.dumps(['train']),
         # List needs to be serialized before being passed into Do function.
@@ -128,8 +126,6 @@ class ExecutorTest(absltest.TestCase):
     exec_properties = {
         spec.SAMPLER_LABEL_KEY:
         'label',
-        spec.SAMPLER_NAME_KEY:
-        'undersampling',
         spec.SAMPLER_SPLIT_KEY:
         json_utils.dumps(['train']),
         # List needs to be serialized before being passed into Do function.
@@ -151,7 +147,6 @@ class ExecutorTest(absltest.TestCase):
   def testShards(self):
     exec_properties = {
         spec.SAMPLER_LABEL_KEY: 'label',
-        spec.SAMPLER_NAME_KEY: 'undersampling',
         spec.SAMPLER_SPLIT_KEY: json_utils.dumps(
             ['train']
         ),  # List needs to be serialized before being passed into Do function.
@@ -174,7 +169,6 @@ class ExecutorTest(absltest.TestCase):
   def testSplits(self):
     exec_properties = {
         spec.SAMPLER_LABEL_KEY: 'label',
-        spec.SAMPLER_NAME_KEY: 'undersampling',
         spec.SAMPLER_SPLIT_KEY: json_utils.dumps(
             ['train', 'eval']
         ),  # List needs to be serialized before being passed into Do function.
@@ -193,7 +187,6 @@ class ExecutorTest(absltest.TestCase):
   def testCopy(self):
     exec_properties = {
         spec.SAMPLER_LABEL_KEY: 'label',
-        spec.SAMPLER_NAME_KEY: 'undersampling',
         spec.SAMPLER_SPLIT_KEY: json_utils.dumps(
             ['train']
         ),  # List needs to be serialized before being passed into Do function.
@@ -223,8 +216,8 @@ class ExecutorTest(absltest.TestCase):
     assert executor.filter_null(["", ""], keep_null=True,
                                 null_vals=["5"])  # return
 
+  @patch("random.random", MagicMock(side_effect=[0.2, 0.6, 0.7] * 10))
   def testPipelineMin(self):
-    random.seed(0)
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2),
                ("2", 2), ("3", 3), ("3", 3), ("", 0)]
     expected = [1, 1, 2, 2, 3, 3, 0]
@@ -235,8 +228,8 @@ class ExecutorTest(absltest.TestCase):
                                         spec.SamplingStrategy.UNDERSAMPLE)
       assert_that(merged, equal_to(expected))
 
+  @patch("random.random", MagicMock(side_effect=[0.2, 0.6, 0.7] * 10))
   def testPipelineMax(self):
-    random.seed(0)
     dataset = [("1", 1), ("1", 1), ("1", 1), ("2", 2), ("2", 2), ("2", 2),
                ("2", 2), ("3", 3), ("3", 3), ("", 0)]
     expected = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0]
@@ -284,7 +277,6 @@ class ExecutorTest(absltest.TestCase):
   def testException(self):
     exec_properties = {
         spec.SAMPLER_LABEL_KEY: 'label',
-        spec.SAMPLER_NAME_KEY: 'undersampling',
         spec.SAMPLER_SPLIT_KEY: json_utils.dumps(
             ['bad']
         ),  # List needs to be serialized before being passed into Do function.

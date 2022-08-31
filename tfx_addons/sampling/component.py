@@ -14,7 +14,7 @@
 # ==============================================================================
 """Sampling component definition."""
 
-from typing import List, Optional, Text
+from typing import List, Optional
 
 from tfx import types
 from tfx.dsl.components.base import base_beam_component, executor_spec
@@ -35,10 +35,9 @@ class Sampler(base_beam_component.BaseBeamComponent):
   set of sampled examples into its own example artifact in
   tf.Record format.
 
-  The sampling logic uses Python's random module:
-  undersampling uses random.sample, and oversampling uses
-  random.choices. Support for more complex sampling algorithms may
-  be added at a later date.
+  The sampling is probabilistic estimation. Note that in small datasets
+  this may result in worse datasets or such. This module is meant to
+  approximate sampling using probability.
 
   By default, the component will ignore all examples with a null value
   (more precisely, a value that evaluates to False) for the given label,
@@ -49,9 +48,12 @@ class Sampler(base_beam_component.BaseBeamComponent):
 
   ## Example
   ```
-  # Performs transformations and feature engineering in training and serving.
-  under = Sampler(
-    examples=example_gen.outputs['examples'])
+  import tfx_addons as tfxa
+
+  under = tfxa.sampling.Sampler(
+    examples=example_gen.outputs['examples'],
+    sampling_strategy=tfxa.sampling.SamplingStrategy.UNDERSAMPLE
+  )
   ```
 
   Component `outputs` contains:
@@ -67,21 +69,15 @@ class Sampler(base_beam_component.BaseBeamComponent):
       self,
       label: str,
       input_data: types.Channel = None,
-      output_data: types.Channel = None,
-      name: Optional[Text] = None,
-      splits: Optional[List[Text]] = None,
-      copy_others: Optional[bool] = True,
+      splits: Optional[List[str]] = None,
+      copy_others: bool = True,
       shards: Optional[int] = 0,
-      null_classes: Optional[List[Text]] = None,
+      null_classes: Optional[List[str]] = None,
       sampling_strategy: SamplingStrategy = SamplingStrategy.UNDERSAMPLE):
     """Construct a SamplerComponent.
 
     Args:
       input_data: A Channel of type `standard_artifacts.Examples`.
-      output_data: A Channel of type `standard_artifacts.Examples`.
-        By default, only the train split is sampled; all others are copied.
-      name: Optional unique name. Necessary if multiple components are
-        declared in the same pipeline.
       label: The name of the column containing class names to sample by.
       splits: A list containing splits to sample.
       copy_others: Determines whether we copy over the splits that aren't
@@ -89,16 +85,14 @@ class Sampler(base_beam_component.BaseBeamComponent):
       shards: The number of files that each sampled split should
         contain. Default 0 is Beam's tfrecordio function's default.
       null_classes: A list determining which classes that we should not sample.
+      sampling_strategy: Wether to undersample or Oversample
     """
-
-    if not output_data:
-      output_data = channel_utils.as_channel([standard_artifacts.Examples()])
+    output_data = channel_utils.as_channel([standard_artifacts.Examples()])
 
     spec = SamplerSpec(
         input_data=input_data,
         output_data=output_data,
         label=label,
-        name=name,
         splits=json_utils.dumps(splits),
         copy_others=int(copy_others),
         shards=shards,
