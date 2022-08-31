@@ -34,7 +34,8 @@ class Executor(tfx_pusher_executor.Executor):
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
         - model_export: a TFX input channel containing a Model artifact.
-        - model_blessing: a TFX input channel containing a ModelBlessing artifact.
+        - model_blessing: a TFX input channel containing a ModelBlessing
+          artifact.
       output_dict: Output dict from key to a list of artifacts, including:
         - pushed_model: a TFX output channel containing a PushedModel artifact.
           It contains information where the model is published at and whether
@@ -49,7 +50,7 @@ class Executor(tfx_pusher_executor.Executor):
         - credential_path: location of GCS or local file system where the
           Service Account(SA) Key file is.
         - options: additional configurations to be passed to initialize Firebase
-          app. 
+          app.
 
     Raises:
       RuntimeError: when the size of model exceeds 40mb.
