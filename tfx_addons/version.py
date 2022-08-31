@@ -39,7 +39,7 @@ _TFXVERSION_CONSTRAINT = (
 _CI_MAX_CONSTRAINTS = ["tfx~=1.9.0", "tensorflow~=2.9.0"]
 _CI_MIN_CONSTRAINTS = [
     f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0",
-    "apache-beam[gcp]<2.35"
+    "apache-beam[gcp]<2.35", "firebase-admin<5.0.3"
 ]
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
