@@ -12,3 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Init module for FirebasePublisher"""
+
+from tfx_addons.firebase_publisher.component import FirebasePublisher
+
+__version__ = '1.0.0'
