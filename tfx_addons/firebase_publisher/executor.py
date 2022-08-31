@@ -33,25 +33,23 @@ class Executor(tfx_pusher_executor.Executor):
 
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
-        - model_export: exported model from trainer.
-        - model_blessing: model blessing path from evaluator.
+        - model_export: a TFX input channel containing a Model artifact.
+        - model_blessing: a TFX input channel containing a ModelBlessing artifact.
       output_dict: Output dict from key to a list of artifacts, including:
-        - pushed_model: A 'PushedModel' artifact. It will contain a pushed
-          destination information.
+        - pushed_model: a TFX output channel containing a PushedModel artifact.
+          It contains information where the model is published at and whether
+          the model is pushed or not.
       exec_properties: An optional dict of execution properties, including:
-        - display_name: display name to appear in Firebase ML. this should be
-          a unique value since it will be used to search a existing model to
-          update.
-        - storage_bucket: GCS bucket where the hosted model is stored.
-        - app_name: the name of Firebase app to determin the scope.
+        - display_name: name to identify a hosted model in Firebase ML.
+            this should be a unique value because it will be used to search
+            a existing model to update.
+        - storage_bucket: GCS bucket where the hosted model will be stored.
+        - app_name: the name of Firebase app to determine the scope.
         - tags: tags to be attached to the hosted ML model.
-        - credential_path: an optional parameter, and it indicates GCS or local
-          location where a Service Account Key file is stored. If this parameter
-          is not given, Application Default Credentials will be used in GCP
-          environment.
+        - credential_path: location of GCS or local file system where the
+          Service Account(SA) Key file is.
         - options: additional configurations to be passed to initialize Firebase
-          app. refer to the official document about the [`initialize_app()`](
-          https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app).
+          app. 
 
     Raises:
       RuntimeError: when the size of model exceeds 40mb.

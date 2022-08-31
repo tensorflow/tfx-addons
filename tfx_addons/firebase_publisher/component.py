@@ -66,24 +66,6 @@ class FirebasePublisher(base_component.BaseComponent):
   applications that need to consume them. To find more about Firebase ML,
   please refer to the official
   [webpage](https://firebase.google.com/products/ml).
-
-  It only publishes a model when it is blessed, and the "blessness" is
-  determined by the upstream `Evaluator` component. If Evaluator is not
-  specified, the input model will always be published.
-
-  Basic usage example:
-  ```py
-  trainer = Trainer(...)
-  evaluator = Evaluator(...)
-
-  fb_publisher = FirebasePublisher(
-    display_name="model_on_firebase",
-    storage_bucket="firebase_ml", # only the bucket name without gs://
-    credential_path="gs://abc.json",
-    model=trainer.outputs["model"],
-    model_blessing=evaluator.outputs["blessing"]
-  )
-  ```
   """
 
   SPEC_CLASS = FirebasePublisherSpec
@@ -100,6 +82,59 @@ class FirebasePublisher(base_component.BaseComponent):
       model: Optional[types.BaseChannel] = None,
       model_blessing: Optional[types.BaseChannel] = None,
   ):
+    """The FirebasePublisher TFX component.
+       FirebasePublisher deploys a trained or blessed model to Firebase ML.
+       This is designed to work as a downstream component of Trainer and
+       Evaluator(optional) components. Trainer gives trained model, and 
+       Evaluator gives information whether the trained model is blessed or
+       not after evaluation of the model. This component only publishes a 
+       model when it is blessed. If Evaluator is not specified, the input 
+       model will always be published.       
+       **Important Note:** Firebase ML allows to host a model under 40mb.
+       if the model size exceeds 40mb, RuntimError will be raised.
+
+
+    Args:
+      display_name: name to identify a hosted model in Firebase ML. this should
+        be a unique value because it will be used to search a existing model to
+        update.
+      storage_bucket: GCS bucket where the hosted model will be stored.
+      app_name: the name of Firebase app to determine the scope. if not given,
+        default app name, '[DEFAULT]' will be used.
+      tags: tags to be attached to the hosted ML model. any meaningful tags will
+        be helpful to understand your model in Firebase ML platform.
+      options: additional configurations to be passed to initialize Firebase app.
+        refer to the official document to find out which options are available at
+        [`initialize_app()`](https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app).
+      credential_path: location of GCS or local file system where the Service Account(SA)
+        Key file is. the SA should have sufficeint permissions to create and view hosted
+        models in Firebase ML. If this parameter is not given, Application Default
+        Credentials will be used in GCP environment.
+      model: a TFX input channel containing a Model artifact. this is usually comes
+        from the standard [`Trainer`](https://www.tensorflow.org/tfx/guide/trainer) component.
+      model_blessing: a TFX input channel containing a ModelBlessing artifact. this is
+        usually comes from the standard [`Evaluator`](https://www.tensorflow.org/tfx/guide/evaluator) component.
+    Returns:
+      a TFX output channel containing a PushedModel artifact. It contains information
+      where the model is published at and whether the model is pushed or not.
+    Raises:
+      RuntimeError: when model size exceeds 40mb.
+    Example:
+      Basic usage example:
+      ```py
+      trainer = Trainer(...)
+      evaluator = Evaluator(...)
+
+      fb_publisher = FirebasePublisher(
+        display_name="model_on_firebase",
+        storage_bucket="firebase_ml", # only the bucket name without gs://
+        credential_path="gs://abc.json",
+        model=trainer.outputs["model"],
+        model_blessing=evaluator.outputs["blessing"]
+      )
+      ```
+    """
+
     pushed_model = types.Channel(type=standard_artifacts.PushedModel)
 
     spec = FirebasePublisherSpec(app_name=app_name,
