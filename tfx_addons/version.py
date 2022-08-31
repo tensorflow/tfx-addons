@@ -73,5 +73,5 @@ _PKG_METADATA = {
     ],
     "pandas_transform": [f"tfx{_TFXVERSION_CONSTRAINT}", "pandas>=1.0.0<2.0"],
     "firebase_publisher":
-    [f"tfx{_TFXVERSION_CONSTRAINT}", "firebase-admin>=5.3.0,<6.0.0"],
+    [f"tfx{_TFXVERSION_CONSTRAINT}", "firebase-admin>=5.0.0,<6.0.0"],
 }
