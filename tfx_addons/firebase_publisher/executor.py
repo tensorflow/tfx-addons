@@ -54,7 +54,6 @@ class Executor(tfx_pusher_executor.Executor):
           https://firebase.google.com/docs/reference/admin/python/firebase_admin#initialize_app).
 
     Raises:
-      ValueError: when the each item in tags has disallowed characters.
       RuntimeError: when the size of model exceeds 40mb.
     """
     self._log_startup(input_dict, output_dict, exec_properties)
