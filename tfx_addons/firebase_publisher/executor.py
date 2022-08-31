@@ -29,7 +29,7 @@ class Executor(tfx_pusher_executor.Executor):
       output_dict: Dict[str, List[types.Artifact]],
       exec_properties: Dict[str, Any],
   ):
-    """Overrides the tfx_pusher_executor to leverage some of utility costs methods
+    """Overrides the tfx_pusher_executor to leverage some of utility methods
 
     Args:
       input_dict: Input dict from input key to a list of artifacts, including:
