@@ -22,7 +22,7 @@ The HuggingFace Model and Space Hubs let us have [Git-LFS](https://git-lfs.githu
 
 Supported models hosted on the HuggingFace Model Hub can be directly loaded/used with APIs provided by [transformers](https://huggingface.co/docs/transformers/index) package. However, it is not limited. We can host arbitrary types of models too. 
 
-HuggingFace Space Hub comes with free resources to host prototype applications that use machine learning models. Currently supported application frameworks are Gradio and Streamlit. It is often a good idea to host current version of the model to the Huggingface Space, so it could be interated with real world before the production deployment. 
+HuggingFace Space Hub provides free resources to host prototype applications that use machine learning models. It supports both private and public modes. Currently supported application frameworks are Gradio and Streamlit. It is often a good idea to host the current version of the model to the HuggingFace Space, so it can be tested before the production deployment. But you can host your models HuggingFace Spaces for other purposes as well.
 
 By keeping these information in mind, `HFModelPusher` let you push a trained or blessed model to the HuggingFace Model Hub within a new branch within TFX pipeline. Then, if specified, it pushes an application to the HuggingFace Space Hub by injecting the current model information into the prepared template sources.
 
