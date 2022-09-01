@@ -67,11 +67,11 @@ HFModelPusher(
 It gives the follwing outputs:
 - `pushed` : integer value to denote if the model is pushed or not. This is set to 0 when the input model is not blessed, and it is set to 1 when the model is successfully pushed
 - `pushed_version` : string value to indicate the current model version. This is decided by `time.time()` Python built-in function
-- `repo_id` : repository ID where the model is pushed to. This follows the format of f"{username}/{repo_name}"
+- `repo_id` : model repository ID where the model is pushed to. This follows the format of f"{username}/{repo_name}"
 - `branch` : branch name where the model is pushed to. The branch name is automatically assigned to the same value of  `pushed_version`
-- `commit_id` : the id from the commit history (branch name could be sufficient to retreive a certain version of the model)
-- `repo_url` : repository URL. It is something like f"https://huggingface.co/{repo_id}/{branch}"
-- `space_url` : 
+- `commit_id` : the id from the commit history (branch name could be sufficient to retreive a certain version of the model) of the model repository
+- `repo_url` : model repository URL. It is something like f"https://huggingface.co/{repo_id}/{branch}"
+- `space_url` : space repository URL. It is something like f"https://huggingface.co/{repo_id}"
 
 ### HuggingFace Space spacific configurations
 ```
