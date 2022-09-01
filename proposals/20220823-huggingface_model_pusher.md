@@ -18,7 +18,7 @@ HuggingFace Model Pusher(`HFModelPusher`) pushes blessed model to the [HuggingFa
 Component
 
 ## Project Use-Case(s)
-The HuggingFace Model and Space Hubs let us have [Git-LFS](https://git-lfs.github.com) enabled repositories in public and private modes, and they are easy to manage versions sepecially for those familiar with Git. 
+The HuggingFace Model and Space Hubs let us have [Git-LFS](https://git-lfs.github.com) enabled repositories in public and private modes. Since these repositories are primarily based on Git, they're easier as far as version control is concerned. 
 
 Supported models hosted on the HuggingFace Model Hub can be directly loaded/used with APIs provided by [transformers](https://huggingface.co/docs/transformers/index) package. However, it is not limited. We can host arbitrary types of models too. 
 
