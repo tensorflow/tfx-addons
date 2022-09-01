@@ -12,25 +12,48 @@
 **Project name:** HuggingFace Model Pusher
 
 ## Project Description
-HuggingFace Model Pusher(`HFModelPusher`) pushes blessed model to the [HuggingFace Model Hub](https://huggingface.co/models).
+HuggingFace Model Pusher(`HFModelPusher`) pushes blessed model to the [HuggingFace Model Hub](https://huggingface.co/models). Also, it optionally pushes application to [HuggingFace Space Hub](https://huggingface.co/spaces).
 
 ## Project Category
 Component
 
 ## Project Use-Case(s)
-The HuggingFace Model Hub lets us have [Git-LFS](https://git-lfs.github.com) enabled repositories in public and private modes. Supported models hosted on the HuggingFace Model Hub can be directly loaded/used with APIs provided by [transformers](https://huggingface.co/docs/transformers/index) package. However, it is not limited. We can host arbitrary types of models too. 
+The HuggingFace Model and Space Hubs let us have [Git-LFS](https://git-lfs.github.com) enabled repositories in public and private modes, and they are easy to manage versions sepecially for those familiar with Git. 
 
-HuggingFace Model Hub is easy to manage model versions, especially for those familiar with Git.
+Supported models hosted on the HuggingFace Model Hub can be directly loaded/used with APIs provided by [transformers](https://huggingface.co/docs/transformers/index) package. However, it is not limited. We can host arbitrary types of models too. 
+
+HuggingFace Space Hub comes with free resources to host prototype applications that use machine learning models. Currently supported application frameworks are Gradio and Streamlit. It is often a good idea to host current version of the model to the Huggingface Space, so it could be interated with real world before the production deployment. 
+
+By keeping these information in mind, `HFModelPusher` let you push a trained or blessed model to the HuggingFace Model Hub within a new branch within TFX pipeline. Then, if specified, it pushes an application to the HuggingFace Space Hub by injecting the current model information into the prepared template sources.
 
 ## Project Implementation
 HFModelPusher is a class-based TFX component, and it inherits from TFX standard `Pusher` component.
 
+### Behaviour
+
+1. Creates HuggingFace Hub __Model__ repository. It will clone one if there is already existing repository
+2. Checks out a new branch with the name of current model version. Since the model is pushed for experimental purpose, it would be good to track the versions of the model within separate branches (When the model is ready to be open to public, one can manually merge the right version(branch) into the main branch)
+3. Download all the model related files(i.e. `SavedModel`) generated from the upstream component such as `Trainer` into the model repository directory. The model files could be stored in GCS bucket, so `tf.io.gfile` module is a good choice since it handles files in location agnostic manner (GCS or local)
+4. Add & commit the current status of the Model repository
+5. Pushes the commit to the remote HuggingFace Model repository
+
+6. Creates HuggingFace Hub __Space__ repository. It will clone one if there is already an existing repository
+7. Copy all the application related files(in `app_path`) into the space repository directory 
+8. Replace special tokens in every files under the repository directory.
+    - there are two special tokens of $HF_MODEL_REPO_NAME and $HF_MODEL_REPO_BRANCH. Each special tokens(placeholders) will be replaced by the id and branch of the model repository in the step 5. 
+9. Add & commit the current status of the Space repository
+10. Pushes the commit to the __main__ branch of the HuggingFace Space Repository
+    - only the app on the main branch can be built and run, so the branch for the Space repository should not be managed
+
+
+### Structure
 It takes the following inputs:
 ```
 HFModelPusher(
     username: str,
-    huggingface_access_token: str,
-    repo_name: Optional[str],    
+    hf_access_token: str,
+    repo_name: Optional[str],
+    hf_space_config: Optional[HFSpaceConfig] = None,
     model: Optional[types.Channel] = None,
     model_blessing: Optional[types.Channel] = None,    
 )
@@ -48,15 +71,30 @@ It gives the follwing outputs:
 - `branch` : branch name where the model is pushed to. The branch name is automatically assigned to the same value of  `pushed_version`
 - `commit_id` : the id from the commit history (branch name could be sufficient to retreive a certain version of the model)
 - `repo_url` : repository URL. It is something like f"https://huggingface.co/{repo_id}/{branch}"
+- `space_url` : 
 
-The behaviour of the component:
-1. It pushes the model when the `model` is blessed, or it pushes the `model` when the `model_blessing` parameter is set to `None`. This behaviour inherits from the standard `Pusher` component
-2. Creates HuggingFace Hub Repository object using the `huggingface-hub` package. It will clone one if there is already an existing repository
-3. Checks out a new branch with the name as `pushed_version`. Since the model is pushed for experimental purpose, it would be good to track the versions of the model within separate branches (When the model is ready to be open to public, one can manually merge the right version(branch) into the main branch)
-4. Copy all the model related files into a temporary directory in a local file system. All the model related files produced by the upstream component such as `Trainer`. They could be stored in GCS bucket, so `tf.io.gfile` module is a good choice since it handles files in location agnostic manner (GCS or local)
-5. Add & commit the current status
-6. Pushes the commit to the remote HuggingFace Model Repository
+### HuggingFace Space spacific configurations
+```
+HFSpaceConfig(
+    app_path: str,
+    repo_name: Optional[str],
+    space_sdk: Optional[str] = "gradio",
+    placeholders: Optional[Dict] = None
+)
 
+# default placeholders
+# the keys should be used as is. the values can be 
+# changed as needed. if so, make sure there are the
+# same strings in the files under `app_path`
+{
+    "model_repo": "$HF_MODEL_REPO_NAME",
+    "model_branch": "$HF_MODEL_REPO_BRANCH"
+}
+```
+- `app_path` : path where the application templates are in the container that runs the TFX pipeline. This is expressed either apps.gradio.img_classifier or apps/gradio.img_classifier
+- `repo_name` : the repository name to push the application to. The default value is same as the TFX pipeline name
+- `space_sdk` : either `gradio` or `streamlit`. this will decide which application framework to be used for the Space repository. The default value is `gradio`
+- `placeholders` : dictionary which placeholders to replace with model specific information. The keys represents describtions, and the values represents the actual placeholders to replace in the files under the `app_path`. There are currently two predefined keys, and if `placeholders` is set to `None`, the default values will be used.
 
 ## Project Dependencies
 - [tfx](https://pypi.org/project/tfx/)
