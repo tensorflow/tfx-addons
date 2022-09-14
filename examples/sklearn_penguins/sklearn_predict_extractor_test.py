@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+# pylint: disable=pointless-string-statement
 """Tests for the custom scikit-learn Evaluator module.
 
 import os
