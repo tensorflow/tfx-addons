@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
-
 """Penguin example using TFX.
 
 import os
