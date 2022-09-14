@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
-
 """Predict extractor for scikit-learn models.
 
 import copy
