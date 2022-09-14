@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
-
 """E2E Tests for penguin_pipeline_sklearn_local.
 
 import os
