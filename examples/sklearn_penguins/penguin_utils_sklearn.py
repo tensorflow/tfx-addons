@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+# pylint: disable=pointless-string-statement
 """Python source file include Penguin pipeline functions and necessary utils.
 
 The utilities in this file are used to build a model with scikit-learn.
