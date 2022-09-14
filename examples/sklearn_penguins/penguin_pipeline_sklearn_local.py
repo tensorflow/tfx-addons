@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Penguin example using TFX."""
+"""Penguin example using TFX.
 
 import os
 from typing import List, Text
@@ -72,7 +72,7 @@ def _create_pipeline(
     metadata_path: Text,
     beam_pipeline_args: List[Text],
 ) -> tfx.dsl.Pipeline:
-  """Implements the Penguin pipeline with TFX."""
+  # Implements the Penguin pipeline with TFX.
   # Brings data into the pipeline or otherwise joins/converts training data.
   example_gen = tfx.components.CsvExampleGen(input_base=data_root)
 
@@ -174,3 +174,4 @@ if __name__ == '__main__':
                        serving_model_dir=_serving_model_dir,
                        metadata_path=_metadata_path,
                        beam_pipeline_args=_beam_pipeline_args))
+"""
