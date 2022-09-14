@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
-
 """Tests for penguin_pipeline_sklearn_gcp.
 
 import os
