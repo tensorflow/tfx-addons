@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+
 """Python source file include Penguin pipeline functions and necessary utils.
 
 The utilities in this file are used to build a model with scikit-learn.
 This module file will be used in Transform and generic Trainer.
-"""
+
 
 import os
 import pickle
@@ -49,6 +52,7 @@ def _input_fn(
     schema: schema_pb2.Schema,
     batch_size: int = 20,
 ) -> Tuple[np.ndarray, np.ndarray]:
+"""
   """Generates features and label for tuning/training.
 
   Args:
@@ -62,6 +66,7 @@ def _input_fn(
     A (features, indices) tuple where features is a matrix of features, and
       indices is a single vector of label indices.
   """
+ """
   record_batch_iterator = data_accessor.record_batch_factory(
       file_pattern,
       dataset_options.RecordBatchesOptions(batch_size=batch_size,
@@ -83,11 +88,13 @@ def _input_fn(
 
 # TFX Trainer will call this function.
 def run_fn(fn_args: FnArgs):
+"""
   """Train the model based on given args.
 
   Args:
     fn_args: Holds args used to train the model as name/value pairs.
   """
+ """
   schema = io_utils.parse_pbtxt_file(fn_args.schema_file, schema_pb2.Schema())
 
   x_train, y_train = _input_fn(fn_args.train_files, fn_args.data_accessor,
@@ -127,3 +134,4 @@ def run_fn(fn_args: FnArgs):
   model_path = os.path.join(fn_args.serving_model_dir, 'model.pkl')
   with fileio.open(model_path, 'wb+') as f:
     pickle.dump(model, f)
+"""
