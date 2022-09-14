@@ -35,7 +35,7 @@ _PREDICT_EXTRACTOR_STAGE_NAME = 'SklearnPredict'
 def _make_sklearn_predict_extractor(
     eval_shared_model: tfma.EvalSharedModel, ) -> extractor.Extractor:
 """
-  """Creates an extractor for performing predictions using a scikit-learn model.
+"""Creates an extractor for performing predictions using a scikit-learn model.
 
   The extractor's PTransform loads and runs the serving pickle against
   every extract yielding a copy of the incoming extracts with an additional
@@ -47,7 +47,7 @@ def _make_sklearn_predict_extractor(
 
   Returns:
     Extractor for extracting predictions.
-  """
+"""
 """
   eval_shared_models = model_util.verify_and_update_eval_shared_models(
       eval_shared_model)
@@ -87,8 +87,8 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
         raise ValueError('Missing feature or label keys in loaded model.')
 
   def process(self, elem: types.Extracts) -> Iterable[types.Extracts]:
- """
-    """Uses loaded models to make predictions on batches of data.
+"""
+"""Uses loaded models to make predictions on batches of data.
 
     Args:
       elem: An extract containing batched features.
@@ -97,8 +97,8 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       Copy of the original extracts with predictions added for each model. If
       there are multiple models, a list of dicts keyed on model names will be
       added, with each value corresponding to a prediction for a single sample.
-    """
- """
+"""
+"""
     # Build feature and label vectors because sklearn cannot read tf.Examples.
     features = []
     labels = []
@@ -132,7 +132,7 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
     eval_shared_models: Dict[Text, types.EvalSharedModel],
 ) -> beam.pvalue.PCollection:
 """
-  """A PTransform that adds predictions and possibly other tensors to extracts.
+"""A PTransform that adds predictions and possibly other tensors to extracts.
 
   Args:
     extracts: PCollection of extracts with inputs keyed by tfma.INPUTS_KEY.
@@ -140,7 +140,7 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
 
   Returns:
     PCollection of Extracts updated with the predictions.
-  """
+"""
 """
   return extracts | 'Predict' >> beam.ParDo(
       _TFMAPredictionDoFn(eval_shared_models))
