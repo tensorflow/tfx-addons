@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Penguin example using TFX on GCP."""
+
+# COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+
+"""Penguin example using TFX on GCP.
 
 import os
 from typing import Dict, List, Optional, Text
@@ -118,7 +121,7 @@ def _create_pipeline(
     ai_platform_serving_args: Optional[Dict[Text, Text]],
     beam_pipeline_args: List[Text],
 ) -> tfx.dsl.Pipeline:
-  """Implements the Penguin pipeline with TFX."""
+  # Implements the Penguin pipeline with TFX.
   # Brings data into the pipeline or otherwise joins/converts training data.
   example_gen = tfx.components.CsvExampleGen(input_base=data_root)
 
@@ -235,3 +238,4 @@ if __name__ == '__main__':
                        ai_platform_training_args=_ai_platform_training_args,
                        ai_platform_serving_args=_ai_platform_serving_args,
                        beam_pipeline_args=_beam_pipeline_args))
+"""
