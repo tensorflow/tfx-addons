@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Predict extractor for scikit-learn models."""
+
+# COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+
+"""Predict extractor for scikit-learn models.
 
 import copy
 import os
@@ -31,6 +34,7 @@ _PREDICT_EXTRACTOR_STAGE_NAME = 'SklearnPredict'
 
 def _make_sklearn_predict_extractor(
     eval_shared_model: tfma.EvalSharedModel, ) -> extractor.Extractor:
+"""
   """Creates an extractor for performing predictions using a scikit-learn model.
 
   The extractor's PTransform loads and runs the serving pickle against
@@ -44,6 +48,7 @@ def _make_sklearn_predict_extractor(
   Returns:
     Extractor for extracting predictions.
   """
+"""
   eval_shared_models = model_util.verify_and_update_eval_shared_models(
       eval_shared_model)
   return extractor.Extractor(
@@ -56,14 +61,14 @@ def _make_sklearn_predict_extractor(
 @beam.typehints.with_input_types(types.Extracts)
 @beam.typehints.with_output_types(types.Extracts)
 class _TFMAPredictionDoFn(model_util.DoFnWithModels):
-  """A DoFn that loads the models and predicts."""
+  # A DoFn that loads the models and predicts.
   def __init__(self, eval_shared_models: Dict[Text, types.EvalSharedModel]):
     super(_TFMAPredictionDoFn, self).__init__(
         {k: v.model_loader
          for k, v in eval_shared_models.items()})
 
   def setup(self):
-    """Setup DoFn for sklearn"""
+    # Setup DoFn for sklearn
     super(_TFMAPredictionDoFn, self).setup()
     self._feature_keys = None
     self._label_key = None
@@ -82,6 +87,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
         raise ValueError('Missing feature or label keys in loaded model.')
 
   def process(self, elem: types.Extracts) -> Iterable[types.Extracts]:
+ """
     """Uses loaded models to make predictions on batches of data.
 
     Args:
@@ -92,6 +98,7 @@ class _TFMAPredictionDoFn(model_util.DoFnWithModels):
       there are multiple models, a list of dicts keyed on model names will be
       added, with each value corresponding to a prediction for a single sample.
     """
+ """
     # Build feature and label vectors because sklearn cannot read tf.Examples.
     features = []
     labels = []
@@ -124,6 +131,7 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
     extracts: beam.pvalue.PCollection,
     eval_shared_models: Dict[Text, types.EvalSharedModel],
 ) -> beam.pvalue.PCollection:
+"""
   """A PTransform that adds predictions and possibly other tensors to extracts.
 
   Args:
@@ -133,19 +141,20 @@ def _ExtractPredictions(  # pylint: disable=invalid-name
   Returns:
     PCollection of Extracts updated with the predictions.
   """
+"""
   return extracts | 'Predict' >> beam.ParDo(
       _TFMAPredictionDoFn(eval_shared_models))
 
 
 def _custom_model_loader_fn(model_path: Text):
-  """Returns a function that loads a scikit-learn model."""
+  # Returns a function that loads a scikit-learn model.
   return lambda: pickle.load(tf.io.gfile.GFile(model_path, 'rb'))
 
 
 # TFX Evaluator will call the following functions.
 def custom_eval_shared_model(eval_saved_model_path, model_name, eval_config,
                              **kwargs) -> tfma.EvalSharedModel:
-  """Returns a single custom EvalSharedModel."""
+  # Returns a single custom EvalSharedModel.
   model_path = os.path.join(eval_saved_model_path, 'model.pkl')
   return tfma.default_eval_shared_model(
       eval_saved_model_path=model_path,
@@ -161,9 +170,10 @@ def custom_extractors(
     eval_config: tfma.EvalConfig,
     tensor_adapter_config: tensor_adapter.TensorAdapterConfig,
 ) -> List[tfma.extractors.Extractor]:
-  """Returns default extractors plus a custom prediction extractor."""
+  # Returns default extractors plus a custom prediction extractor.
   predict_extractor = _make_sklearn_predict_extractor(eval_shared_model)
   return tfma.default_extractors(eval_shared_model=eval_shared_model,
                                  eval_config=eval_config,
                                  tensor_adapter_config=tensor_adapter_config,
                                  custom_predict_extractor=predict_extractor)
+"""
