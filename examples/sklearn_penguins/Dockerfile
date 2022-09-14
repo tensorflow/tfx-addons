@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG TFX_VERSION
-FROM tensorflow/tfx:$TFX_VERSION
-RUN pip install -U tfx[examples]
+# COMMENTING OUT WHILE ARCHIVED
+
+# ARG TFX_VERSION
+# FROM tensorflow/tfx:$TFX_VERSION
+# RUN pip install -U tfx[examples]
