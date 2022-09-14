@@ -45,7 +45,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
             eval_config=self._eval_config))
     self._schema = text_format.Parse(
 """
-        """
+"""
         feature {
           name: "age"
           type: FLOAT
@@ -58,7 +58,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           name: "label"
           type: INT
         }
-        """
+"""
 """
        , schema_pb2.Schema())
     self._tfx_io = test_util.InMemoryTFExampleRecord(
@@ -168,12 +168,12 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
   def _create_sklearn_model(self, eval_export_dir):
 """
-    """Creates and pickles a toy scikit-learn model.
+"""Creates and pickles a toy scikit-learn model.
 
     Args:
         eval_export_dir: Directory to store a pickled scikit-learn model. This
             directory is created if it does not exist.
-    """
+"""
 """
     x_train = [[3, 0], [4, 1]]
     y_train = [0, 1]
