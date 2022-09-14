@@ -53,7 +53,7 @@ def _input_fn(
     batch_size: int = 20,
 ) -> Tuple[np.ndarray, np.ndarray]:
 """
-  """Generates features and label for tuning/training.
+"""Generates features and label for tuning/training.
 
   Args:
     file_pattern: input tfrecord file pattern.
@@ -65,8 +65,8 @@ def _input_fn(
   Returns:
     A (features, indices) tuple where features is a matrix of features, and
       indices is a single vector of label indices.
-  """
- """
+"""
+"""
   record_batch_iterator = data_accessor.record_batch_factory(
       file_pattern,
       dataset_options.RecordBatchesOptions(batch_size=batch_size,
@@ -89,12 +89,12 @@ def _input_fn(
 # TFX Trainer will call this function.
 def run_fn(fn_args: FnArgs):
 """
-  """Train the model based on given args.
+"""Train the model based on given args.
 
   Args:
     fn_args: Holds args used to train the model as name/value pairs.
-  """
- """
+"""
+"""
   schema = io_utils.parse_pbtxt_file(fn_args.schema_file, schema_pb2.Schema())
 
   x_train, y_train = _input_fn(fn_args.train_files, fn_args.data_accessor,
