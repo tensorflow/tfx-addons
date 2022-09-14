@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the custom scikit-learn Evaluator module."""
+
+# COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+
+"""Tests for the custom scikit-learn Evaluator module.
 
 import os
 import pickle
@@ -42,6 +45,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
             model_name=None,
             eval_config=self._eval_config))
     self._schema = text_format.Parse(
+"""
         """
         feature {
           name: "age"
@@ -55,7 +59,9 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
           name: "label"
           type: INT
         }
-        """, schema_pb2.Schema())
+        """
+"""
+       , schema_pb2.Schema())
     self._tfx_io = test_util.InMemoryTFExampleRecord(
         schema=self._schema,
         raw_record_column_name=constants.ARROW_INPUT_COLUMN)
@@ -71,7 +77,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
   @unittest.skip('Currently failing. See #72 for details')
   def testMakeSklearnPredictExtractor(self):
-    """Tests that predictions are made from extracts for a single model."""
+    # Tests that predictions are made from extracts for a single model.
     feature_extractor = features_extractor.FeaturesExtractor(self._eval_config)
     prediction_extractor = (
         sklearn_predict_extractor._make_sklearn_predict_extractor(  # pylint:disable=protected-access
@@ -98,7 +104,7 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
 
   @unittest.skip('Currently failing. See #72 for details')
   def testMakeSklearnPredictExtractorWithMultiModels(self):
-    """Tests that predictions are made from extracts for multiple models."""
+    # Tests that predictions are made from extracts for multiple models.
     eval_config = config.EvalConfig(model_specs=[
         config.ModelSpec(name='model1'),
         config.ModelSpec(name='model2'),
@@ -146,14 +152,14 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
       util.assert_that(predict_extracts, check_result)
 
   def test_custom_eval_shared_model(self):
-    """Tests that an EvalSharedModel is created with a custom sklearn loader."""
+    # Tests that an EvalSharedModel is created with a custom sklearn loader.
     model_file = os.path.basename(self._eval_shared_model.model_path)
     self.assertEqual(model_file, 'model.pkl')
     model = self._eval_shared_model.model_loader.construct_fn()
     self.assertIsInstance(model, nn.MLPClassifier)
 
   def test_custom_extractors(self):
-    """Tests that the sklearn extractor is used when creating extracts."""
+    # Tests that the sklearn extractor is used when creating extracts.
     extractors = sklearn_predict_extractor.custom_extractors(
         self._eval_shared_model, self._eval_config,
         self._tensor_adapter_config)
@@ -162,12 +168,14 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
                   [extractor.stage_name for extractor in extractors])
 
   def _create_sklearn_model(self, eval_export_dir):
+"""
     """Creates and pickles a toy scikit-learn model.
 
     Args:
         eval_export_dir: Directory to store a pickled scikit-learn model. This
             directory is created if it does not exist.
     """
+"""
     x_train = [[3, 0], [4, 1]]
     y_train = [0, 1]
     model = nn.MLPClassifier(max_iter=1)
@@ -179,3 +187,4 @@ class SklearnPredictExtractorTest(testutil.TensorflowModelAnalysisTest):
     model_path = os.path.join(eval_export_dir, 'model.pkl')
     with open(model_path, 'wb+') as f:
       pickle.dump(model, f)
+"""
