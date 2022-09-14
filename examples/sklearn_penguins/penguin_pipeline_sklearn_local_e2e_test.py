@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""E2E Tests for penguin_pipeline_sklearn_local."""
+
+# COMMENTED OUT TO AVOID CI ISSUES WHILE ARCHIVED
+
+"""E2E Tests for penguin_pipeline_sklearn_local.
 
 import os
 import unittest
@@ -46,7 +49,7 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
                                        self._pipeline_name, 'metadata.db')
 
   def assertExecutedOnce(self, component: Text) -> None:
-    """Check the component is executed exactly once."""
+    # Check the component is executed exactly once.
     component_path = os.path.join(self._pipeline_root, component)
     self.assertTrue(tfx.dsl.io.fileio.exists(component_path))
     execution_path = os.path.join(component_path, '.system',
@@ -93,3 +96,4 @@ class PenguinPipelineSklearnLocalEndToEndTest(tf.test.TestCase):
 if __name__ == '__main__':
   tf.compat.v1.enable_v2_behavior()
   tf.test.main()
+"""
