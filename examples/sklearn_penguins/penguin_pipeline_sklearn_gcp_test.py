@@ -23,6 +23,7 @@ class NullTestCase(unittest.TestCase):
     """test docstring"""
     self.assertEqual((1 + 2), 3)
 
+
 if __name__ == '__main__':
   unittest.main()
 # pylint: disable=pointless-string-statement
