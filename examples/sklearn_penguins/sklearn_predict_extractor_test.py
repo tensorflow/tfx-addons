@@ -16,14 +16,15 @@
 """Null test to satisfy CI"""
 import unittest
 
+
 class NullTestCase(unittest.TestCase):
-    """class docstring"""
-    def test(self):
-        """test docstring"""
-        self.assertEqual((1 + 2), 3)
+  """class docstring"""
+  def test(self):
+    """test docstring"""
+    self.assertEqual((1 + 2), 3)
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
 
 # pylint: disable=pointless-string-statement
 """Tests for the custom scikit-learn Evaluator module.
