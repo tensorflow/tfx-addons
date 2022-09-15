@@ -3,7 +3,10 @@
 
 This example is archived because there is no currently active owner.  It is also basically a duplicate of the [existing example in the main TFX repo](https://github.com/tensorflow/tfx/tree/master/tfx/examples/penguin/experimental), which is maintained by the TFX team.
 
-This example could be expanded to include a broader use of Scikit-Learn.  If anyone is interested in expanding or working on this, this code is a starting place.  Please contact the TFX-Addons maintainers to request ownership.
+This example could be expanded to include a broader use of Scikit-Learn.  If anyone is interested in expanding or working on this, you can check out the code in [v0.3.0 release](https://github.com/tensorflow/tfx-addons/tree/v0.3.0/examples/sklearn_penguins).  
+
+Please contact the TFX-Addons maintainers to request ownership.
+
 <hr />
 
 # Penguin Classification Scikit-learn Example
