@@ -25,7 +25,7 @@ class NullTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-
+# pylint: disable=pointless-string-statement
 """E2E Tests for penguin_pipeline_sklearn_local.
 
 import os
