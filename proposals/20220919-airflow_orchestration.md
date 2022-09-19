@@ -5,12 +5,12 @@
 
 **Your email:** murthyvs@google.com
 
-**Your company/organization:** Google Core ML
+**Your company/organization:** Google Core ML TFX Team (MTV + Seoul)
 
 **Project name:** Airflow Orchestration
 
 ## Project Description
-Moving Airflow to TFX add-ons due to lack of native support.
+Moving Airflow to TFX add-ons due to decreasing native support.
 
 ## Project Category
 Orchestrator
@@ -22,7 +22,7 @@ We are moving Airflow from tfx/orchestration to tfx-addons. Native support for A
 Move Airflow from tfx/orchestration to tfx-addons.
 
 ## Project Dependencies
-Same as tfx/orchestration/airflow
+Same as tfx/orchestration/airflow.
 
 ## Project Team
 Google Core ML TFX Team (MTV + Seoul)
