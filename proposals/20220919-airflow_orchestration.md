@@ -24,24 +24,10 @@ We are moving Airflow from tfx/orchestration to tfx-addons. Native support for A
 3. Update TFX tutorials on www.tensorflow.org to indicate deprecated and moving to TFXA
  
 ## Project Dependencies
-1. tfx/dsl/components/base:base_node
-2. tfx/dsl/components/base:base_component
-3. tfx/dsl/components/base:base_executor
-4. tfx/dsl/components/base:executor_spec
-5. tfx/orchestration:data_types
-6. tfx/orchestration:metadata
-7. tfx/orchestration/config:base_component_config
-8. tfx/orchestration/launcher:base_component_launcher
-9. tfx/orchestration:pipeline
-10. tfx/orchestration:tfx_runner
-11. tfx/orchestration/config:config_utils
-12. tfx/orchestration/config:pipeline_config
-13. tfx/utils:json_utils
-14. tfx/utils:telemetry_utils
+TensorFlow Extended (1.9.1)
 
 ## Project Team
-Varun Murthy (murthyvs@google.com)
-Google Core ML TFX Team (tfx-team@google.com)
+murthyvs: Varun Murthy (murthyvs@google.com)
 
 # Note
 Please be aware of the processes and requirements which are outlined here:
