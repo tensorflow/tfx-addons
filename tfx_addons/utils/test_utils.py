@@ -16,6 +16,7 @@
 
 from typing import List
 
+
 def get_tfx_version(version: str) -> List[int]:
   """
     Returns the TFX version as integers.
