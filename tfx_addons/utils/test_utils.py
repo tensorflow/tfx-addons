@@ -20,5 +20,7 @@ from typing import List
 def get_tfx_version(version: str) -> List[int]:
   """
     Returns the TFX version as integers.
-    """
+  """
+  # NB(gcasassaez): Remove suffix to avoid parsing issues
+  version = version.split("-")[0]
   return tuple([int(x) for x in version.split(".")])  # pylint: disable=R1728
