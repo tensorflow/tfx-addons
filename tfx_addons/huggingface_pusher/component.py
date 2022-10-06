@@ -15,7 +15,7 @@
 """HuggingFace(HF) Pusher TFX Component.
 The HFPusher is used to push model and prototype application to HuggingFace Hub.
 """
-from typing import Text, Dict, Any, Optional
+from typing import Any, Dict, Optional, Text
 
 from tfx import types
 from tfx.dsl.components.base import base_component, executor_spec
@@ -30,27 +30,27 @@ MODEL_BLESSING_KEY = "model_blessing"
 
 
 class HFPusherSpec(types.ComponentSpec):
-    """ComponentSpec for TFX HFPusher Component."""
+  """ComponentSpec for TFX HFPusher Component."""
 
-    PARAMETERS = {
-        "username": ExecutionParameter(type=str),
-        "access_token": ExecutionParameter(type=str),
-        "repo_name": ExecutionParameter(type=str),
-        "space_config": ExecutionParameter(type=Dict[Text, Any], optional=True),
-    }
-    INPUTS = {
-        MODEL_KEY: ChannelParameter(type=standard_artifacts.Model, optional=True),
-        MODEL_BLESSING_KEY: ChannelParameter(
-            type=standard_artifacts.ModelBlessing, optional=True
-        ),
-    }
-    OUTPUTS = {
-        PUSHED_MODEL_KEY: ChannelParameter(type=standard_artifacts.PushedModel),
-    }
+  PARAMETERS = {
+      "username": ExecutionParameter(type=str),
+      "access_token": ExecutionParameter(type=str),
+      "repo_name": ExecutionParameter(type=str),
+      "space_config": ExecutionParameter(type=Dict[Text, Any], optional=True),
+  }
+  INPUTS = {
+      MODEL_KEY:
+      ChannelParameter(type=standard_artifacts.Model, optional=True),
+      MODEL_BLESSING_KEY:
+      ChannelParameter(type=standard_artifacts.ModelBlessing, optional=True),
+  }
+  OUTPUTS = {
+      PUSHED_MODEL_KEY: ChannelParameter(type=standard_artifacts.PushedModel),
+  }
 
 
 class HFPusher(base_component.BaseComponent):
-    """Component for pushing model and application to HuggingFace Hub.
+  """Component for pushing model and application to HuggingFace Hub.
 
     The `HFPusher` is a [TFX Component](https://www.tensorflow.org/tfx
     /guide/understanding_tfx_pipelines#component), and its primary pur
@@ -60,19 +60,19 @@ class HFPusher(base_component.BaseComponent):
     lication to HuggingFace Space Hub.
     """
 
-    SPEC_CLASS = HFPusherSpec
-    EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
+  SPEC_CLASS = HFPusherSpec
+  EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
 
-    def __init__(
-        self,
-        username: str,
-        access_token: str,
-        repo_name: str,
-        space_config: Optional[Dict[Text, Any]] = None,
-        model: Optional[types.Channel] = None,
-        model_blessing: Optional[types.Channel] = None,
-    ):
-        """The HFPusher TFX component.
+  def __init__(
+      self,
+      username: str,
+      access_token: str,
+      repo_name: str,
+      space_config: Optional[Dict[Text, Any]] = None,
+      model: Optional[types.Channel] = None,
+      model_blessing: Optional[types.Channel] = None,
+  ):
+    """The HFPusher TFX component.
 
         HFPusher pushes a trained or blessed model to HuggingFace Model Hub.
         This is designed to work as a downstream component of Trainer and o
@@ -150,16 +150,16 @@ class HFPusher(base_component.BaseComponent):
         ```
         """
 
-        pushed_model = types.Channel(type=standard_artifacts.PushedModel)
+    pushed_model = types.Channel(type=standard_artifacts.PushedModel)
 
-        spec = HFPusherSpec(
-            username=username,
-            access_token=access_token,
-            repo_name=repo_name,
-            space_config=space_config,
-            model=model,
-            model_blessing=model_blessing,
-            pushed_model=pushed_model,
-        )
+    spec = HFPusherSpec(
+        username=username,
+        access_token=access_token,
+        repo_name=repo_name,
+        space_config=space_config,
+        model=model,
+        model_blessing=model_blessing,
+        pushed_model=pushed_model,
+    )
 
-        super().__init__(spec=spec)
+    super().__init__(spec=spec)

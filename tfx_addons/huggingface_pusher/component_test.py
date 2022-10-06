@@ -15,27 +15,26 @@
 """Tests for TFX HuggingFace Pusher Custom Component."""
 
 import tensorflow as tf
-from tfx.types import standard_artifacts
-from tfx.types import channel_utils
+from tfx.types import channel_utils, standard_artifacts
 
 from tfx_addons.huggingface_pusher.component import HFPusher
 
 
 class HFPusherTest(tf.test.TestCase):
-    def testConstruct(self):
-        test_model = channel_utils.as_channel([standard_artifacts.Model()])
-        hf_pusher = HFPusher(
-            username="test_username",
-            access_token="test_access_token",
-            repo_name="test_repo_name",
-            model=test_model,
-        )
+  def testConstruct(self):
+    test_model = channel_utils.as_channel([standard_artifacts.Model()])
+    hf_pusher = HFPusher(
+        username="test_username",
+        access_token="test_access_token",
+        repo_name="test_repo_name",
+        model=test_model,
+    )
 
-        self.assertEqual(
-            standard_artifacts.PushedModel.TYPE_NAME,
-            hf_pusher.outputs["pushed_model"].type_name,
-        )
+    self.assertEqual(
+        standard_artifacts.PushedModel.TYPE_NAME,
+        hf_pusher.outputs["pushed_model"].type_name,
+    )
 
 
 if __name__ == "__main__":
-    tf.test.main()
+  tf.test.main()
