@@ -69,8 +69,6 @@ class RunnerTest(tf.test.TestCase):
 
   @mock.patch('tfx_addons.huggingface_pusher.runner.io_utils.copy_dir')
   def testCheckWorkflowWithSpaceConfigButWithAppPath(self, mock_copy_dir):
-    mock_copy_dir = Mock()
-
     runner._create_remote_repo = Mock()  # pylint: disable=protected-access
     runner._clone_and_checkout = Mock()  # pylint: disable=protected-access
     runner._replace_files = Mock()  # pylint: disable=protected-access
@@ -88,12 +86,12 @@ class RunnerTest(tf.test.TestCase):
     except RuntimeError:
       assert False
 
-    mock_copy_dir.assert_called_once()
     self.assertEqual(runner._create_remote_repo.call_count, 2)  # pylint: disable=protected-access
     self.assertEqual(runner._clone_and_checkout.call_count, 2)  # pylint: disable=protected-access
     self.assertEqual(runner._replace_files.call_count, 2)  # pylint: disable=protected-access
     self.assertEqual(runner._push_to_remote_repo.call_count, 2)  # pylint: disable=protected-access
     runner._replace_placeholders.assert_called_once()  # pylint: disable=protected-access
+    mock_copy_dir.assert_called_once()
 
 
 if __name__ == "__main__":
