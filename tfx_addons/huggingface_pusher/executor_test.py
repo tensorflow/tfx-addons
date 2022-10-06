@@ -67,5 +67,6 @@ class RunnerTest(tf.test.TestCase):
 
     try:
       exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]}, {})
+      assert False
     except RuntimeError:
       assert True
