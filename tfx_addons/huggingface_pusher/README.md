@@ -99,6 +99,11 @@ HFSpaceConfig(
 ## Project Dependencies
 - [tfx](https://pypi.org/project/tfx/)
 - [huggingface-hub](https://pypi.org/project/huggingface-hub/)
+- [Git-LFS](https://git-lfs.github.com/) which could be installed as below
+```shell
+$ curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+$ sudo apt-get install git-lfs
+```
 
 ## Project Team
 - Chansung Park, @deep-diver, deep.diver.csp@gmail.com
