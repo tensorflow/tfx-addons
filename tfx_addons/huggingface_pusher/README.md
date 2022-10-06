@@ -73,7 +73,7 @@ It gives the follwing outputs:
 - `repo_url` : model repository URL. It is something like f"https://huggingface.co/{repo_id}/{branch}"
 - `space_url` : space repository URL. It is something like f"https://huggingface.co/{repo_id}"
 
-### HuggingFace Space spacific configurations
+### HuggingFace Space specific configurations
 ```
 HFSpaceConfig(
     app_path: str,
