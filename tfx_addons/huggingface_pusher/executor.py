@@ -18,6 +18,7 @@ the workflow handler runner.deploy_model_for_hf_hub().
 
 import ast
 import time
+from shutil import which
 from typing import Any, Dict, List
 
 from tfx import types
@@ -88,8 +89,17 @@ class Executor(tfx_pusher_executor.Executor):
             he values represents the actual placeholders to replace in the f
             iles under the app_path. There are currently two predefined keys,
             and if placeholders is set to None, the default values will be used.
+        Raises:
+            RuntimeError: if app_path is not set when space_config is provided.
+            RuntimeError: if git-lfs is not installed.
         """
     self._log_startup(input_dict, output_dict, exec_properties)
+
+    if self._is_git_lfs_installed() is not True:
+      raise RuntimeError(
+          "Git-LFS is not installed. "
+          "Git-LFS installation guide can be found in https://git-lfs.github.com/."
+      )
 
     model_push = artifact_utils.get_single_instance(
         output_dict[standard_component_specs.PUSHED_MODEL_KEY])
@@ -98,6 +108,7 @@ class Executor(tfx_pusher_executor.Executor):
     if not self.CheckBlessing(input_dict):
       self._MarkNotPushed(model_push)
       return
+
     model_path = self.GetModelPath(input_dict)
     model_version_name = f"v{int(time.time())}"
 
@@ -121,3 +132,6 @@ class Executor(tfx_pusher_executor.Executor):
 
       if key != "repo_url":
         model_push.set_string_custom_property(key, value)
+
+  def _is_git_lfs_installed(self):
+    return which("git-lfs") is not None
