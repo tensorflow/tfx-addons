@@ -23,83 +23,77 @@ from tfx_addons.huggingface_pusher import runner
 
 
 class RunnerTest(tf.test.TestCase):
-	def testCheckWorkflowWithoutSpaceConfig(self):
-		runner._create_remote_repo = Mock()
-		runner._clone_and_checkout = Mock()
-		runner._replace_files = Mock()
-		runner._push_to_remote_repo = Mock()
-		runner._replace_placeholders = Mock()
+  def testCheckWorkflowWithoutSpaceConfig(self):
+    runner._create_remote_repo = Mock() # pylint: disable=protected-access
+    runner._clone_and_checkout = Mock() # pylint: disable=protected-access
+    runner._replace_files = Mock() # pylint: disable=protected-access
+    runner._push_to_remote_repo = Mock() # pylint: disable=protected-access
+    runner._replace_placeholders = Mock() # pylint: disable=protected-access
 
-		runner.deploy_model_for_hf_hub(
-			username="test_username",
-			access_token="test_access_token",
-			repo_name="test_repo_name",
-			model_path="test_model_path",
-			model_version="test_model_version",
-		)
+    runner.deploy_model_for_hf_hub(
+        username="test_username",
+        access_token="test_access_token",
+        repo_name="test_repo_name",
+        model_path="test_model_path",
+        model_version="test_model_version",
+    )
 
-		runner._create_remote_repo.assert_called_once()
-		runner._clone_and_checkout.assert_called_once()
-		runner._replace_files.assert_called_once()
-		runner._push_to_remote_repo.assert_called_once()
-		runner._replace_placeholders.assert_not_called()
+    runner._create_remote_repo.assert_called_once()  # pylint: disable=protected-access
+    runner._clone_and_checkout.assert_called_once() # pylint: disable=protected-access
+    runner._replace_files.assert_called_once() # pylint: disable=protected-access
+    runner._push_to_remote_repo.assert_called_once() # pylint: disable=protected-access
+    runner._replace_placeholders.assert_not_called() # pylint: disable=protected-access
 
-	def testCheckWorkflowWithSpaceConfigButWithoutAppPath(self):
-		runner._create_remote_repo = Mock()
-		runner._clone_and_checkout = Mock()
-		runner._replace_files = Mock()
-		runner._push_to_remote_repo = Mock()
-		runner._replace_placeholders = Mock()
+  def testCheckWorkflowWithSpaceConfigButWithoutAppPath(self):
+    runner._create_remote_repo = Mock() # pylint: disable=protected-access
+    runner._clone_and_checkout = Mock() # pylint: disable=protected-access
+    runner._replace_files = Mock() # pylint: disable=protected-access
+    runner._push_to_remote_repo = Mock() # pylint: disable=protected-access
+    runner._replace_placeholders = Mock() # pylint: disable=protected-access
 
-		try:
-			runner.deploy_model_for_hf_hub(
-				username="test_username",
-				access_token="test_access_token",
-				repo_name="test_repo_name",
-				model_path="test_model_path",
-				model_version="test_model_version",
-				space_config={
-					
-				}
-			)			
-		except RuntimeError:
-			assert True
-	
-		runner._create_remote_repo.assert_called_once()
-		runner._clone_and_checkout.assert_called_once()
-		runner._replace_files.assert_called_once()
-		runner._push_to_remote_repo.assert_called_once()
-		runner._replace_placeholders.assert_not_called()		
+    try:
+      runner.deploy_model_for_hf_hub(username="test_username",
+                                     access_token="test_access_token",
+                                     repo_name="test_repo_name",
+                                     model_path="test_model_path",
+                                     model_version="test_model_version",
+                                     space_config={})
+    except RuntimeError:
+      assert True
 
-	@mock.patch('tfx_addons.huggingface_pusher.runner.io_utils.copy_dir')
-	def testCheckWorkflowWithSpaceConfigButWithAppPath(self, mock_copy_dir):
-		mock_copy_dir = Mock()
+    runner._create_remote_repo.assert_called_once() # pylint: disable=protected-access
+    runner._clone_and_checkout.assert_called_once() # pylint: disable=protected-access
+    runner._replace_files.assert_called_once() # pylint: disable=protected-access
+    runner._push_to_remote_repo.assert_called_once() # pylint: disable=protected-access
+    runner._replace_placeholders.assert_not_called() # pylint: disable=protected-access
 
-		runner._create_remote_repo = Mock()
-		runner._clone_and_checkout = Mock()
-		runner._replace_files = Mock()
-		runner._push_to_remote_repo = Mock()
-		runner._replace_placeholders = Mock()
+  @mock.patch('tfx_addons.huggingface_pusher.runner.io_utils.copy_dir')
+  def testCheckWorkflowWithSpaceConfigButWithAppPath(self, mock_copy_dir):
+    mock_copy_dir = Mock()
 
-		try:
-			runner.deploy_model_for_hf_hub(
-				username="test_username",
-				access_token="test_access_token",
-				repo_name="test_repo_name",
-				model_path="test_model_path",
-				model_version="test_model_version",
-				space_config={
-					"app_path": "test_app_path"
-				}
-			)			
-		except RuntimeError:
-			assert False
-	
-		self.assertEqual(runner._create_remote_repo.call_count, 2)
-		self.assertEqual(runner._clone_and_checkout.call_count, 2)
-		self.assertEqual(runner._replace_files.call_count, 2)
-		self.assertEqual(runner._push_to_remote_repo.call_count, 2)
-		runner._replace_placeholders.assert_called_once()
+    runner._create_remote_repo = Mock() # pylint: disable=protected-access
+    runner._clone_and_checkout = Mock() # pylint: disable=protected-access
+    runner._replace_files = Mock() # pylint: disable=protected-access
+    runner._push_to_remote_repo = Mock() # pylint: disable=protected-access
+    runner._replace_placeholders = Mock() # pylint: disable=protected-access
+
+    try:
+      runner.deploy_model_for_hf_hub(
+          username="test_username",
+          access_token="test_access_token",
+          repo_name="test_repo_name",
+          model_path="test_model_path",
+          model_version="test_model_version",
+          space_config={"app_path": "test_app_path"})
+    except RuntimeError:
+      assert False
+
+    self.assertEqual(runner._create_remote_repo.call_count, 2) # pylint: disable=protected-access
+    self.assertEqual(runner._clone_and_checkout.call_count, 2) # pylint: disable=protected-access
+    self.assertEqual(runner._replace_files.call_count, 2) # pylint: disable=protected-access
+    self.assertEqual(runner._push_to_remote_repo.call_count, 2) # pylint: disable=protected-access
+    runner._replace_placeholders.assert_called_once() # pylint: disable=protected-access
+
 
 if __name__ == "__main__":
   tf.test.main()
