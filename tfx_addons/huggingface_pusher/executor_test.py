@@ -24,48 +24,50 @@ from tfx_addons.huggingface_pusher import executor
 
 
 class RunnerTest(tf.test.TestCase):
-  
   @mock.patch('tfx_addons.huggingface_pusher.executor.which')
   @mock.patch('tfx_addons.huggingface_pusher.runner.deploy_model_for_hf_hub')
   def testCheckGitLFSInstalled(self, mock_runner_function, mock_which):
     executor.Executor.CheckBlessing = Mock()
     executor.Executor.GetModelPath = Mock()
-    executor.Executor._MarkPushed = Mock() # pylint: disable=protected-access
+    executor.Executor._MarkPushed = Mock()  # pylint: disable=protected-access
 
     executor.Executor.CheckBlessing.return_value = True
     executor.Executor.GetModelPath.return_value = "test_model_path"
 
-    mock_runner_function.return_value = {"test_key": "test_value", "repo_url": "test_repo_url"}
+    mock_runner_function.return_value = {
+        "test_key": "test_value",
+        "repo_url": "test_repo_url"
+    }
     mock_which.return_value = "git-lfs"
-    
-    _executor = executor.Executor()
+
+    exe = executor.Executor()
 
     try:
-        _executor.Do({}, {
-            "pushed_model": [standard_artifacts.PushedModel()]
-        }, {})
+      exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]},
+                   {})
     except RuntimeError:
-        assert False
+      assert False
 
   @mock.patch('tfx_addons.huggingface_pusher.executor.which')
   @mock.patch('tfx_addons.huggingface_pusher.runner.deploy_model_for_hf_hub')
   def testCheckGitLFSNotInstalled(self, mock_runner_function, mock_which):
     executor.Executor.CheckBlessing = Mock()
     executor.Executor.GetModelPath = Mock()
-    executor.Executor._MarkPushed = Mock() # pylint: disable=protected-access
+    executor.Executor._MarkPushed = Mock()  # pylint: disable=protected-access
 
     executor.Executor.CheckBlessing.return_value = True
     executor.Executor.GetModelPath.return_value = "test_model_path"
 
-    mock_runner_function.return_value = {"test_key": "test_value", "repo_url": "test_repo_url"}
+    mock_runner_function.return_value = {
+        "test_key": "test_value",
+        "repo_url": "test_repo_url"
+    }
     mock_which.return_value = None
-    
-    _executor = executor.Executor()
+
+    exe = executor.Executor()
 
     try:
-        _executor.Do({}, {
-            "pushed_model": [standard_artifacts.PushedModel()]
-        }, {})
+      exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]},
+                   {})
     except RuntimeError:
-        assert True
-
+      assert True
