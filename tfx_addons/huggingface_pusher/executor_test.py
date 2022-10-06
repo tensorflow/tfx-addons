@@ -43,8 +43,7 @@ class RunnerTest(tf.test.TestCase):
     exe = executor.Executor()
 
     try:
-      exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]},
-                   {})
+      exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]}, {})
     except RuntimeError:
       assert False
 
@@ -67,7 +66,6 @@ class RunnerTest(tf.test.TestCase):
     exe = executor.Executor()
 
     try:
-      exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]},
-                   {})
+      exe.Do({}, {"pushed_model": [standard_artifacts.PushedModel()]}, {})
     except RuntimeError:
       assert True
