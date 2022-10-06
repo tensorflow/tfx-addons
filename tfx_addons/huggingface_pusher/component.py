@@ -131,6 +131,7 @@ class HFPusher(base_component.BaseComponent):
 
         Raises:
             RuntimeError: if app_path is not set when space_config is provided.
+            RuntimeError: if git-lfs is not installed.
         Example:
 
         Basic usage example:
