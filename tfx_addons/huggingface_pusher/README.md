@@ -51,9 +51,10 @@ It takes the following inputs:
 ```
 HFModelPusher(
     username: str,
-    hf_access_token: str,
+    access_token: str,
     repo_name: Optional[str],
-    hf_space_config: Optional[HFSpaceConfig] = None,
+    space_config: Optional[Optional[Dict[Text, Any]]] = None,
+    decrypt_fn: Optional[str] = None,
     model: Optional[types.Channel] = None,
     model_blessing: Optional[types.Channel] = None,    
 )
@@ -61,6 +62,7 @@ HFModelPusher(
 - `username` : username of the HuggingFace user (can be an individual user or an organization)
 - `hf_access_token` : access token value of the HuggingFace user. 
 - `repo_name` : the repository name to push the current version of the model to. The default value is same as the TFX pipeline name
+- `decrypt_fn` :  decrypt_fn: access token decryption function name including the module where it belongs to such as module_path.decrypt_fn
 - `model` : the model artifact from the upstream TFX component such as `Trainer`
 - `model_blessing` : the blessing artifact from the upstream TFX component such as `Evaluator`
 
@@ -73,14 +75,14 @@ It gives the follwing outputs:
 - `repo_url` : model repository URL. It is something like f"https://huggingface.co/{repo_id}/{branch}"
 - `space_url` : space repository URL. It is something like f"https://huggingface.co/{repo_id}"
 
-### HuggingFace Space specific configurations
+### HuggingFace Space specific configurations in `space_config`
 ```
-HFSpaceConfig(
-    app_path: str,
-    repo_name: Optional[str],
-    space_sdk: Optional[str] = "gradio",
-    placeholders: Optional[Dict] = None
-)
+{
+    'app_path': str,
+    'repo_name': Optional[str],
+    'space_sdk': Optional[str] = "gradio",
+    'placeholders': Optional[Dict] = None
+}
 
 # default placeholders
 # the keys should be used as is. the values can be 
