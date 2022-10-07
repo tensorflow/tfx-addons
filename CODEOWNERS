@@ -46,6 +46,9 @@
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
 
+# HuggingFace Pusher
+/tfx_addons/huggingface_pusher @deep-diver @sayakpaul
+
 # Message Exit Handler
 /tfx_addons/message_exit_handler @hanneshapke
 /tfx_addons/utils @hanneshapke
