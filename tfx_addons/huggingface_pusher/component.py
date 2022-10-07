@@ -37,6 +37,7 @@ class HFPusherSpec(types.ComponentSpec):
       "access_token": ExecutionParameter(type=str),
       "repo_name": ExecutionParameter(type=str),
       "space_config": ExecutionParameter(type=Dict[Text, Any], optional=True),
+      "decrypt_fn": ExecutionParameter(type=str, optional=True),
   }
   INPUTS = {
       MODEL_KEY:
@@ -69,6 +70,7 @@ class HFPusher(base_component.BaseComponent):
       access_token: str,
       repo_name: str,
       space_config: Optional[Dict[Text, Any]] = None,
+      decrypt_fn: Optional[str] = None,
       model: Optional[types.Channel] = None,
       model_blessing: Optional[types.Channel] = None,
   ):
@@ -118,6 +120,8 @@ class HFPusher(base_component.BaseComponent):
                 within the Space Hub. repository is identified as {username}/
                 {repo_name}. If this is not set, the same name to the Model H
                 ub repository will be used.
+        decrypt_fn: access token decryption function name including the module
+            where it belongs to such as module_path.decrypt_fn.
         model: a TFX input channel containing a Model artifact. this is usually
             comes from the standard [`Trainer`]
             (https://www.tensorflow.org/tfx/guide/trainer) component.
@@ -158,6 +162,7 @@ class HFPusher(base_component.BaseComponent):
         access_token=access_token,
         repo_name=repo_name,
         space_config=space_config,
+        decrypt_fn=decrypt_fn,
         model=model,
         model_blessing=model_blessing,
         pushed_model=pushed_model,

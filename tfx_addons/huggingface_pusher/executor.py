@@ -21,9 +21,11 @@ import time
 from shutil import which
 from typing import Any, Dict, List
 
+from absl import logging
 from tfx import types
 from tfx.components.pusher import executor as tfx_pusher_executor
 from tfx.types import artifact_utils, standard_component_specs
+from tfx.utils import import_utils
 
 from tfx_addons.huggingface_pusher import runner
 
@@ -31,6 +33,7 @@ _USERNAME_KEY = "username"
 _ACCESS_TOKEN_KEY = "access_token"
 _REPO_NAME_KEY = "repo_name"
 _SPACE_CONFIG_KEY = "space_config"
+_DECRYPT_FN_KEY = "decrypt_fn"
 
 
 class Executor(tfx_pusher_executor.Executor):
@@ -89,6 +92,8 @@ class Executor(tfx_pusher_executor.Executor):
             he values represents the actual placeholders to replace in the f
             iles under the app_path. There are currently two predefined keys,
             and if placeholders is set to None, the default values will be used.
+            - decrypt_fn: access token decryption function name including the m
+            odule where it belongs to such as module_path.decrypt_fn.
         Raises:
             RuntimeError: if app_path is not set when space_config is provided.
             RuntimeError: if git-lfs is not installed.
@@ -101,6 +106,16 @@ class Executor(tfx_pusher_executor.Executor):
           "Git-LFS installation guide can be found in "
           "https://huggingface.co/docs/hub/repositories-getting-started#requirements "
           "and https://git-lfs.github.com/.")
+
+    decrypt_fn = exec_properties.get(_DECRYPT_FN_KEY, None)
+    access_token = exec_properties.get(_ACCESS_TOKEN_KEY)
+
+    if decrypt_fn:
+      module_path, fn_name = decrypt_fn.rsplit(".", 1)
+      logging.info(f"HFPusher: Importing {fn_name} from {module_path} "
+                   "to decrypt credentials.")
+      fn = import_utils.import_func_from_module(module_path, fn_name)
+      access_token = fn(access_token)
 
     model_push = artifact_utils.get_single_instance(
         output_dict[standard_component_specs.PUSHED_MODEL_KEY])
@@ -118,9 +133,9 @@ class Executor(tfx_pusher_executor.Executor):
       space_config = ast.literal_eval(space_config)
 
     pushed_properties = runner.deploy_model_for_hf_hub(
-        username=exec_properties.get(_USERNAME_KEY, None),
-        access_token=exec_properties.get(_ACCESS_TOKEN_KEY, None),
-        repo_name=exec_properties.get(_REPO_NAME_KEY, None),
+        username=exec_properties.get(_USERNAME_KEY),
+        access_token=access_token,
+        repo_name=exec_properties.get(_REPO_NAME_KEY),
         space_config=space_config,
         model_path=model_path,
         model_version=model_version_name,
