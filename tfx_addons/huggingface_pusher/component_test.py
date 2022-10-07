@@ -29,18 +29,17 @@ class HFPusherTest(tf.test.TestCase):
         repo_name="test_repo_name",
         model=test_model,
         space_config={
-          "repo_name": "test_repo_name", # default: same as model repo_name
-          "app_path": "app.gradio", # or app/gradio
-          "space_sdk": "gradio", # or streamlit, default: gradio
-          "placeholders": {
-            # look for $MODEL_REPO_ID, $MODEL_REPO_URL, $MODEL_VERSION
-            # tokens in files to replace with appropriate values at runtime
-            "MODEL_REPO_ID": "$MODEL_REPO_ID", 
-            "MODEL_REPO_URL": "$MODEL_REPO_URL",
-            "MODEL_VERSION": "$MODEL_VERSION",
-          }
-        }
-    )
+            "repo_name": "test_repo_name",  # default: same as model repo_name
+            "app_path": "app.gradio",  # or app/gradio
+            "space_sdk": "gradio",  # or streamlit, default: gradio
+            "placeholders": {
+                # look for $MODEL_REPO_ID, $MODEL_REPO_URL, $MODEL_VERSION
+                # tokens in files to replace with appropriate values at runtime
+                "MODEL_REPO_ID": "$MODEL_REPO_ID",
+                "MODEL_REPO_URL": "$MODEL_REPO_URL",
+                "MODEL_VERSION": "$MODEL_VERSION",
+            }
+        })
 
     self.assertEqual(
         standard_artifacts.PushedModel.TYPE_NAME,

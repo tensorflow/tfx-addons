@@ -99,9 +99,8 @@ class Executor(tfx_pusher_executor.Executor):
       raise RuntimeError(
           "Git-LFS is not installed. "
           "Git-LFS installation guide can be found in "
-					"https://huggingface.co/docs/hub/repositories-getting-started#requirements "
-					"and https://git-lfs.github.com/."
-      )
+          "https://huggingface.co/docs/hub/repositories-getting-started#requirements "
+          "and https://git-lfs.github.com/.")
 
     model_push = artifact_utils.get_single_instance(
         output_dict[standard_component_specs.PUSHED_MODEL_KEY])
