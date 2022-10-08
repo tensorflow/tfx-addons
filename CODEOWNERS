@@ -1,18 +1,21 @@
 # Global owners for SIG TFX-Addons
 * @rcrowe-google @theadactyl
 
-# Core team for reviews of project proposals and main distribution files
+# SIG operations: proposals and contributions guidelines
 /proposals/ @rcrowe-google
-/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
-/tfx_addons/version.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
-/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
-/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
+/CONTRIBUTING.md @rcrowe-google @casassg @hanneshapke
 
+# PyPi distribution files
+/tfx_addons/__init__.py @casassg @hanneshapke
+/tfx_addons/version.py @casassg @hanneshapke
+/setup.py @casassg @hanneshapke
+/pyproject.toml @casassg @hanneshapke
+/README.md @casassg @hanneshapke
 
-# CI configuration (for now owned by @casassg)
-/.github/workflows/*.yml @casassg @vulkomilev
-/.github/ci  @casassg @vulkomilev
-
+# CI/CD configuration (Release team)
+/.github/workflows/ @casassg @hanneshapke
+/.github/ci  @casassg @hanneshapke
+/RELEASE.md @casassg @hanneshapke
 
 # Sci-Kit Learn Example using the Penguins dataset
 /examples/sklearn_penguins/ @TheMichaelHu @1025KB
@@ -43,8 +46,12 @@
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
 
+# HuggingFace Pusher
+/tfx_addons/huggingface_pusher @deep-diver @sayakpaul
+
 # Message Exit Handler
 /tfx_addons/message_exit_handler @hanneshapke
+/tfx_addons/utils @hanneshapke
 
 # PandasTransform Component
 /tfx_addons/pandas_transform @rcrowe-google

@@ -33,10 +33,10 @@ if _VERSION_SUFFIX:
 
 # Required TFX version [min, max)
 _INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
-_EXCLUSIVE_MAX_TFX_VERSION = "1.10.0"
+_EXCLUSIVE_MAX_TFX_VERSION = "1.11.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
-_CI_MAX_CONSTRAINTS = ["tfx~=1.9.0", "tensorflow~=2.9.0"]
+_CI_MAX_CONSTRAINTS = ["tfx~=1.10.0", "tensorflow~=2.9.0"]
 _CI_MIN_CONSTRAINTS = [
     f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0",
     "apache-beam[gcp]<2.35", "firebase-admin<5.0.3"
