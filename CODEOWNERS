@@ -3,14 +3,14 @@
 
 # SIG operations: proposals and contributions guidelines
 /proposals/ @rcrowe-google
-/CONTRIBUTING.md @rcrowe-google @casassg @hanneshapke
+/CONTRIBUTING.md @rcrowe-google @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/README.md @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
 
 # PyPi distribution files
-/tfx_addons/__init__.py @casassg @hanneshapke
-/tfx_addons/version.py @casassg @hanneshapke
-/setup.py @casassg @hanneshapke
-/pyproject.toml @casassg @hanneshapke
-/README.md @casassg @hanneshapke
+/tfx_addons/__init__.py @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/tfx_addons/version.py @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/setup.py @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/pyproject.toml @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
 
 # CI/CD configuration (Release team)
 /.github/workflows/ @casassg @hanneshapke
@@ -37,7 +37,7 @@
 /tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse 
+/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse
 /examples/fraud_feast @BACtaki @casassg @wihanbooyse
 
 # Feature Selection Component
