@@ -1,110 +1,108 @@
-# Copyright 2019 Google LLC. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""TFX ExampleValidator component definition."""
+import importlib
+import json
+import os
 
-from typing import List, Optional, Union
-from absl import logging
-from tfx import types
-from tfx.components.example_validator import executor
-from tfx.dsl.components.base import base_beam_component
-from tfx.dsl.components.base import executor_spec
-from tfx.types import standard_component_specs
-from tfx.utils import json_utils
-from tfx.proto import evaluator_pb2
-from tfx.orchestration import data_types
-import tensorflow_model_analysis as tfma
+import tensorflow as tf
+from tfx.dsl.component.experimental.annotations import OutputDict
+from tfx.dsl.component.experimental.decorators import component
+from tfx.types import artifact, artifact_utils
+from tfx.types import standard_artifacts
+from tfx.v1.dsl.components import InputArtifact, OutputArtifact, Parameter
+from tfx_bsl.coders import example_coder
+from typing import Callable, TypeVar
 
 
-class ExampleFilter(base_beam_component.BaseBeamComponent):
-    """A TFX component to validate input examples.
+# Output artifact containing required data related to feature selection
+class FeatureSelectionArtifact(artifact.Artifact):
+  """Output artifact containing feature scores from the Feature Selection component"""
+  TYPE_NAME = 'Feature Selection'
+  PROPERTIES = {
+      'scores': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+      'p_values': artifact.Property(type=artifact.PropertyType.JSON_VALUE),
+      'selected_features':
+      artifact.Property(type=artifact.PropertyType.JSON_VALUE)
+  }
 
-    The ExampleValidator component uses [Tensorflow Data
-    Validation](https://www.tensorflow.org/tfx/data_validation/api_docs/python/tfdv)
-    to validate the statistics of some splits on input examples against a schema.
+# get a list of files for the specified path
+def _get_file_list(dir_path):
+  file_list = [
+      f for f in os.listdir(dir_path)
+      if os.path.isfile(os.path.join(dir_path, f))
+  ]
+  return file_list
+# reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
+def _get_data_from_tfrecords(train_uri):
+  # get all the data files
+  train_uri = [
+      os.path.join(train_uri, file_path)
+      for file_path in _get_file_list(train_uri)
+  ]
+  raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
+  print('raw_dataset')
+  print(raw_dataset)
+  np_dataset = []
+  for tfrecord in raw_dataset:
+    serialized_example = tfrecord.numpy()
+    example = example_coder.ExampleToNumpyDict(serialized_example)
+    np_dataset.append(example)
 
-    The ExampleValidator component identifies anomalies in training and serving
-    data. The component can be configured to detect different classes of anomalies
-    in the data. It can:
-      - perform validity checks by comparing data statistics against a schema that
-        codifies expectations of the user.
+  return np_dataset
 
-    Schema Based Example Validation
-    The ExampleValidator component identifies any anomalies in the example data by
-    comparing data statistics computed by the StatisticsGen component against a
-    schema. The schema codifies properties which the input data is expected to
-    satisfy, and is provided and maintained by the user.
+# update example with selected features
+def _update_example(selected_features, orig_example):
+  result = {}
+  for key, feature in orig_example.features.feature.items():
+    if key in selected_features:
+      result[key] = feature
 
-    ## Example
-    ```
-    # Performs anomaly detection based on statistics and data schema.
-    validate_stats = ExampleValidator(
-        statistics=statistics_gen.outputs['statistics'],
-        schema=infer_schema.outputs['schema'])
-    ```
+  new_example = tf.train.Example(features=tf.train.Features(feature=result))
+  return new_example
+# returns data in list and nested list formats compatible with sklearn
+def _data_preprocessing(np_dataset, target_feature):
 
-    Component `outputs` contains:
-     - `anomalies`: Channel of type `standard_artifacts.ExampleAnomalies`.
+  # getting the required data without any metadata
+  np_dataset = [{k: v[0]
+                 for k, v in example.items()} for example in np_dataset]
 
-    See [the ExampleValidator
-    guide](https://www.tensorflow.org/tfx/guide/exampleval) for more details.
-    """
+  # extracting `y`
+  target = [i.pop(target_feature) for i in np_dataset]
+  feature_keys = list(np_dataset[0].keys())
+  # getting `X`
+  input_data = [[i[j] for j in feature_keys] for i in np_dataset]
 
-    SPEC_CLASS = standard_component_specs.Filter_FunctionSpec
-    EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(executor.Executor)
+  return [feature_keys, target, input_data]
 
-    def __init__(self,
+# reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
+def _get_data_from_tfrecords(train_uri):
+  # get all the data files
+  train_uri = [
+      os.path.join(train_uri, file_path)
+      for file_path in _get_file_list(train_uri)
+  ]
+  raw_dataset = tf.data.TFRecordDataset(train_uri, compression_type='GZIP')
 
-                 examples: types.BaseChannel,
-                 model: Optional[types.BaseChannel] = None,
-                 baseline_model: Optional[types.BaseChannel] = None,
-                 feature_slicing_spec: Optional[Union[evaluator_pb2.FeatureSlicingSpec,
-                                                      data_types.RuntimeParameter]] = None,
-                 fairness_indicator_thresholds: Optional[Union[
-                     List[float], data_types.RuntimeParameter]] = None,
-                 example_splits: Optional[List[str]] = None,
-                 eval_config: Optional[tfma.EvalConfig] = None,
-                 schema: Optional[types.BaseChannel] = None,
-                 module_file: Optional[str] = None,
-                 exclude_splits: Optional[List[str]] = None,
+  np_dataset = []
+  for tfrecord in raw_dataset:
+    serialized_example = tfrecord.numpy()
+    example = example_coder.ExampleToNumpyDict(serialized_example)
+    np_dataset.append(example)
 
-                 module_path: Optional[str] = None,
-                 filter_functions: () = lambda x: x):
-        """Construct an ExampleValidator component.
+  return np_dataset
 
-        Args:
-          statistics: A BaseChannel of type `base_component.BaseComponentt`.
-          schema: A BaseChannel of type `standard_artifacts.Schema`. _required_
-          exclude_splits: Names of splits that the example validator should not
-            validate. Default behavior (when exclude_splits is set to None) is
-            excluding no splits.
-        """
-        if exclude_splits is None:
-            logging.info('Excluding no splits because exclude_splits is not set.')
+return_type = TypeVar("return_type")
+@component
+def MyTrainerComponent(
+        training_data: InputArtifact[standard_artifacts.Examples],
+        filter_function_str : Parameter[str],
+        filtered_data: OutputArtifact[standard_artifacts.Examples],
+) -> OutputDict(list_len=int):
+  '''My simple trainer component.'''
 
-        spec = standard_component_specs.Filter_FunctionSpec(
-            examples=examples,
-            model=model,
-            baseline_model=baseline_model,
-            feature_slicing_spec=feature_slicing_spec,
-            fairness_indicator_thresholds=(
-                fairness_indicator_thresholds if isinstance(
-                    fairness_indicator_thresholds, data_types.RuntimeParameter) else
-                json_utils.dumps(fairness_indicator_thresholds)),
-            example_splits=json_utils.dumps(example_splits),
-            eval_config=eval_config,
-            schema=schema,
-            filter_functions=filter_functions,
-            module_file=module_file,
-            module_path=module_path)
-        super().__init__(spec=spec)
+  records = _get_data_from_tfrecords(training_data.uri+"/Split-train")
+  filter_function = importlib.import_module(filter_function_str).filter_function
+  records = filter_function(records)
+  filtered_data = records
+  result_len = 0
+  return {
+    'list_len': result_len
+  }
