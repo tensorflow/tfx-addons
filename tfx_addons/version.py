@@ -75,5 +75,7 @@ _PKG_METADATA = {
     "firebase_publisher":
     [f"tfx{_TFXVERSION_CONSTRAINT}", "firebase-admin>=5.0.0,<6.0.0"],
     "huggingface_pusher":
-    [f"tfx{_TFXVERSION_CONSTRAINT}", "huggingface-hub>=0.10.0,<1.0.0"]
+    [f"tfx{_TFXVERSION_CONSTRAINT}", "huggingface-hub>=0.10.0,<1.0.0"],
+    "model_card_generator":
+    [f"tfx{_TFXVERSION_CONSTRAINT}", "model-card-toolkit>=1.0.0,<2.0.0"]
 }
