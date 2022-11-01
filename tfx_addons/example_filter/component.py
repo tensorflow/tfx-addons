@@ -10,42 +10,26 @@ from tfx.types import standard_artifacts
 from tfx.v1.dsl.components import InputArtifact, OutputArtifact, Parameter
 from tfx_bsl.coders import example_coder
 from typing import Callable, TypeVar
-
+from pathy.gcs import BucketClientGCS
+import re
 
 # get a list of files for the specified path
-def _get_file_list(dir_path):
-    file_list = [
-        f for f in os.listdir(dir_path)
-        if os.path.isfile(os.path.join(dir_path, f))
-    ]
+def _get_file_list(dir_path,bucket_name='default'):
+    if 'gs' == dir_path[:2]:
+
+        client = storage.Client()
+        file_list = []
+        result = re.search(r"gs://(?P<bucketName>.*?)/(?P<path>.*)",dir_path,re.S|re.U|re.I)
+        if not result:
+            print('GSC path is not valid')
+        for blob in client.list_blobs(result.group('bucketName'), result.group('path')):
+            file_list.append(str(blob))
+    else:
+        file_list = [
+            f for f in os.listdir(dir_path)
+            if os.path.isfile(os.path.join(dir_path, f))
+        ]
     return file_list
-
-
-# update example with selected features
-def _update_example(selected_features, orig_example):
-    result = {}
-    for key, feature in orig_example.features.feature.items():
-        if key in selected_features:
-            result[key] = feature
-
-    new_example = tf.train.Example(features=tf.train.Features(feature=result))
-    return new_example
-
-
-# returns data in list and nested list formats compatible with sklearn
-def _data_preprocessing(np_dataset, target_feature):
-    # getting the required data without any metadata
-    np_dataset = [{k: v[0]
-                   for k, v in example.items()} for example in np_dataset]
-
-    # extracting `y`
-    target = [i.pop(target_feature) for i in np_dataset]
-    feature_keys = list(np_dataset[0].keys())
-    # getting `X`
-    input_data = [[i[j] for j in feature_keys] for i in np_dataset]
-
-    return [feature_keys, target, input_data]
-
 
 # reads and returns data from TFRecords at URI as a list of dictionaries with values as numpy arrays
 def _get_data_from_tfrecords(train_uri: str):
@@ -69,7 +53,7 @@ return_type = TypeVar("return_type")
 
 
 @component
-def MyTrainerComponent(
+def FilterComponent(
         input_data: InputArtifact[standard_artifacts.Examples],
         filter_function_str: Parameter[str],
         filtered_data: OutputArtifact[standard_artifacts.Examples],
@@ -78,17 +62,39 @@ def MyTrainerComponent(
 
     Args:
       input_data: Input list of data to be filtered.
-      filter_function_str: Name of the function that will be used to filter the data.
+      filter_function_str: Module name of the function that will be used to filter the data.
+        Example for the function
+            filter_function.py:
+
+            def filter_function(input_list):
+                output_list = []
+                for element in input_list:
+                    if element.something:
+                        output_list.append(element)
+                return output_list
+            main.py:
+            import filter_function
+            FilterComponent(input_data ,'filter_function',output_data)
       filtered_data: Output artifact.Where the filtered data will be stored.
 
+
     Returns:
-      None
+      len of the list after the filter
+           {
+             'list_len': len(output_list)
+           }
+
     """
+    print('2121')
     records = _get_data_from_tfrecords(input_data.uri + "/Split-train")
     filter_function = importlib.import_module(filter_function_str).filter_function
     records = filter_function(records)
     filtered_data = records
     result_len = len(records)
+    with tf.io.gfile.GFile(filtered_data.uri, 'w') as f:
+        for element in records:
+            f.write(element)
+
     return {
         'list_len': result_len
     }

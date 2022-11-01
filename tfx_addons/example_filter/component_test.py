@@ -17,8 +17,7 @@
 import tensorflow as tf
 from absl.testing import absltest
 from tfx.types import artifact_utils, channel_utils, standard_artifacts
-import component
-
+from . import component
 
 class ComponentTest(absltest.TestCase):
 
@@ -26,12 +25,14 @@ class ComponentTest(absltest.TestCase):
         examples = standard_artifacts.Examples()
         examples.split_names = artifact_utils.encode_split_names(['train', 'eval'])
         params = {
-            "examples": channel_utils.as_channel([examples]),
-
+            "input_data": channel_utils.as_channel([examples]),
+        "filter_function_str": 'filter_function',
         }
 
-        component.ExampleFilter(**params)
+        print(component.FilterComponent(**params))
 
 
 if __name__ == '__main__':
-    tf.test.main()
+    #tf.test.main()
+
+    component.FilterComponent(**params)
