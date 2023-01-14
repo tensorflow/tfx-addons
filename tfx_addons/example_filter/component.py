@@ -85,7 +85,7 @@ def FilterComponent(
            }
 
     """
-    print('2121')
+    print('test')
     records = _get_data_from_tfrecords(input_data.uri + "/Split-train")
     filter_function = importlib.import_module(filter_function_str).filter_function
     records = filter_function(records)
