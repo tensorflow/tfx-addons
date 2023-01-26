@@ -32,14 +32,14 @@ if _VERSION_SUFFIX:
   __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)
 
 # Required TFX version [min, max)
-_INCLUSIVE_MIN_TFX_VERSION = "1.4.0"
+_INCLUSIVE_MIN_TFX_VERSION = "1.6.0"
 _EXCLUSIVE_MAX_TFX_VERSION = "1.13.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
 _CI_MAX_CONSTRAINTS = ["tfx~=1.12.0", "tensorflow~=2.11.0"]
 _CI_MIN_CONSTRAINTS = [
-    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}", "tensorflow~=2.6.0",
-    "apache-beam[gcp]<2.35", "firebase-admin<5.0.3"
+    f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}",
+    "tensorflow~=2.8.0",
 ]
 # This is a list of officially  maintained projects with their dependencies.
 # Any project added here will be automatically picked up on release.
@@ -58,7 +58,9 @@ _PKG_METADATA = {
     [f"tfx{_TFXVERSION_CONSTRAINT}", "scikit_learn>=1.0.2,<2.0.0"],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "feast>=0.21.3,<1.0.0",
+        # feast 0.23 upgrades numpy to >=1.22 which is not supported on py 3.7 and conflicts w google libraries
+        # ToDo(gcasassaez): Relax this once we stop supporting 3.7
+        "feast>=0.21.3,<0.23.0",
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
