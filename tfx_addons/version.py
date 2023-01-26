@@ -58,9 +58,7 @@ _PKG_METADATA = {
     [f"tfx{_TFXVERSION_CONSTRAINT}", "scikit_learn>=1.0.2,<2.0.0"],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        # feast 0.23 upgrades numpy to >=1.22 which is not supported on py 3.7 and conflicts w google libraries
-        # ToDo(gcasassaez): Relax this once we stop supporting 3.7
-        "feast>=0.21.3,<0.23.0",
+        "feast>=0.21.3,<1.0.0",
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
