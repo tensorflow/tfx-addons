@@ -58,8 +58,8 @@ _PKG_METADATA = {
     [f"tfx{_TFXVERSION_CONSTRAINT}", "scikit_learn>=1.0.2,<2.0.0"],
     "feast_examplegen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        # ToDo(gcasassaez): Relax this once we stop supporting 3.7
-        # feast 0.23 upgrades numpy to >=1.22 which is not supported on py 3.7 and conflicts w google libraries
+        # ToDo(gcasassaez): Relax this once we stop supporting python 3.7
+        # feast>=0.23 upgrades to numpy>=1.22 which does not work on 3.7
         "feast>=0.21.3,<0.23.0",
     ],
     "xgboost_evaluator": [
@@ -73,7 +73,7 @@ _PKG_METADATA = {
         "slackclient>=2.9.0,<3.0",
         "pydantic>=1.8.0,<2.0",
     ],
-    "pandas_transform": [f"tfx{_TFXVERSION_CONSTRAINT}", "pandas>=1.0.0<2.0"],
+    "pandas_transform": [f"tfx{_TFXVERSION_CONSTRAINT}", "pandas>=1.0.0,<2.0"],
     "firebase_publisher":
     [f"tfx{_TFXVERSION_CONSTRAINT}", "firebase-admin>=5.0.0,<6.0.0"],
     "huggingface_pusher":
