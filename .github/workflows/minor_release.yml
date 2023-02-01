@@ -1,7 +1,7 @@
 name: Create Minor Release
 on:
   workflow_dispatch:
-     
+
 jobs:
   createrelease:
     runs-on: ubuntu-latest
@@ -9,19 +9,21 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v2
-    - name: Update patch and get version
+    - name: Set minor version
       id: set-version
       run: |
         echo "::set-output name=version::$(python ./.github/workflows/prepare_minor_release.py)"
     - name: Create release branch
       run: git checkout -b r${{ steps.set-version.outputs.version }}
-    - name: Commit version.py
+    - name: Initialize mandatory git config
+      run: |
+       git config user.name "GitHub Actions"
+       git config user.email noreply@github.com
+    - name: Commit changelog and manifest files
       id: make-commit
       run: |
-        git config user.name "GitHub Actions"
-        git config user.email noreply@github.com
         git add tfx_addons/version.py
-        git commit --message "Prepare release {{ steps.set-version.outputs.version }}"
+        git commit --message "Prepare release ${{ steps.set-version.outputs.version }}"
         echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Push new branch
       run: git push origin r${{ steps.set-version.outputs.version }}
@@ -33,4 +35,29 @@ jobs:
         draft: true
         generateReleaseNotes: true
         skipIfReleaseExists: true
-        tag: v${{ steps.set-version.outputs.version }}.0rc0
+        tag: c${{ steps.set-version.outputs.version }}.0rc0
+    - name: Update main
+      id: update-main
+      run: |
+        git checkout main
+        echo "::set-output name=new_version::$(python ./.github/workflows/update_main.py)"
+    - name: Commit main change
+      run: |
+        git checkout -b ${{ github.triggering_actor }}/update-${{ steps.update-main.outputs.new_version }}
+        git add tfx_addons/version.py
+        git commit --message "Update main to ${{ steps.update-main.outputs.new_version }}"
+        git push origin ${{ github.triggering_actor }}/update-${{ steps.update-main.outputs.new_version }}
+        
+    - name: Create pull request into main
+      uses: thomaseizinger/create-pull-request@1.0.0
+      with:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       head: ${{ github.triggering_actor }}/update-${{ steps.update-main.outputs.new_version }}
+       base: main
+       title: Update minor version to ${{ steps.update-main.outputs.new_version }}
+       reviewers: ${{ github.triggering_actor }}
+       body: |
+           This is an automatic PR to update main to next minor version: ${{ steps.update-main.outputs.new_version }}. 
+           Wait until ${{ steps.set-version.outputs.version }} has been released before merging.
+           
+           Check out RELEASE.md for more details
