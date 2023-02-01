@@ -14,7 +14,7 @@ jobs:
       run: |
         echo "::set-output name=version::$(python ./.github/workflows/prepare_minor_release.py)"
     - name: Create release branch
-      run: git checkout -b release/v${{ steps.set-version.outputs.version }}
+      run: git checkout -b r${{ steps.set-version.outputs.version }}
     - name: Initialize mandatory git config
       run: |
        git config user.name "GitHub Actions"
@@ -26,11 +26,13 @@ jobs:
         git commit --message "Prepare release {{ steps.set-version.outputs.version }}"
         echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Push new branch
-      run: git push origin release/v${{ steps.set-version.outputs.version }}
+      run: git push origin r${{ steps.set-version.outputs.version }}
     - uses: ncipollo/release-action@v1
       with:
-        name: ${{ steps.set-version.outputs.version }}.0-rc0
+        name: v${{ steps.set-version.outputs.version }}.0rc0
         commit: ${{ steps.make-commit.outputs.commit }}
         prerelease: true
         draft: true
-        tag: ${{ steps.set-version.outputs.version }}.0-rc0
+        generateReleaseNotes: true
+        skipIfReleaseExists: true
+        tag: c${{ steps.set-version.outputs.version }}.0rc0
