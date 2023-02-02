@@ -11,7 +11,7 @@ TFX Addons follows [Semantic Versioning 2.0](https://semver.org/) strategy.
     * Add updates for new features, enhancements, bug fixes
     * Add contributors using `git shortlog <last-version>..HEAD -s`
 3. Publish release.
-4. Create a new PR and merge an increase of `_MINOR_VERSION` number in `main` to get ready for next release.
+4. Find the minor version PR created above and merge it.
 
 
 ## Major/Minor releases

@@ -57,7 +57,8 @@ jobs:
        title: Update minor version to ${{ steps.update-main.outputs.new_version }}
        reviewers: ${{ github.triggering_actor }}
        body: |
-           This is an automatic PR to update main to next minor version: ${{ steps.update-main.outputs.new_version }}. 
-           Wait until ${{ steps.set-version.outputs.version }} has been released before merging.
+           This is an automatic PR triggered by ${{ github.triggering_actor }} to prepare for ${{ steps.set-version.outputs.version }} release.
            
-           Check out RELEASE.md for more details
+           Approve and merge in order to update main branch to ${{ steps.update-main.outputs.new_version }}.
+           
+           Check out [RELEASE.md](https://github.com/tensorflow/tfx-addons/blob/main/RELEASE.md) for more details.
