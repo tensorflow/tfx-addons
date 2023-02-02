@@ -35,7 +35,7 @@ jobs:
         draft: true
         generateReleaseNotes: true
         skipIfReleaseExists: true
-        tag: c${{ steps.set-version.outputs.version }}.0rc0
+        tag: v${{ steps.set-version.outputs.version }}.0rc0
     - name: Update main
       id: update-main
       run: |

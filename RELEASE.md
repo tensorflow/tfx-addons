@@ -11,13 +11,15 @@ TFX Addons follows [Semantic Versioning 2.0](https://semver.org/) strategy.
     * Add updates for new features, enhancements, bug fixes
     * Add contributors using `git shortlog <last-version>..HEAD -s`
 3. Publish release.
+    * Check PyPI to ensure release candidate has been released.
+    * Send email to mailing list for vote.
 4. Find the minor version PR created above and merge it.
 
 
 ## Major/Minor releases
 
 1. Create new `rX.Y` branch on https://github.com/tensorflow/tfx-addons from `main`.
-2. Create new PR with updates to `version.py` against `rX.Y` branch.
+2. Update `version.py` in `rX.Y` branch.
 	* Set the correct version and suffix in [version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py).
 	* Ensure the proper minimum and maximum tested versions of TFX are set in [version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py).
 	* Ensure proper supported python libraries are set in [version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py).
