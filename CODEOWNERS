@@ -34,7 +34,7 @@
 /tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse 
+/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse
 /examples/fraud_feast @BACtaki @casassg @wihanbooyse
 
 # Feature Selection Component
@@ -46,3 +46,5 @@
 # Message Exit Handler
 /tfx_addons/message_exit_handler @hanneshapke
 
+# Predictions to Bigquery Component
+/tfx_addons/predictions_to_bigquery @hanneshapke
