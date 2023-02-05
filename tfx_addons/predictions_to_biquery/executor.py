@@ -67,9 +67,8 @@ class FilterPredictionToDictFn(beam.DoFn):
         label, score = self._parse_prediction(parsed_predictions)
 
         if score > self.filter_threshold:
-            # @piero generate dict dynamically
             yield {
-                # @piero set keys dynamically
+                # TODO: features should be read dynamically
                 "feature0": example_values[0],
                 "feature1": example_values[1],
                 "feature2": example_values[2],
