@@ -2,17 +2,19 @@
 Util functions for the Digits Prediction-to-BigQuery component.
 """
 
+import glob
 from typing import Any, Dict, List
 
 import numpy as np
 import tensorflow as tf
+import tensorflow_transform as tft
 from absl import logging
 from google.protobuf import text_format
 from tensorflow.python.lib.io import file_io
 from tensorflow_metadata.proto.v0 import schema_pb2
 
 
-def load_schema(input_path: str) -> schema_pb2.Schema:
+def load_schema(input_path: str) -> Dict:
     """
     Loads a TFX schema from a file and returns schema object.
 
@@ -26,7 +28,59 @@ def load_schema(input_path: str) -> schema_pb2.Schema:
     schema = schema_pb2.Schema()
     schema_text = file_io.read_file_to_string(input_path)
     text_format.Parse(schema_text, schema)
-    return schema
+    return tft.tf_metadata.schema_utils.schema_as_feature_spec(schema).feature_spec
+
+def _get_compress_type(file_path):
+    magic_bytes = {
+        b'x\x01': 'ZLIB',
+        b'x^': 'ZLIB',
+        b'x\x9c': 'ZLIB',
+        b'x\xda': 'ZLIB',
+        b'\x1f\x8b': 'GZIP'}
+
+    two_bytes = open(file_path, 'rb').read(2)
+    return magic_bytes.get(two_bytes)
+
+def _get_feature_type(feature=None, type_=None):
+
+    if type_:
+        return {
+            int: tf.int64,
+            bool: tf.int64,
+            float: tf.float32,
+            str: tf.string,
+            bytes: tf.string,
+        }[type_]
+
+    if feature:
+        if feature.HasField('int64_list'):
+            return tf.int64
+        if feature.HasField('float_list'):
+            return tf.float32
+        if feature.HasField('bytes_list'):
+            return tf.string
+
+def parse_schema(prediction_log_path: str, compression_type: str = 'auto') -> Dict:
+
+    features = {}
+
+    file_paths = glob.glob(prediction_log_path)
+    if compression_type == 'auto':
+        compression_type = _get_compress_type(file_paths[0])
+
+    dataset = tf.data.TFRecordDataset(
+        file_paths, compression_type=compression_type)
+
+    serialized = next(iter(dataset.map(lambda serialized: serialized)))
+    seq_ex = tf.train.SequenceExample.FromString(serialized.numpy())
+
+    if seq_ex.feature_lists.feature_list:
+        raise NotImplementedError("FeatureLists aren't supported at the moment.")
+
+    for key, feature in seq_ex.context.feature.items():
+        features[key] = tf.io.FixedLenFeature(
+            (), _get_feature_type(feature=feature))
+    return features
 
 
 def convert_python_numpy_to_bq_type(python_type: Any) -> str:

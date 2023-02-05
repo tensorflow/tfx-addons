@@ -17,7 +17,9 @@ from tfx import types
 from tfx.dsl.components.base import base_beam_executor
 from tfx.types import artifact_utils
 
-from .utils import convert_single_value_to_native_py_value, create_annotation_fields, feature_to_bq_schema, load_schema
+from .utils import (convert_single_value_to_native_py_value,
+                    create_annotation_fields, feature_to_bq_schema,
+                    load_schema, parse_schema)
 
 _SCORE_MULTIPLIER = 1e6
 _SCHEMA_FILE = "schema.pbtxt"
@@ -100,10 +102,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         if exec_properties["vocab_label_file"] is None:
             raise ValueError("vocab_label_file must be set in exec_properties")
 
-        # get features from tfx schema
-        schema_uri = os.path.join(artifact_utils.get_single_uri(input_dict["schema"]), _SCHEMA_FILE)
-        features = tft.tf_metadata.schema_utils.schema_as_feature_spec(load_schema(schema_uri)).feature_spec
-
         # get labels from tf transform generated vocab file
         transform_output = artifact_utils.get_single_uri(input_dict["transform_graph"])
         tf_transform_output = tft.TFTransformOutput(transform_output)
@@ -131,6 +129,15 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         # set prediction result file path and decoder
         prediction_log_path = f"{inference_results_uri}/*.gz"
         prediction_log_decoder = beam.coders.ProtoCoder(prediction_log_pb2.PredictionLog)
+
+        # get features from tfx schema if present
+        if input_dict["schema"]:
+            schema_uri = os.path.join(artifact_utils.get_single_uri(input_dict["schema"]), _SCHEMA_FILE)
+            features = load_schema(schema_uri)
+
+        # generate features from predictions
+        else:
+            features = parse_schema(prediction_log_path)
 
         # generate bigquery schema from tfx schema (features)
         bq_schema_fields = feature_to_bq_schema(features, required=True)

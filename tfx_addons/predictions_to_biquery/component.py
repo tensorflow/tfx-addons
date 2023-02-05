@@ -45,7 +45,8 @@ class AnnotateUnlabeledCategoryDataComponent(base_component.BaseComponent):
     The component takes the following input artifacts:
     * Inference results: InferenceResult
     * Transform graph: TransformGraph
-    * Schema: Schema
+    * Schema: Schema (optional) if not present, the component will determine the schema
+    (only predtion supported at the moment)
 
     The component takes the following parameters:
     * vocab_label_file: str - The file name of the file containing the vocabulary labels
@@ -71,17 +72,18 @@ class AnnotateUnlabeledCategoryDataComponent(base_component.BaseComponent):
         self,
         inference_results: types.Channel = None,
         transform_graph: types.Channel = None,
-        schema: types.Channel = None,
         bq_table_name: str = None,
         vocab_label_file: str = _VOCAB_FILE,
         filter_threshold: float = _MIN_THRESHOLD,
         table_suffix: str = "%Y%m%d",
         table_partitioning: bool = True,
+        schema: Optional[types.Channel] = None,
         expiration_time_delta: Optional[int] = 0,
         bigquery_export: Optional[types.Channel] = None,
     ):
 
         bigquery_export = bigquery_export or types.Channel(type=standard_artifacts.String)
+        schema = schema or types.Channel(type=standard_artifacts.Schema())
 
         spec = AnnotateUnlabeledCategoryDataComponentSpec(
             inference_results=inference_results,
