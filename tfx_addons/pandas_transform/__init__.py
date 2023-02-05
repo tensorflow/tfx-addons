@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Sampling component"""
-__all__ = ["Sampler", "SamplingStrategy"]
+"""Init module for PandasTransform"""
 
-from .component import Sampler
-from .spec import SamplingStrategy
+from tfx_addons.pandas_transform.component import PandasTransform
+
+__version__ = '1.0.0'

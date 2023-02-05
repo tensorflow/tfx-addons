@@ -12,8 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Sampling component"""
-__all__ = ["Sampler", "SamplingStrategy"]
+"""Tests for TFX Firebase Publisher Custom Component."""
 
-from .component import Sampler
-from .spec import SamplingStrategy
+import tensorflow as tf
+from tfx.types import standard_artifacts
+
+from tfx_addons.firebase_publisher.component import FirebasePublisher
+
+
+class FirebasePublisherTest(tf.test.TestCase):
+  def testConstruct(self):
+    firebase_publisher = FirebasePublisher(display_name="test_display_name",
+                                           storage_bucket="storage_bucket")
+
+    self.assertEqual(standard_artifacts.PushedModel.TYPE_NAME,
+                     firebase_publisher.outputs['pushed_model'].type_name)
+
+
+if __name__ == '__main__':
+  tf.test.main()

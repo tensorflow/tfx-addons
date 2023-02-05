@@ -94,6 +94,23 @@ SIG team members will be assigned to review your pull requests. Once the pull re
     if the initial contributors agree.
   * In case, the initial contributors have abandoned the project or can't be reached, the TFX Addons core team can decide about the ownership reassignment.
   * Requesting project code ownership requires a substantial contribution (e.g. update of a component to a newer TFX version).
+
+### Specifying project dependencies
+
+Each project specifies it's own Python dependencies depending on what folder it lives under:
+
+* **Projects in `examples/`**: Those need to provide a `requirements.txt` in the root of their folder. Example: `examples/xgboost_penguins/requirements.txt`. You can depend on a `tfx_addons` project by using `../..[project_name]` in your `requirements.txt` file.
+* **Projects in `tfx_addons/`**: In order for project to be included in release and be tested, you will need to specify dependencies in [tfx_addons/version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py) `_PKG_METADATA` where key is the project name (aka tfx_addons/{project_name}) and value is a list of requirements strings needed for your component. Once added, this will automatically be picked up by CI and will automatically include your project into the tfx-addons release. In addition, your project will be added to the `tfx_addons.{project_name}` namespace, such that it can be used:
+
+```python
+
+import tfx_addons as tfxa
+
+tfxa.project_name
+```
+
+Note that CI runs on `pytest`, see _Testing your code_ below to check how to create tests for your code.
+
 ### Development tips
 
 We use [pre-commit](https://pre-commit.com/) to validate our code before we push to the repository. We use push over commit to allow more flexibility.
@@ -103,7 +120,7 @@ Here's how to install it locally:
 - Activate virtual environment: `source env/bin/activate`
 - Upgrade pip: `pip install --upgrade pip`
 - Install test packages: `pip install -e ".[test]"`
-- Install pre-commit hooks for push hooks: `pre-commit install pre-push`
+- Install pre-commit hooks for push hooks: `pre-commit install --hook-type pre-push`
 - Change and commit files. pre-commit will run the tests and linting before you push. You can also manually trigger the tests and linting with `pre-commit run --hook-stage push --all-files`
 
 Note that pre-commit will be run via GitHub Action automatically for new PRs.
@@ -143,17 +160,14 @@ Include a license at the top of new files.
 
 * [Python license example](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/nn.py#L1)
 
-Pre-commit will add the files for you if installed.
-
-```bash
-pre-commit run --hook-stage push --files tfx_addons/__init__.py
-```
-
 #### Testing your code
 
 We use pytest to run tests. You can run tests locally using:
 
 - Create virtual environemnt: `python3 -m venv env`
-- Activate virtual environment: `source env/bin/activate`
-- Install test packages: `pip install -e ".[all,test]"`
-- Run tests: `pytest`
+- Activate virtual environment: `source env/bin/activate && pip install --upgrade pip`
+- Choose component to develop: `export COMPONENT_NAME=mlmd_client` (replace with the component you will be developing)
+- Install test packages: `pip install -e ".[$COMPONENT_NAME,test]"`
+- Run tests: `python -m pytest tfx_addons/$COMPONENT_NAME`
+
+Note that only files that end with `_test.py` will be recognized as test. Learn more on writing pytest tests in [pytest docs](https://docs.pytest.org/en/latest/getting-started.html#create-your-first-test).
