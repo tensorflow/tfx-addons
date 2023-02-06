@@ -1,3 +1,19 @@
+# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+# ToDo(gcasassaez): Fix up linter issues
+# pylint: skip-file
 """
 Digits Prediction-to-BigQuery: Functionality to write prediction results usually from a BulkInferrer to BigQuery.
 """
@@ -17,29 +33,32 @@ _VOCAB_FILE = "vocab_label_txt"
 
 class AnnotateUnlabeledCategoryDataComponentSpec(types.ComponentSpec):
 
-    PARAMETERS = {
-        # These are parameters that will be passed in the call to
-        # create an instance of this component.
-        "vocab_label_file": ExecutionParameter(type=str),
-        "bq_table_name": ExecutionParameter(type=str),
-        "filter_threshold": ExecutionParameter(type=float),
-        "table_suffix": ExecutionParameter(type=str),
-        "table_partitioning": ExecutionParameter(type=bool),
-        "expiration_time_delta": ExecutionParameter(type=int),
-    }
-    INPUTS = {
-        # This will be a dictionary with input artifacts, including URIs
-        "transform_graph": ChannelParameter(type=standard_artifacts.TransformGraph),
-        "inference_results": ChannelParameter(type=standard_artifacts.InferenceResult),
-        "schema": ChannelParameter(type=standard_artifacts.Schema),
-    }
-    OUTPUTS = {
-        "bigquery_export": ChannelParameter(type=standard_artifacts.String),
-    }
+  PARAMETERS = {
+      # These are parameters that will be passed in the call to
+      # create an instance of this component.
+      "vocab_label_file": ExecutionParameter(type=str),
+      "bq_table_name": ExecutionParameter(type=str),
+      "filter_threshold": ExecutionParameter(type=float),
+      "table_suffix": ExecutionParameter(type=str),
+      "table_partitioning": ExecutionParameter(type=bool),
+      "expiration_time_delta": ExecutionParameter(type=int),
+  }
+  INPUTS = {
+      # This will be a dictionary with input artifacts, including URIs
+      "transform_graph":
+      ChannelParameter(type=standard_artifacts.TransformGraph),
+      "inference_results":
+      ChannelParameter(type=standard_artifacts.InferenceResult),
+      "schema":
+      ChannelParameter(type=standard_artifacts.Schema),
+  }
+  OUTPUTS = {
+      "bigquery_export": ChannelParameter(type=standard_artifacts.String),
+  }
 
 
 class AnnotateUnlabeledCategoryDataComponent(base_component.BaseComponent):
-    """
+  """
     AnnotateUnlabeledCategoryData Component.
 
     The component takes the following input artifacts:
@@ -65,36 +84,38 @@ class AnnotateUnlabeledCategoryDataComponent(base_component.BaseComponent):
     * bigquery_export: String - The URI of the BigQuery table containing the results.
     """
 
-    SPEC_CLASS = AnnotateUnlabeledCategoryDataComponentSpec
-    EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(AnnotateUnlabeledCategoryDataExecutor)
+  SPEC_CLASS = AnnotateUnlabeledCategoryDataComponentSpec
+  EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(
+      AnnotateUnlabeledCategoryDataExecutor)
 
-    def __init__(
-        self,
-        inference_results: types.Channel = None,
-        transform_graph: types.Channel = None,
-        bq_table_name: str = None,
-        vocab_label_file: str = _VOCAB_FILE,
-        filter_threshold: float = _MIN_THRESHOLD,
-        table_suffix: str = "%Y%m%d",
-        table_partitioning: bool = True,
-        schema: Optional[types.Channel] = None,
-        expiration_time_delta: Optional[int] = 0,
-        bigquery_export: Optional[types.Channel] = None,
-    ):
+  def __init__(
+      self,
+      inference_results: types.Channel = None,
+      transform_graph: types.Channel = None,
+      bq_table_name: str = None,
+      vocab_label_file: str = _VOCAB_FILE,
+      filter_threshold: float = _MIN_THRESHOLD,
+      table_suffix: str = "%Y%m%d",
+      table_partitioning: bool = True,
+      schema: Optional[types.Channel] = None,
+      expiration_time_delta: Optional[int] = 0,
+      bigquery_export: Optional[types.Channel] = None,
+  ):
 
-        bigquery_export = bigquery_export or types.Channel(type=standard_artifacts.String)
-        schema = schema or types.Channel(type=standard_artifacts.Schema())
+    bigquery_export = bigquery_export or types.Channel(
+        type=standard_artifacts.String)
+    schema = schema or types.Channel(type=standard_artifacts.Schema())
 
-        spec = AnnotateUnlabeledCategoryDataComponentSpec(
-            inference_results=inference_results,
-            transform_graph=transform_graph,
-            schema=schema,
-            bq_table_name=bq_table_name,
-            vocab_label_file=vocab_label_file,
-            filter_threshold=filter_threshold,
-            table_suffix=table_suffix,
-            table_partitioning=table_partitioning,
-            expiration_time_delta=expiration_time_delta,
-            bigquery_export=bigquery_export,
-        )
-        super().__init__(spec=spec)
+    spec = AnnotateUnlabeledCategoryDataComponentSpec(
+        inference_results=inference_results,
+        transform_graph=transform_graph,
+        schema=schema,
+        bq_table_name=bq_table_name,
+        vocab_label_file=vocab_label_file,
+        filter_threshold=filter_threshold,
+        table_suffix=table_suffix,
+        table_partitioning=table_partitioning,
+        expiration_time_delta=expiration_time_delta,
+        bigquery_export=bigquery_export,
+    )
+    super().__init__(spec=spec)
