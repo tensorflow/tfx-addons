@@ -9,3 +9,8 @@ build-backend = "setuptools.build_meta"
 addopts = "--verbose"
 python_files = "*_test.py"
 norecursedirs = ["env", "proposals"]
+
+[tool.pylint.MASTER]
+ignore-paths = [
+  '^tfx_addons/predictions_to_bigquery/.*.py$',
+]
