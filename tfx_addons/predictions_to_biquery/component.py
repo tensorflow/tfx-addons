@@ -14,7 +14,6 @@
 # ==============================================================================
 # ToDo(gcasassaez): Fix up linter issues
 # pylint: skip-file
-# isort: skip_file
 """
 Digits Prediction-to-BigQuery: Functionality to write prediction results usually from a BulkInferrer to BigQuery.
 """

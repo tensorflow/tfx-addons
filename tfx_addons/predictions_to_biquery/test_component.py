@@ -14,7 +14,6 @@
 # ==============================================================================
 # ToDo(gcasassaez): Fix up linter issues
 # pylint: skip-file
-# isort: skip_file
 """
 Tests around Digits Prediction-to-BigQuery component.
 """

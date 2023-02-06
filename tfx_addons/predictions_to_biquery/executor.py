@@ -14,7 +14,6 @@
 # ==============================================================================
 # ToDo(gcasassaez): Fix up linter issues
 # pylint: skip-file
-# isort: skip_file
 """
 Executor functionality to write prediction results usually from a BulkInferrer to BigQuery.
 """
