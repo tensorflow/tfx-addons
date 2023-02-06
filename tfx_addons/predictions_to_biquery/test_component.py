@@ -14,7 +14,6 @@
 # ==============================================================================
 # ToDo(gcasassaez): Fix up linter issues
 # pylint: skip-file
-# yapf: disable
 # isort: skip_file
 """
 Tests around Digits Prediction-to-BigQuery component.
@@ -27,26 +26,28 @@ from . import component
 
 
 class ComponentTest(tf.test.TestCase):
-    def setUp(self):
-        super(ComponentTest, self).setUp()
-        self._transform_graph = channel_utils.as_channel([standard_artifacts.TransformGraph()])
-        self._inference_results = channel_utils.as_channel([standard_artifacts.InferenceResult()])
-        self._schema = channel_utils.as_channel([standard_artifacts.Schema()])
+  def setUp(self):
+    super(ComponentTest, self).setUp()
+    self._transform_graph = channel_utils.as_channel(
+        [standard_artifacts.TransformGraph()])
+    self._inference_results = channel_utils.as_channel(
+        [standard_artifacts.InferenceResult()])
+    self._schema = channel_utils.as_channel([standard_artifacts.Schema()])
 
-    def testConstruct(self):
-        # not a real test, just checking if if the component can be
-        # instantiated
-        _ = component.AnnotateUnlabeledCategoryDataComponent(
-            transform_graph=self._transform_graph,
-            inference_results=self._inference_results,
-            schema=self._schema,
-            bq_table_name="gcp_project:bq_database.table",
-            vocab_label_file="vocab_txt",
-            filter_threshold=0.1,
-            table_suffix="%Y",
-            table_partitioning=False,
-        )
+  def testConstruct(self):
+    # not a real test, just checking if if the component can be
+    # instantiated
+    _ = component.AnnotateUnlabeledCategoryDataComponent(
+        transform_graph=self._transform_graph,
+        inference_results=self._inference_results,
+        schema=self._schema,
+        bq_table_name="gcp_project:bq_database.table",
+        vocab_label_file="vocab_txt",
+        filter_threshold=0.1,
+        table_suffix="%Y",
+        table_partitioning=False,
+    )
 
 
 if __name__ == "__main__":
-    tf.test.main()
+  tf.test.main()
