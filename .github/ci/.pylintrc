@@ -14,7 +14,9 @@ profile=no
 # paths.
 ignore=proto
 
-ignore-paths=^tfx_addons/predictions_to_bigquery/.*$
+ignore-paths=^tfx_addons/predictions_to_biquery/component.py$,
+             ^tfx_addons/predictions_to_biquery/utils.py$,
+             ^tfx_addons/predictions_to_biquery/executor.py$
 
 # Pickle collected data for later comparisons.
 persistent=no
