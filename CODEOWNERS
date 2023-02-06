@@ -55,5 +55,8 @@
 /tfx_addons/message_exit_handler @hanneshapke
 /tfx_addons/utils @hanneshapke
 
+# Predictions to Bigquery Component
+/tfx_addons/predictions_to_bigquery @hanneshapke
+
 # PandasTransform Component
 /tfx_addons/pandas_transform @rcrowe-google
