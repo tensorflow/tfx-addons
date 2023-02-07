@@ -15,7 +15,8 @@
 # ToDo(gcasassaez): Fix up linter issues
 # pylint: skip-file
 """
-Digits Prediction-to-BigQuery: Functionality to write prediction results usually from a BulkInferrer to BigQuery.
+Digits Prediction-to-BigQuery: Functionality to write prediction results usually
+ from a BulkInferrer to BigQuery.
 """
 
 from typing import Optional
