@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# ToDo(gcasassaez): Fix up linter issues
-# pylint: skip-file
 """
-Executor functionality to write prediction results usually from a BulkInferrer to BigQuery.
+Executor functionality to write prediction results usually from a BulkInferrer
+to BigQuery.
 """
 
 import datetime
@@ -77,7 +76,7 @@ class FilterPredictionToDictFn(beam.DoFn):
     score = predictions[0][prediction_id]
     return label, score
 
-  def process(self, element):
+  def process(self, element):  # pylint: disable=missing-function-docstring
     parsed_examples = tf.make_ndarray(
         element.predict_log.request.inputs["examples"])
     parsed_predictions = tf.make_ndarray(
