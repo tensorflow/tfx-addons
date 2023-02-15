@@ -16,7 +16,7 @@ CopyExampleGen will allow the user to copy a pre-existing Tfrecord dataset or ra
 Component
 
 ## Project Use-Case(s)
-CopyExampleGen will be able to do two things. First, this component will allow the user to add a dict input with split_names as the key and their respective raw data URIs as their value, then convert the data into Tfrecords, then format the directory structure so that it matches that of an Example Artifact.
+CopyExampleGen will allow the user to add a dict input with split_names as the key and their respective raw data URIs as their value, then convert the data into Tfrecords, then format the directory structure so that it matches that of an Example Artifact.
 
 Currently, ingesting data with the ExampleGen requires a Beam job to be ran and requires the data to be shuffled. This component will save users hours/ days of having to create a workaround fully custom ExampleGen component. Some challenges our users have had:
 Reshuffle doesn't work well with DirectRunner and causes OOMing. Users have been patching out shuffling in every release and doing it in the DB query. They have given up on Beam based ExampleGen and have created an entire custom ExampleGen that reads from the database and doesn’t use Beam. Link.
