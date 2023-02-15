@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# ToDo(gcasassaez): Fix up linter issues
-# pylint: skip-file
 """
 Util functions for the Digits Prediction-to-BigQuery component.
 """
@@ -80,9 +78,12 @@ def _get_feature_type(feature=None, type_=None):
     if feature.HasField('bytes_list'):
       return tf.string
 
+  return None
+
 
 def parse_schema(prediction_log_path: str,
                  compression_type: str = 'auto') -> Dict:
+  """Parses feature schema from predictions."""
 
   features = {}
 

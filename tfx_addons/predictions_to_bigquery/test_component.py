@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# ToDo(gcasassaez): Fix up linter issues
-# pylint: skip-file
 """
 Tests around Digits Prediction-to-BigQuery component.
 """

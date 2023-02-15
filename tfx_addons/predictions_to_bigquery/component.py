@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# ToDo(gcasassaez): Fix up linter issues
-# pylint: skip-file
 """
 Digits Prediction-to-BigQuery: Functionality to write prediction results usually
  from a BulkInferrer to BigQuery.
@@ -30,6 +28,8 @@ from .executor import Executor as AnnotateUnlabeledCategoryDataExecutor
 
 _MIN_THRESHOLD = 0.8
 _VOCAB_FILE = "vocab_label_txt"
+
+# pylint: disable=missing-class-docstring
 
 
 class AnnotateUnlabeledCategoryDataComponentSpec(types.ComponentSpec):
@@ -65,24 +65,28 @@ class AnnotateUnlabeledCategoryDataComponent(base_component.BaseComponent):
     The component takes the following input artifacts:
     * Inference results: InferenceResult
     * Transform graph: TransformGraph
-    * Schema: Schema (optional) if not present, the component will determine the schema
-    (only predtion supported at the moment)
+    * Schema: Schema (optional) if not present, the component will determine
+    the schema (only predtion supported at the moment)
 
     The component takes the following parameters:
-    * vocab_label_file: str - The file name of the file containing the vocabulary labels
-    (produced by TFT).
-    * bq_table_name: str - The name of the BigQuery table to write the results to.
-    * filter_threshold: float   - The minimum probability threshold for a prediction to
-    be considered a positive, thrustworthy prediction. Default is 0.8.
-    * table_suffix: str (optional) - If provided, the generated datetime string will
-    be added the BigQuery table name as suffix. The default is %Y%m%d.
+    * vocab_label_file: str - The file name of the file containing the
+      vocabulary labels (produced by TFT).
+    * bq_table_name: str - The name of the BigQuery table to write the results
+      to.
+    * filter_threshold: float   - The minimum probability threshold for a
+      prediction to be considered a positive, thrustworthy prediction.
+      Default is 0.8.
+    * table_suffix: str (optional) - If provided, the generated datetime string
+      will be added the BigQuery table name as suffix. The default is %Y%m%d.
     * table_partitioning: bool - Whether to partition the table by DAY. If True,
-    the generated BigQuery table will be partition by date. If False, no partitioning will
-    be applied. Default is True.
-    * expiration_time_delta: int (optional) - The number of seconds after which the table will expire.
+      the generated BigQuery table will be partition by date. If False, no
+      partitioning will be applied. Default is True.
+    * expiration_time_delta: int (optional) - The number of seconds after which
+      the table will expire.
 
     The component produces the following output artifacts:
-    * bigquery_export: String - The URI of the BigQuery table containing the results.
+    * bigquery_export: String - The URI of the BigQuery table containing the
+      results.
     """
 
   SPEC_CLASS = AnnotateUnlabeledCategoryDataComponentSpec
