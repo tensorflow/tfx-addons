@@ -57,26 +57,27 @@ def FilterComponent(
         input_data: InputArtifact[standard_artifacts.Examples],
         filter_function_str: Parameter[str],
         filtered_data: OutputArtifact[standard_artifacts.Examples],
+        output_file: Parameter[str]
 ) -> OutputDict(list_len=int):
     """Filters the data from input data by using the filter function.
 
     Args:
       input_data: Input list of data to be filtered.
+      output_file: the name of the file to be saved to.
       filter_function_str: Module name of the function that will be used to filter the data.
         Example for the function
-            filter_function.py:
+            my_example/my_filter.py:
 
-            def filter_function(input_list):
+            # filter module must have filter_function implemented
+            def filter_function(input_list: Array):
                 output_list = []
                 for element in input_list:
                     if element.something:
                         output_list.append(element)
                 return output_list
-            main.py:
-            import filter_function
-            FilterComponent(input_data ,'filter_function',output_data)
-      filtered_data: Output artifact.Where the filtered data will be stored.
 
+            pipeline.py:
+            FilterComponent(input_data ,'my_example.my_filter',output_data)
 
     Returns:
       len of the list after the filter
@@ -85,15 +86,13 @@ def FilterComponent(
            }
 
     """
-    print('test')
     records = _get_data_from_tfrecords(input_data.uri + "/Split-train")
     filter_function = importlib.import_module(filter_function_str).filter_function
-    records = filter_function(records)
-    filtered_data = records
+    filtered_data tf.data.Dataset.from_tensor_slices( filter_function(records))
     result_len = len(records)
-    with tf.io.gfile.GFile(filtered_data.uri, 'w') as f:
-        for element in records:
-            f.write(element)
+    filename = 'test.tfrecord'
+    writer = tf.data.experimental.TFRecordWriter(filename)
+    writer.write(filtered_data)
 
     return {
         'list_len': result_len

@@ -17,8 +17,7 @@
 import tensorflow as tf
 from absl.testing import absltest
 from tfx.types import artifact_utils, channel_utils, standard_artifacts
-#from . import component
-import component
+from tfx_addons.example_filter import component
 # Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +41,7 @@ from tfx.orchestration import data_types
 from tfx.types import (artifact_utils, channel_utils, standard_artifacts,
                        standard_component_specs)
 
-from component import FilterComponent
+from tfx_addons.example_filter.component import FilterComponent
 
 
 class ComponentTest(tf.test.TestCase):
