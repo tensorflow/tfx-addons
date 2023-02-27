@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+# This code was originally written by Hannes Hapke <hannes--at--digits--dot--com>
+# on Feb. 6, 2023.
 """
 Digits Prediction-to-BigQuery: Functionality to write prediction results usually
  from a BulkInferrer to BigQuery.

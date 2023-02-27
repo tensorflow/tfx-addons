@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+# This code was originally written by Hannes Hapke <hannes--at--digits--dot--com>
+# on Feb. 6, 2023.
 """
 Util functions for the Digits Prediction-to-BigQuery component.
 """
@@ -228,7 +230,7 @@ def create_annotation_fields(
 
   score_field = {
       "name": score_field_name,
-      "type": "INTEGER",
+      "type": "FLOAT",
       "mode": "REQUIRED" if required else "NULLABLE",
   }
 
