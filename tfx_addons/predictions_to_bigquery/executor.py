@@ -19,83 +19,83 @@ to BigQuery.
 
 import datetime
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Generator, List, Tuple
 
 import apache_beam as beam
 import numpy as np
+import numpy.typing as npt
 import tensorflow as tf
 import tensorflow_transform as tft
 from absl import logging
-from tensorflow.python.eager.context import eager_mode
 from tensorflow_serving.apis import prediction_log_pb2
 from tfx import types
 from tfx.dsl.components.base import base_beam_executor
 from tfx.types import artifact_utils
 
-from .utils import (convert_single_value_to_native_py_value,
-                    create_annotation_fields, feature_to_bq_schema,
+from .utils import (create_annotation_fields, feature_to_bq_schema,
                     load_schema, parse_schema)
 
-_SCORE_MULTIPLIER = 1e6
 _SCHEMA_FILE = "schema.pbtxt"
 _ADDITIONAL_BQ_PARAMETERS = {}
+_DECIMAL_PLACES = 6
 
 
 @beam.typehints.with_input_types(str)
 @beam.typehints.with_output_types(beam.typehints.Iterable[Tuple[str, str,
                                                                 Any]])
 class FilterPredictionToDictFn(beam.DoFn):
-  """
-    Convert a prediction to a dictionary.
-    """
+  """Converts a PredictionLog proto to a dict."""
   def __init__(
       self,
       labels: List,
       features: Any,
-      ts: datetime.datetime,
+      timestamp: datetime.datetime,
       filter_threshold: float,
-      score_multiplier: int = _SCORE_MULTIPLIER,
+      score_multiplier: float = 1.,
   ):
-    self.labels = labels
-    self.features = features
-    self.filter_threshold = filter_threshold
-    self.score_multiplier = score_multiplier
-    self.ts = ts
+    self._labels = labels
+    self._features = features
+    self._filter_threshold = filter_threshold
+    self._score_multiplier = score_multiplier
+    self._timestamp = timestamp
 
-  def _fix_types(self, example):
-    with eager_mode():
-      return [
-          convert_single_value_to_native_py_value(v) for v in example.values()
-      ]
-
-  def _parse_prediction(self, predictions):
+  def _parse_prediction(self, predictions: npt.ArrayLike):
     prediction_id = np.argmax(predictions)
     logging.debug("Prediction id: %s", prediction_id)
     logging.debug("Predictions: %s", predictions)
-    label = self.labels[prediction_id]
+    label = self._labels[prediction_id]
     score = predictions[0][prediction_id]
     return label, score
 
-  def process(self, element):  # pylint: disable=missing-function-docstring
-    parsed_examples = tf.make_ndarray(
-        element.predict_log.request.inputs["examples"])
-    parsed_predictions = tf.make_ndarray(
-        element.predict_log.response.outputs["output_0"])
+  def _parse_example(self, serialized: bytes) -> Dict[str, Any]:
+    parsed_example = tf.io.parse_example(serialized, self._features)
+    output = {}
+    for key, tensor in parsed_example.items():
+      value_list = tensor.numpy().tolist()
+      if isinstance(value_list[0], bytes):
+        value_list = [v.decode('utf-8') for v in value_list]
+      value = value_list[0] if len(value_list) == 1 else value_list
+      output[key] = value
+    return output
 
-    example_values = self._fix_types(
-        tf.io.parse_single_example(parsed_examples[0], self.features))
-    label, score = self._parse_prediction(parsed_predictions)
-
-    if score > self.filter_threshold:
-      yield {
-          # TODO: features should be read dynamically
-          "feature0": example_values[0],
-          "feature1": example_values[1],
-          "feature2": example_values[2],
+  def process(self, element) -> Generator[Dict[str, Any], None, None]:
+    """Processes element."""
+    parsed_prediction_scores = tf.make_ndarray(
+        element.predict_log.response.outputs["outputs"])
+    label, score = self._parse_prediction(parsed_prediction_scores)
+    if score >= self._filter_threshold:
+      output = {
           "category_label": label,
-          "score": int(score * self.score_multiplier),
-          "datetime": self.ts,
+          # Workaround to issue with the score value having additional non-zero values
+          # in higher decimal places.
+          # e.g. 0.8 -> 0.800000011920929
+          "score": round(score * self._score_multiplier, _DECIMAL_PLACES),
+          "datetime": self._timestamp,
       }
+      output.update(
+          self._parse_example(
+              element.predict_log.request.inputs['examples'].string_val))
+      yield output
 
 
 class Executor(base_beam_executor.BaseBeamExecutor):
@@ -110,7 +110,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
   ) -> None:
     """Do function for predictions_to_bq executor."""
 
-    ts = datetime.datetime.now().replace(second=0, microsecond=0)
+    timestamp = datetime.datetime.now().replace(second=0, microsecond=0)
 
     # check required executive properties
     if exec_properties["bq_table_name"] is None:
@@ -136,11 +136,12 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     # set table prefix and partitioning parameters
     bq_table_name = exec_properties["bq_table_name"]
     if exec_properties["table_suffix"]:
-      bq_table_name += "_" + ts.strftime(exec_properties["table_suffix"])
+      bq_table_name += "_" + timestamp.strftime(
+          exec_properties["table_suffix"])
 
     if exec_properties["expiration_time_delta"]:
       expiration_time = int(
-          ts.timestamp()) + exec_properties["expiration_time_delta"]
+          timestamp.timestamp()) + exec_properties["expiration_time_delta"]
       _ADDITIONAL_BQ_PARAMETERS.update(
           {"expirationTime": str(expiration_time)})
       logging.info(
@@ -183,7 +184,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
                FilterPredictionToDictFn(
                    labels=labels,
                    features=features,
-                   ts=ts,
+                   timestamp=timestamp,
                    filter_threshold=exec_properties["filter_threshold"],
                ))
            | "Write Dict to BQ" >> beam.io.gcp.bigquery.WriteToBigQuery(
