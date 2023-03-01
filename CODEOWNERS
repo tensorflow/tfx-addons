@@ -56,7 +56,7 @@
 /tfx_addons/utils @hanneshapke
 
 # Predictions to Bigquery Component
-/tfx_addons/predictions_to_biquery @hanneshapke
+/tfx_addons/predictions_to_biquery @hanneshapke @cfezequiel
 
 # PandasTransform Component
 /tfx_addons/pandas_transform @rcrowe-google
