@@ -10,31 +10,80 @@
 **Project name:** CopyExampleGen component
 
 ## Project Description
-CopyExampleGen will allow the user to copy a pre-existing Tfrecord dataset or raw data and ingest it into the pipeline, ultimately skipping the process of shuffling and running the Beam job. This process will require a dict input with split_names and their respective URI. This will output an Examples Artifact (same as the Artifact output from the ExampleGen component)  in which downstream components can use.
+CopyExampleGen will allow the user to copy pre-existing tfrecords and ingest it into the pipeline as examples, ultimately skipping the process of shuffling and running the Beam job that is in the standard component, ExampleGen. This process will require a dict input with split names as keys and their respective URIs as the value from the user. Following suit, the component will set the artifact’s properties, generate output dict, and register contexts and execution. Lastly, it will output an Examples Artifact in which downstream components can use.
+
+Example of pipeline component definition:
+```python
+ copy_example_gen = component.CopyExampleGen(
+      splits_dict = tfrecords_dict
+ )
+```
 
 ## Project Category
-Component
+Addon Component
 
 ## Project Use-Case(s)
-CopyExampleGen will allow the user to add a dict input with split_names as the key and their respective pre-existing Tfrecords URIs as their value, then format the director structure so that it matches that of an Example Artifact.
+CopyExampleGen will replace ExampleGen when tfrecords and split names are already in the possession of the user. Hence, a Beam job will not be run nor will the tfrecords be shuffled and/ or randomized saving data ingestion pipeline process time.
 
-Currently, ingesting data with the ExampleGen requires a Beam job to be ran and requires the data to be shuffled. This component will save users hours/ days of having to create a workaround fully custom ExampleGen component. Some challenges our users have had:
-Reshuffle doesn't work well with DirectRunner and causes OOMing. Users have been patching out shuffling in every release and doing it in the DB query. They have given up on Beam based ExampleGen and have created an entire custom ExampleGen that reads from the database and doesn’t use Beam. Link.
-When the use case is a time series problem using sliding windows, shuffling before splitting in train and eval set is counterproductive as the user would need a coherent training set. Link.
-Almost impossible to use ExampleGen based components for large datasets. Without it, Beam knows how to write to disk after transforming from input format to output format, allowing it to transform (slowly) large datasets that would otherwise not fit into memory. Link.
+Currently, ingesting data with the ExampleGen component does not provide a way to split without random data shuffling and always runs a beam job. This component will save significant time (hours for large amounts of data) per pipeline run when a pipeline run does not require data to be shuffled. Some challenges users have had:
+
+  1. “Reshuffle doesn't work well with DirectRunner and causes OOMing. Users have been patching out shuffling in every release and doing it in the DB query. They have given up on Beam based ExampleGen and have created an entire custom ExampleGen that reads from the database and doesn’t use Beam”.
+
+  2. “When the use case is a time series problem using sliding windows, shuffling before splitting in train and eval set is counterproductive as the user would need a coherent training set”.
+
 
 ## Project Implementation
-Use case #1 - Tfrecords as input URIs:
-This component will:
-1. Accept a dict i.e. {'split_name1': './path/to/split_name1/tfrecord1', 'split_name2': './path/to/split_name2/tfrecord2'}
-2. Retrieve the tfrecords
-3. Create an Examples Artifact, following Examples directory structure and properties required for an Examples Artifact
-4. Register the Examples Artifact into MLMD
-5. Output as 'examples' to be ingested from downstream components
+### Component
 
+CopyExampleGenSpec Class:
+  Add parameters to following sections in CopyExampleGenSpec(types.ComponentSpec) class:
+
+- `PARAMETERS`: `’tfrecords_dict’: ‘ExecutionParameter(type=dict)’`. The user input dict will follow a pattern like {‘Split-name’: ‘uri_to_tfrecords_folder’} i.e. (see question #2):
+```python
+  { 
+    ‘train’: ‘./uri/path/to/Split_train/’,
+    ‘eval’: ‘./uri/path/to/Split_eval/’
+  }
+```
+
+ - `INPUTS`: will be empty since user will only have a dict
+  
+ - `OUTPUTS`: `’output_data’: ‘ChannelParameter(type=standard_artifacts.Examples)’`
+
+CopyExampleGen Class:
+  `output_data` will contain a list of Channels for each split of the data. The splits in `output_data` will be derived from the keys in the ‘tfrecords_dict’.
+
+
+
+### Executor
+
+#### Part 1
+
+  Using the keys and values from `tfrecords_dict`:
+  1. function `parse_tfrecords_dict(tfrecords_dict)`: determine the source (and possibly destination–see question #2) for the files in each split, building exact URIs as necessary. 
+  2. function `split_names(tfrecords_dict)`: parse the input into the list of split names that will become `split` properties of the output Examples artifact. Example: `[“train”,”eval”]`
+
+  Depending on when the file copying happens (see question #1), possibly copy the files at this point. 
+
+
+#### Part 2
+
+  Transform the result of `parse_tfrecords_dict` we created above into an Examples Artifact. Importer Node has the functionality and process we are trying to recreate in this CopyExampleGen because it registers an external resource into MLMD and outputs the user defined Artifact type. 
+
+  This step can possibly use the [importer.generate_output_dict](https://github.com/tensorflow/tfx/blob/f8ce19339568ae58519d4eecfdd73078f80f84a2/tfx/dsl/components/common/importer.py#L153) function:
+  Create standard ‘output_dict’ variable. The value will be created by calling the worker function. If file copying is done before this step, this method can probably be used as is to register the artifact.
+ 
+## Open Implementation Questions
+  1. There's a few open questions about how the file copying should actually done. Where does the copying that importer does actually happen? And what's the best way to change that? Are there other ways in TFX to do copying in a robust way? Maybe something in tfx.io? If there's an existing method, what has to happen in the `parse_tfrecords_dict`. Depending on the copying capabilities available, will there be a need to detect the execution environment? Does TFX rely on other tools to execute a copy that handle this? Is detection of the execution environment and the copying itself separate? What could be reused? 
+    
+  - If it's not easy to detect the execution environment without also performing a copy, will the user have to specify the execution environment and therefore how to do the copy (e.g., local copy, GCS, S3). And then what's the best way to handle that?
+    
+  2. Should the dictionary of file inputs take a path to a folder? Globs? Lists of individual files?
+  3. Assuming file copying is done entirely separately, [importer.generate_output_dict](https://github.com/tensorflow/tfx/blob/f8ce19339568ae58519d4eecfdd73078f80f84a2/tfx/dsl/components/common/importer.py#L153) be used as is to register the artifacts, or does some separate code using [MLMD](https://www.tensorflow.org/tfx/guide/mlmd) in a different way need to be written
 
 ## Project Dependencies
-Using: Python 3.8.2, Tensorflow 2.11.0, TFX 1.12.0
+Possibly libraries that directly access blob storage platforms, e.g. google-cloud-storage.
+
 
 ## Project Team
 Alex Ho, alexanderho@google.com, @alxndrnh
