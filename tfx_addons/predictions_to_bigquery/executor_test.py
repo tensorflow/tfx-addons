@@ -15,7 +15,8 @@
 """Tests for executor.py."""
 
 import datetime
-from typing import Mapping, Sequence, Union
+import pathlib
+from typing import Union
 from unittest import mock
 
 import apache_beam as beam
@@ -35,7 +36,7 @@ _TIMESTAMP = datetime.datetime.now()
 
 
 def _create_tf_example(
-    features: Mapping[str, Union[bytes, float, int]]) -> tf.train.Example:
+    features: dict[str, Union[bytes, float, int]]) -> tf.train.Example:
   tf_features = {}
   for key, value in features.items():
     if isinstance(value, bytes):
@@ -59,8 +60,8 @@ def _create_model_spec() -> model_pb2.ModelSpec:
 
 
 def _create_predict_request(
-    features: Mapping[str, Union[bytes, float, int]]
-) -> predict_pb2.PredictRequest:
+    features: dict[str, Union[bytes, float,
+                              int]]) -> predict_pb2.PredictRequest:
   tf_example = _create_tf_example(features)
   request_tensor_proto = tf.make_tensor_proto(
       values=tf_example.SerializeToString(), dtype=tf.string, shape=(1, ))
@@ -73,7 +74,7 @@ def _create_predict_request(
 
 
 def _create_predict_response(
-    values: Sequence[float]) -> predict_pb2.PredictResponse:
+    values: list[float]) -> predict_pb2.PredictResponse:
   response_tensor_proto = tf.make_tensor_proto(values=values,
                                                dtype=tf.float32,
                                                shape=(1, len(values)))
@@ -103,10 +104,10 @@ class FilterPredictionToDictFnTest(absltest.TestCase):
     self.filter_threshold = 0.5
 
     self.dofn = executor.FilterPredictionToDictFn(
-        labels=self.labels,
         features=self.features,
         timestamp=self.timestamp,
         filter_threshold=self.filter_threshold,
+        labels=self.labels,
     )
 
   def test_process(self):
@@ -138,6 +139,30 @@ class FilterPredictionToDictFnTest(absltest.TestCase):
     with self.assertRaises(StopIteration):
       _ = next(self.dofn.process(element))
 
+  def test_process_no_labels(self):
+    features = {
+        'bytes_feature': tf.io.FixedLenFeature([], dtype=tf.string),
+    }
+    dofn = executor.FilterPredictionToDictFn(
+        features=features,
+        timestamp=self.timestamp,
+        filter_threshold=self.filter_threshold,
+        labels=None,
+    )
+    element = _create_prediction_log(
+        request=_create_predict_request(features={
+            'bytes_feature': b'a',
+        }),
+        response=_create_predict_response([0.9]),
+    )
+    expected = {
+        'bytes_feature': 'a',
+        'score': 0.9,
+        'datetime': mock.ANY,
+    }
+    output = next(dofn.process(element))
+    self.assertEqual(expected, output)
+
 
 def _make_artifact(uri) -> types.Artifact:
   artifact = types.Artifact(metadata_store_pb2.ArtifactType())
@@ -146,7 +171,7 @@ def _make_artifact(uri) -> types.Artifact:
 
 
 def _make_artifact_mapping(
-    data_dict: Mapping[str, str]) -> Mapping[str, Sequence[types.Artifact]]:
+    data_dict: dict[str, str]) -> dict[str, list[types.Artifact]]:
   return {k: [_make_artifact(v)] for k, v in data_dict.items()}
 
 
@@ -168,23 +193,31 @@ class ExecutorTest(absltest.TestCase):
         'gcs_temp_dir': 'gs://bucket/temp-dir',
         'expiration_time_delta': 1,
         'filter_threshold': 0.5,
-        'table_suffix': '%Y%m%d',
+        'table_time_suffix': '%Y%m%d',
         'table_partitioning': True,
         'vocab_label_file': 'vocab_file',
     }
 
-    self.executor = executor.Executor()
-
+    self.enter_context(
+        mock.patch.object(executor, '_get_prediction_log_path', autospec=True))
+    self.enter_context(
+        mock.patch.object(executor,
+                          '_get_tft_output',
+                          autospec=True,
+                          return_value=object()))
+    self.enter_context(
+        mock.patch.object(executor, '_get_schema_features', autospec=True))
     self.enter_context(
         mock.patch.object(executor, '_get_labels', autospec=True))
     self.enter_context(
-        mock.patch.object(executor, '_get_bq_table_name', autospec=True))
+        mock.patch.object(executor, '_check_bq_table_name', autospec=True))
+    self.enter_context(
+        mock.patch.object(executor, '_add_bq_table_name_suffix',
+                          autospec=True))
     self.enter_context(
         mock.patch.object(executor,
                           '_get_additional_bq_parameters',
                           autospec=True))
-    self.enter_context(
-        mock.patch.object(executor, '_get_features', autospec=True))
     self.enter_context(
         mock.patch.object(executor, '_features_to_bq_schema', autospec=True))
 
@@ -193,14 +226,14 @@ class ExecutorTest(absltest.TestCase):
     self.mock_pardo = self.enter_context(
         mock.patch.object(beam, 'ParDo', autospec=True))
     self.mock_write_to_bigquery = self.enter_context(
-        mock.patch.object(beam.io.gcp.bigquery,
-                          'WriteToBigQuery',
-                          autospec=True))
+        mock.patch.object(beam.io, 'WriteToBigQuery', autospec=True))
 
     self.enter_context(
         mock.patch.object(types.Artifact,
                           'set_string_custom_property',
                           autospec=True))
+
+    self.executor = executor.Executor()
 
   def test_Do(self):
     self.executor.Do(self.input_dict, self.output_dict, self.exec_properties)
@@ -215,30 +248,67 @@ class ExecutorTest(absltest.TestCase):
 
 class ExecutorModuleTest(parameterized.TestCase):
   """Tests for executor module-level functions."""
+  def test_get_prediction_log_path(self):
+    inference_results = [_make_artifact('inference_results')]
+    expected = 'inference_results/*.gz'
+    output = executor._get_prediction_log_path(inference_results)
+    self.assertEqual(expected, output)
+
+  @parameterized.named_parameters([
+      ('no_inference_results', False),
+      ('inference_results', True),
+  ])
+  def test_get_tft_output(self, has_transform_graph):
+    if has_transform_graph:
+      transform_graph = [_make_artifact('transform_graph')]
+      mock_tftransform_output = self.enter_context(
+          mock.patch.object(tft, 'TFTransformOutput', autospec=True))
+
+      _ = executor._get_tft_output(transform_graph)
+
+      mock_tftransform_output.assert_called_once()
+
+    else:
+      output = executor._get_tft_output(None)
+      self.assertIsNone(output)
+
   def test_get_labels(self):
     mock_tftransform_output = self.enter_context(
         mock.patch.object(tft, 'TFTransformOutput', autospec=True))
     mock_vocabulary_by_name = (
         mock_tftransform_output.return_value.vocabulary_by_name)
     mock_vocabulary_by_name.return_value = [b'a', b'b']
-
-    transform_output_uri = '/path/to/transform_output'
     vocab_file = 'vocab'
+    tft_output = tft.TFTransformOutput('uri')
 
-    output = executor._get_labels(transform_output_uri, vocab_file)
+    output = executor._get_labels(tft_output, vocab_file)
 
     self.assertEqual(['a', 'b'], output)
-    mock_tftransform_output.assert_called_once_with(transform_output_uri)
     mock_vocabulary_by_name.assert_called_once_with(vocab_file)
+
+  @parameterized.named_parameters([
+      ('project_dataset_table', 'gcp_project:bq_dataset.bq_table_name', True),
+      ('dataset_table', 'bq_dataset.bq_table_name', True),
+      ('table_only', 'bq_table_name', False)
+  ])
+  def test_check_bq_table_name(self, bq_table_name, is_ok):
+    if is_ok:
+      try:
+        executor._check_bq_table_name(bq_table_name)
+      except ValueError:
+        self.fail('ValueError was raised unexpectedly.')
+    else:
+      with self.assertRaises(ValueError):
+        executor._check_bq_table_name(bq_table_name)
 
   @parameterized.named_parameters([('no_timestamp', None, None),
                                    ('timestamp_no_format', _TIMESTAMP, None),
                                    ('timestamp_format', _TIMESTAMP, '%Y%m%d')])
-  def test_get_bq_table_name(self, timestamp, timestring_format):
+  def test_add_bq_table_name_suffix(self, timestamp, timestring_format):
     basename = 'bq_table'
 
-    output = executor._get_bq_table_name(basename, timestamp,
-                                         timestring_format)
+    output = executor._add_bq_table_name_suffix(basename, timestamp,
+                                                timestring_format)
 
     if timestamp is None:
       expected = basename
@@ -258,8 +328,8 @@ class ExecutorModuleTest(parameterized.TestCase):
       ('table_partitioning_only', None, True),
       ('expiration_table_partitioning', 2, True),
   ])
-  def test_get_additiona_bq_parameters(self, expiration_days,
-                                       table_partitioning):
+  def test_get_additional_bq_parameters(self, expiration_days,
+                                        table_partitioning):
     output = executor._get_additional_bq_parameters(expiration_days,
                                                     table_partitioning)
 
@@ -278,44 +348,60 @@ class ExecutorModuleTest(parameterized.TestCase):
       }
       self.assertEqual(expected, output)
 
+  def test_parse_features_from_prediction_results(self):
+    test_data_dir = pathlib.Path(
+        'tfx_addons/predictions_to_bigquery/testdata/sample-tfx-output')
+    prediction_log_path = (test_data_dir /
+                           'BulkInferrer/inference_result/7/*.gz')
+    output = executor._parse_features_from_prediction_results(
+        str(prediction_log_path))
+    self.assertIn('Culmen Depth (mm)', output)
+    self.assertEqual(tf.float32, output['Culmen Depth (mm)'].dtype)
+
   @parameterized.named_parameters([
-      ('error_no_input', None, None),
-      ('schema_uri_only', 'uri', None),
-      ('prediction_log_path', None, 'path'),
-      ('schema_uri_prediction_log_path', 'uri', 'path'),
+      ('error_no_inputs', False, False, False),
+      ('schema', True, False, False),
+      ('tft_output', False, True, False),
+      ('prediction_log_path', False, False, True),
   ])
-  def test_get_features(self, schema_uri, prediction_log_path):
-    schema = {
-        'feature': tf.io.FixedLenFeature([], dtype=tf.int64),
-    }
+  def test_get_schema_features(self, has_schema, has_tft_output,
+                               has_prediction_log_path):
     mock_load_schema = self.enter_context(
         mock.patch.object(utils,
                           'load_schema',
                           autospec=True,
-                          return_value=schema))
-    mock_parse_schema = self.enter_context(
-        mock.patch.object(utils,
-                          'parse_schema',
-                          autopspec=True,
-                          return_value=schema))
+                          return_value=has_schema))
+    mock_raw_feature_spec = self.enter_context(
+        mock.patch.object(tft.TFTransformOutput,
+                          'raw_feature_spec',
+                          autospec=True))
+    mock_parse_features_from_prediction_results = self.enter_context(
+        mock.patch.object(executor,
+                          '_parse_features_from_prediction_results',
+                          autospec=True,
+                          return_value=has_schema))
 
-    if schema_uri is None and prediction_log_path is None:
+    if (has_schema is None and has_tft_output is None
+        and has_prediction_log_path is None):
       with self.assertRaises(ValueError):
-        _ = executor._get_features(schema_uri=schema_uri,
-                                   prediction_log_path=prediction_log_path)
+        _ = executor._get_schema_features(has_schema, has_tft_output,
+                                          has_prediction_log_path)
+      return
+
+    if has_schema:
+      schema = [_make_artifact('schema_uri')]
+      _ = executor._get_schema_features(schema, None, None)
+      mock_load_schema.assert_called_once()
+
+    elif has_tft_output:
+      tft_output = tft.TFTransformOutput('uri')
+      _ = executor._get_schema_features(None, tft_output, None)
+      mock_raw_feature_spec.assert_called_once()
 
     else:
-      output = executor._get_features(schema_uri=schema_uri,
-                                      prediction_log_path=prediction_log_path)
-
-      if schema_uri:
-        mock_load_schema.assert_called_once_with(mock.ANY)
-        mock_parse_schema.assert_not_called()
-      elif prediction_log_path:
-        mock_load_schema.assert_not_called()
-        mock_parse_schema.assert_called_once_with(prediction_log_path)
-
-      self.assertEqual(schema, output)
+      prediction_log_path = 'path'
+      _ = executor._get_schema_features(None, None, prediction_log_path)
+      mock_parse_features_from_prediction_results.assert_called_once()
 
   def test_features_to_bq_schema(self):
     mock_feature_to_bq_schema = self.enter_context(
