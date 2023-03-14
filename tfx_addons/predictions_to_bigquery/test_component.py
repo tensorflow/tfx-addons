@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# This code was originally written by Hannes Hapke <hannes--at--digits--dot--com>
+# This code was originally written by Hannes Hapke (Digits Financial Inc.)
 # on Feb. 6, 2023.
 """
 Tests around Digits Prediction-to-BigQuery component.
