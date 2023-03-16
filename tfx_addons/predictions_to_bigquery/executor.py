@@ -17,7 +17,6 @@
 """Implements executor to write BulkInferrer prediction results to BigQuery."""
 
 import datetime
-import os
 import re
 from typing import Any, Optional, Union
 
@@ -32,10 +31,8 @@ from tfx import types
 from tfx.dsl.components.base import base_beam_executor
 from tfx.types import Artifact, artifact_utils
 
-# TODO(cezequiel): Move relevant functions in utils module here.
 from tfx_addons.predictions_to_bigquery import utils
 
-_SCHEMA_FILE_NAME = "schema.pbtxt"
 _DECIMAL_PLACES = 6
 _DEFAULT_TIMESTRING_FORMAT = '%Y%m%d_%H%M%S'
 _REQUIRED_EXEC_PROPERTIES = (
@@ -43,7 +40,6 @@ _REQUIRED_EXEC_PROPERTIES = (
     'filter_threshold',
     'gcs_temp_dir',
 )
-_REGEX_CHARS_TO_REPLACE = re.compile(r'[^a-zA-Z0-9_]')
 _REGEX_BQ_TABLE_NAME = re.compile(r'^[\w-]*:?[\w_]+\.[\w_]+$')
 
 
@@ -108,71 +104,6 @@ def _get_additional_bq_parameters(
   return output
 
 
-# TODO(cezequiel): Move to a separate module with called functions.
-# pylint: disable=protected-access
-def _parse_features_from_prediction_results(
-    prediction_log_path: str) -> dict[str, Any]:
-  filepath = tf.io.gfile.glob(prediction_log_path)[0]
-  compression_type = utils._get_compress_type(filepath)
-  dataset = tf.data.TFRecordDataset([filepath],
-                                    compression_type=compression_type)
-
-  for bytes_record in dataset.take(1):
-    prediction_log = prediction_log_pb2.PredictionLog.FromString(
-        bytes_record.numpy())
-
-  example_bytes = (
-      prediction_log.predict_log.request.inputs['examples'].string_val[0])
-  example = tf.train.Example.FromString(example_bytes)
-  features = {}
-
-  for name, feature_proto in example.features.feature.items():
-    feature_dtype = utils._get_feature_type(feature=feature_proto)
-    feature = tf.io.VarLenFeature(dtype=feature_dtype)
-    features[name] = feature
-
-  return features
-
-
-def _get_schema_features(
-    schema: Optional[list[Artifact]] = None,
-    tft_output: Optional[tft.TFTransformOutput] = None,
-    prediction_log_path: Optional[str] = None,
-) -> dict[str, Any]:
-  if schema is not None:
-    schema_uri = artifact_utils.get_single_uri(schema)
-    schema_file = os.path.join(schema_uri, _SCHEMA_FILE_NAME)
-    return utils.load_schema(schema_file)
-
-  if tft_output is not None:
-    return tft_output.raw_feature_spec()
-
-  if prediction_log_path is None:
-    raise ValueError(
-        'Specify one of `schema`, `tft_output` or `prediction_log_path`.')
-
-  return _parse_features_from_prediction_results(prediction_log_path)
-
-
-def _get_bq_field_name_from_key(key: str) -> str:
-  field_name = _REGEX_CHARS_TO_REPLACE.sub('_', key)
-  return re.sub('_+', '_', field_name).strip('_')
-
-
-def _features_to_bq_schema(features: dict[str, Any], required: bool = False):
-  bq_schema_fields_ = utils.feature_to_bq_schema(features, required=required)
-  bq_schema_fields = []
-  for field in bq_schema_fields_:
-    field['name'] = _get_bq_field_name_from_key(field['name'])
-    bq_schema_fields.append(field)
-  bq_schema_fields.extend(
-      utils.create_annotation_fields(label_field_name="category_label",
-                                     score_field_name="score",
-                                     required=required,
-                                     add_datetime_field=True))
-  return {"fields": bq_schema_fields}
-
-
 def _tensor_to_native_python_value(
     tensor: Union[tf.Tensor, tf.sparse.SparseTensor]) -> Optional[Any]:
   """Converts a TF Tensor to a native Python value."""
@@ -224,12 +155,12 @@ class FilterPredictionToDictFn(beam.DoFn):
     parsed_example = tf.io.parse_example(serialized, self._features)
     output = {}
     for key, tensor in parsed_example.items():
-      field = _get_bq_field_name_from_key(key)
       value = _tensor_to_native_python_value(tensor)
       # To add a null value to BigQuery from JSON, omit the key,value pair
       # with null value.
       if value is None:
         continue
+      field = utils.get_bq_field_name_from_key(key)
       output[field] = value
     return output
 
@@ -279,7 +210,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
     tft_output = _get_tft_output(input_dict.get('transform_graph'))
 
     # get schema features
-    features = _get_schema_features(
+    features = utils.get_feature_spec(
         schema=input_dict.get('schema'),
         tft_output=tft_output,
         prediction_log_path=prediction_log_path,
@@ -300,7 +231,9 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         exec_properties['table_time_suffix'])
 
     # generate bigquery schema from tf transform features
-    bq_schema = _features_to_bq_schema(features)
+    add_label_field = labels is not None
+    bq_schema = utils.feature_spec_to_bq_schema(
+        features, add_label_field=add_label_field)
     logging.info(f'generated bq_schema: {bq_schema}.')
 
     additional_bq_parameters = _get_additional_bq_parameters(

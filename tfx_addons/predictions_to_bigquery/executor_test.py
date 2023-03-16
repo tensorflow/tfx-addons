@@ -15,7 +15,6 @@
 """Tests for executor.py."""
 
 import datetime
-import pathlib
 from typing import Union
 from unittest import mock
 
@@ -206,7 +205,7 @@ class ExecutorTest(absltest.TestCase):
                           autospec=True,
                           return_value=object()))
     self.enter_context(
-        mock.patch.object(executor, '_get_schema_features', autospec=True))
+        mock.patch.object(utils, 'get_feature_spec', autospec=True))
     self.enter_context(
         mock.patch.object(executor, '_get_labels', autospec=True))
     self.enter_context(
@@ -219,7 +218,7 @@ class ExecutorTest(absltest.TestCase):
                           '_get_additional_bq_parameters',
                           autospec=True))
     self.enter_context(
-        mock.patch.object(executor, '_features_to_bq_schema', autospec=True))
+        mock.patch.object(utils, 'feature_spec_to_bq_schema', autospec=True))
 
     self.mock_read_from_tfrecord = self.enter_context(
         mock.patch.object(beam.io, 'ReadFromTFRecord', autospec=True))
@@ -347,82 +346,6 @@ class ExecutorModuleTest(parameterized.TestCase):
           },
       }
       self.assertEqual(expected, output)
-
-  def test_parse_features_from_prediction_results(self):
-    test_data_dir = pathlib.Path(
-        'tfx_addons/predictions_to_bigquery/testdata/sample-tfx-output')
-    prediction_log_path = (test_data_dir /
-                           'BulkInferrer/inference_result/7/*.gz')
-    output = executor._parse_features_from_prediction_results(
-        str(prediction_log_path))
-    self.assertIn('Culmen Depth (mm)', output)
-    self.assertEqual(tf.float32, output['Culmen Depth (mm)'].dtype)
-
-  @parameterized.named_parameters([
-      ('error_no_inputs', False, False, False),
-      ('schema', True, False, False),
-      ('tft_output', False, True, False),
-      ('prediction_log_path', False, False, True),
-  ])
-  def test_get_schema_features(self, has_schema, has_tft_output,
-                               has_prediction_log_path):
-    mock_load_schema = self.enter_context(
-        mock.patch.object(utils,
-                          'load_schema',
-                          autospec=True,
-                          return_value=has_schema))
-    mock_raw_feature_spec = self.enter_context(
-        mock.patch.object(tft.TFTransformOutput,
-                          'raw_feature_spec',
-                          autospec=True))
-    mock_parse_features_from_prediction_results = self.enter_context(
-        mock.patch.object(executor,
-                          '_parse_features_from_prediction_results',
-                          autospec=True,
-                          return_value=has_schema))
-
-    if (has_schema is None and has_tft_output is None
-        and has_prediction_log_path is None):
-      with self.assertRaises(ValueError):
-        _ = executor._get_schema_features(has_schema, has_tft_output,
-                                          has_prediction_log_path)
-      return
-
-    if has_schema:
-      schema = [_make_artifact('schema_uri')]
-      _ = executor._get_schema_features(schema, None, None)
-      mock_load_schema.assert_called_once()
-
-    elif has_tft_output:
-      tft_output = tft.TFTransformOutput('uri')
-      _ = executor._get_schema_features(None, tft_output, None)
-      mock_raw_feature_spec.assert_called_once()
-
-    else:
-      prediction_log_path = 'path'
-      _ = executor._get_schema_features(None, None, prediction_log_path)
-      mock_parse_features_from_prediction_results.assert_called_once()
-
-  def test_features_to_bq_schema(self):
-    mock_feature_to_bq_schema = self.enter_context(
-        mock.patch.object(utils, 'feature_to_bq_schema', autospec=True))
-    mock_create_annotation_fields = self.enter_context(
-        mock.patch.object(utils,
-                          'create_annotation_fields',
-                          autospec=True,
-                          return_value={}))
-
-    features = {
-        'feature': tf.io.FixedLenFeature([], dtype=tf.int64),
-    }
-    required = True
-
-    output = executor._features_to_bq_schema(features, required)
-
-    self.assertIn('fields', output)
-    mock_feature_to_bq_schema.assert_called_once_with(features,
-                                                      required=required)
-    mock_create_annotation_fields.assert_called_once()
 
 
 if __name__ == '__main__':
