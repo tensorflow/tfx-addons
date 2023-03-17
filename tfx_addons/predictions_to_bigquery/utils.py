@@ -137,7 +137,7 @@ def get_feature_spec(
     tft_output: TensorFlow Transform output path.
     prediction_log_path: Path to a TFRecord file containing inference results.
   """
-  if schema is not None:
+  if schema:  # note: schema can be an empty list
     schema_uri = artifact_utils.get_single_uri(schema)
     schema_file = os.path.join(schema_uri, _SCHEMA_FILE_NAME)
     return _get_feature_spec_from_schema_file(schema_file)
@@ -254,7 +254,7 @@ def feature_spec_to_bq_schema(feature_spec: FeatureSpec,
       `_create_annotation_fields`.
 
   Returns:
-    A `BigQUerySchema` object.
+    A `BigQuerySchema` object.
   """
   bq_schema_fields = _feature_spec_to_bq_schema_fields(feature_spec,
                                                        required=required)

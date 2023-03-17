@@ -196,8 +196,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
   ) -> None:
     """Do function for predictions_to_bq executor."""
 
-    timestamp = datetime.datetime.now().replace(second=0, microsecond=0)
-
     # Check required keys set in exec_properties
     _check_exec_properties(exec_properties)
 
@@ -226,9 +224,10 @@ class Executor(base_beam_executor.BaseBeamExecutor):
 
     # set BigQuery table name and timestamp suffix if specified.
     _check_bq_table_name(exec_properties['bq_table_name'])
+    timestamp = datetime.datetime.now().replace(second=0, microsecond=0)
     bq_table_name = _add_bq_table_name_suffix(
         exec_properties['bq_table_name'], timestamp,
-        exec_properties['table_time_suffix'])
+        exec_properties.get('table_time_suffix'))
 
     # generate bigquery schema from tf transform features
     add_label_field = labels is not None

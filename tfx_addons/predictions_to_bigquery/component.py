@@ -34,19 +34,21 @@ class PredictionsToBigQueryComponentSpec(types.ComponentSpec):
 
   PARAMETERS = {
       'bq_table_name': ExecutionParameter(type=str),
+      'gcs_temp_dir': ExecutionParameter(type=str),
       'table_expiration_days': ExecutionParameter(type=int),
       'filter_threshold': ExecutionParameter(type=float),
       'table_partitioning': ExecutionParameter(type=bool),
-      'table_time_suffix': ExecutionParameter(type=str),
-      'vocab_label_file': ExecutionParameter(type=str),
+      'table_time_suffix': ExecutionParameter(type=str, optional=True),
+      'vocab_label_file': ExecutionParameter(type=str, optional=True),
   }
   INPUTS = {
       'inference_results':
       (ChannelParameter(type=standard_artifacts.InferenceResult)),
-      # TODO(cezequiel): Implement schema or transform_graph logic
-      'schema': (ChannelParameter(type=standard_artifacts.Schema)),
+      'schema': (ChannelParameter(type=standard_artifacts.Schema,
+                                  optional=True)),
       'transform_graph':
-      (ChannelParameter(type=standard_artifacts.TransformGraph)),
+      (ChannelParameter(type=standard_artifacts.TransformGraph,
+                        optional=True)),
   }
   OUTPUTS = {
       'bigquery_export': ChannelParameter(type=standard_artifacts.String),
@@ -62,13 +64,14 @@ class PredictionsToBigQueryComponent(base_component.BaseComponent):
       self,
       inference_results: types.Channel,
       bq_table_name: str,
+      gcs_temp_dir: str,
       bigquery_export: Optional[types.Channel] = None,
       transform_graph: Optional[types.Channel] = None,
       schema: Optional[types.Channel] = None,
       table_expiration_days: Optional[int] = 0,
       filter_threshold: float = _MIN_THRESHOLD,
       table_partitioning: bool = True,
-      table_time_suffix: str = '%Y%m%d',
+      table_time_suffix: Optional[str] = None,
       vocab_label_file: Optional[str] = None,
   ) -> None:
     """Initialize the component.
@@ -103,6 +106,7 @@ class PredictionsToBigQueryComponent(base_component.BaseComponent):
     spec = PredictionsToBigQueryComponentSpec(
         inference_results=inference_results,
         bq_table_name=bq_table_name,
+        gcs_temp_dir=gcs_temp_dir,
         bigquery_export=bigquery_export,
         transform_graph=transform_graph,
         schema=schema,
