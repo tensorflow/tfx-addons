@@ -29,13 +29,19 @@ import logging
 import os
 import pathlib
 import shutil
+import subprocess
+from typing import List
 
+import tensorflow as tf
 from absl.testing import absltest
 from google.api_core import exceptions
-from google.cloud import bigquery
+from google.cloud import aiplatform, bigquery
+from google.cloud.aiplatform import pipeline_jobs
 from ml_metadata.proto import metadata_store_pb2
 from tfx import types
 from tfx import v1 as tfx
+from tfx.dsl.component.experimental import container_component, placeholders
+from tfx.dsl.components.base import base_node
 from tfx.proto import example_gen_pb2
 from tfx.types import artifact_utils
 from tfx.types.standard_artifacts import Model, String
@@ -44,6 +50,8 @@ from tfx_addons.predictions_to_bigquery import component, executor
 
 _GOOGLE_CLOUD_PROJECT = os.environ['GOOGLE_CLOUD_PROJECT']
 _GCS_TEMP_DIR = os.environ['GCS_TEMP_DIR']
+_GCP_SERVICE_ACCOUNT_EMAIL = os.environ.get('GCP_SERVICE_ACCOUNT_EMAIL')
+_GCP_COMPONENT_IMAGE = os.environ['GCP_COMPONENT_IMAGE']
 
 _BQ_TABLE_EXPIRATION_DATE = datetime.datetime.now() + datetime.timedelta(
     days=1)
@@ -62,7 +70,6 @@ def _make_artifact_mapping(
   return {k: [_make_artifact(v)] for k, v in data_dict.items()}
 
 
-@absltest.skip
 class ExecutorBigQueryTest(absltest.TestCase):
   """Tests executor pipeline exporting predicitons to a BigQuery table."""
   def _get_full_bq_table_name(self, generated_bq_table_name):
@@ -119,7 +126,8 @@ class ExecutorBigQueryTest(absltest.TestCase):
 
   def tearDown(self):
     super().tearDown()
-    self._expire_table(self.generated_bq_table_name)
+    if self.generated_bq_table_name:
+      self._expire_table(self.generated_bq_table_name)
 
   def test_Do(self):
     self.executor.Do(self.input_dict, self.output_dict, self.exec_properties)
@@ -134,8 +142,17 @@ class ExecutorBigQueryTest(absltest.TestCase):
     self._assert_bq_table_exists(self.generated_bq_table_name)
 
 
+def _gcs_path_exists(gcs_path: str) -> bool:
+  files = tf.io.gfile.glob(gcs_path + '/*')
+  return bool(files)
+
+
+def _copy_local_dir_to_gcs(local_dir: str, gcs_path: str):
+  subprocess.check_call(f'gsutil -m cp -r {local_dir} {gcs_path}', shell=True)
+
+
 @tfx.dsl.components.component
-def _saved_model_component(
+def _saved_model_function_component(
     model: tfx.dsl.components.OutputArtifact[Model],
     saved_model_dir: tfx.dsl.components.Parameter[str],
 ):
@@ -145,19 +162,99 @@ def _saved_model_component(
   shutil.copytree(saved_model_dir, target_dir, dirs_exist_ok=True)
 
 
+def _create_saved_model_container_component_class():
+  return container_component.create_container_component(
+      name='SavedModelContainerComponent',
+      inputs={},
+      outputs={
+          'model': Model,
+      },
+      parameters={
+          'saved_model_dir': str,
+      },
+      image='google/cloud-sdk:latest',
+      command=[
+          'sh',
+          '-exc',
+          '''
+          saved_model_dir="$0"
+          model_uri="$1"
+          gsutil cp -r $saved_model_dir $model_uri/
+          ''',
+          placeholders.InputValuePlaceholder('saved_model_dir'),
+          placeholders.OutputUriPlaceholder('model'),
+      ],
+  )
+
+
+def _saved_model_component(saved_model_dir: str):
+  if saved_model_dir.startswith('gs://'):
+    saved_model_component_class = (
+        _create_saved_model_container_component_class())
+    saved_model = saved_model_component_class(saved_model_dir=saved_model_dir)
+  else:
+    saved_model = _saved_model_function_component(
+        saved_model_dir=saved_model_dir)
+  return saved_model
+
+
 @tfx.dsl.components.component
-def _get_predictions_to_bigquery_output(
+def _get_output_function_component(
     bigquery_export: tfx.dsl.components.InputArtifact[String],
     output_filepath: tfx.dsl.components.Parameter[str],
 ):
-  """Checks output of the predictions-to-bigquery component."""
-  generated_bq_table_name = bigquery_export.get_custom_property(
-      'generated_bq_table_name')
-  output = {
-      'generated_bq_table_name': generated_bq_table_name,
-  }
-  with open(output_filepath, 'wt', encoding='utf-8') as output_file:
+  """Copies component-under-test output to `output_filepath`."""
+  with tf.io.gfile.GFile(bigquery_export.uri) as input_file:
+    bq_table_name = input_file.read()
+  with tf.io.gfile.GFile(output_filepath, 'w') as output_file:
+    output = {
+        'generated_bq_table_name': bq_table_name,
+    }
     json.dump(output, output_file)
+
+
+def _create_get_output_container_component_class():
+  return container_component.create_container_component(
+      name='BigQueryExportContainerComponent',
+      inputs={
+          'bigquery_export': String,
+      },
+      parameters={
+          'output_path': str,
+      },
+      image='google/cloud-sdk:latest',
+      command=[
+          'sh',
+          '-exc',
+          '''
+          apt install -y jq
+          bigquery_export_uri="$0"
+          local_bigquery_export_path=$(mktemp)
+          local_output_path=$(mktemp)
+          output_path="$1"
+          gsutil cp $bigquery_export_uri $local_bigquery_export_path
+          bq_table_name=$(cat $local_bigquery_export_path)
+          jq --null-input \
+              --arg bq_table_name "$bq_table_name" \
+              '{"generated_bq_table_name": $bq_table_name}' \
+              > $local_output_path
+          gsutil cp -r $local_output_path $output_path
+          ''',
+          placeholders.InputUriPlaceholder('bigquery_export'),
+          placeholders.InputValuePlaceholder('output_path'),
+      ],
+  )
+
+
+def _get_output_component(output_channel, output_file):
+  if output_file.startswith('gs://'):
+    get_output_class = _create_get_output_container_component_class()
+    output_component = get_output_class(bigquery_export=output_channel,
+                                        output_path=output_file)
+  else:
+    output_component = _get_output_function_component(
+        bigquery_export=output_channel, output_filepath=output_file)
+  return output_component
 
 
 class ComponentIntegrationTest(absltest.TestCase):
@@ -165,15 +262,15 @@ class ComponentIntegrationTest(absltest.TestCase):
   def setUp(self):
     super().setUp()
     # Pipeline config
-    self.dataset_dir = _TEST_DATA_DIR / 'penguins-dataset'
-    self.saved_model_dir = (_TEST_DATA_DIR /
-                            'sample-tfx-output/Trainer/model/6/Format-Serving')
-    self.model_channel = types.Channel(type=Model)
-    self.pipeline_name = 'component_integration_test'
-    self.pipeline_root = self.create_tempdir()
-    self.metadata_path = self.create_tempfile()
+    self.pipeline_name = 'component-integration-test'
+    self.test_file = 'test-tiny.csv'
     self.gcs_temp_dir = _GCS_TEMP_DIR
-    self.output_file = self.create_tempfile()
+    self.dataset_name = 'penguins-dataset'
+    self.saved_model_path = 'sample-tfx-output/Trainer/model/6/Format-Serving'
+
+    # Vertex Pipeline config
+    self.service_account = _GCP_SERVICE_ACCOUNT_EMAIL
+    self.location = os.environ.get('GCP_REGION') or 'us-central1'
 
     # GCP config
     self.gcp_project = _GOOGLE_CLOUD_PROJECT
@@ -182,28 +279,13 @@ class ComponentIntegrationTest(absltest.TestCase):
     self.client = bigquery.Client()
     self.client.create_dataset(dataset=self.bq_dataset, exists_ok=True)
 
-    # Components
-    test_split = (example_gen_pb2.Input.Split(name='test',
-                                              pattern='test/test-tiny.csv'))
-    self.unlabeled_example_gen = tfx.components.CsvExampleGen(
-        input_base=str(self.dataset_dir),
-        input_config=example_gen_pb2.Input(
-            splits=[test_split])).with_id('UnlabeledExampleGen')
-    self.saved_model = _saved_model_component(saved_model_dir=str(
-        self.saved_model_dir))  # type: ignore
-    self.bulk_inferrer = tfx.components.BulkInferrer(
-        examples=self.unlabeled_example_gen.outputs['examples'],
-        model=self.saved_model.outputs['model'],
-        data_spec=tfx.proto.DataSpec(),
-        model_spec=tfx.proto.ModelSpec(),
-    )
-
     # Test config
     self.generated_bq_table_name = None
 
   def tearDown(self):
     super().tearDown()
-    self._expire_table(self.generated_bq_table_name)
+    if self.generated_bq_table_name is not None:
+      self._expire_table(self.generated_bq_table_name)
 
   def _expire_table(self, full_bq_table_name):
     full_bq_table_name = full_bq_table_name.replace(':', '.')
@@ -215,45 +297,139 @@ class ComponentIntegrationTest(absltest.TestCase):
       table.expires = _BQ_TABLE_EXPIRATION_DATE
       self.client.update_table(table, ['expires'])
 
-  def _create_pipeline(self, component_under_test, output_filepath):
-    get_output = (_get_predictions_to_bigquery_output(
-        bigquery_export=component_under_test.outputs['bigquery_export'],
-        output_filepath=output_filepath))
-    components = [
-        self.unlabeled_example_gen,
-        self.saved_model,
-        self.bulk_inferrer,
-        component_under_test,
-        get_output,
-    ]
+  def _create_gcs_tempfile(self) -> str:
+    timestamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+    self.gcs_temp_file = os.path.join(_GCS_TEMP_DIR, 'pipeline-outputs',
+                                      f'output-{timestamp}')
+    return self.gcs_temp_file
+
+  def _create_upstream_components(self, use_gcs=False):
+    if use_gcs:
+      gcs_test_data_dir = os.path.join(_GCS_TEMP_DIR, _TEST_DATA_DIR.stem)
+      if not _gcs_path_exists(gcs_test_data_dir):
+        # Copy test files to GCS
+        _copy_local_dir_to_gcs(str(_TEST_DATA_DIR), _GCS_TEMP_DIR)
+      dataset_dir = os.path.join(gcs_test_data_dir, self.dataset_name)
+      saved_model_dir = os.path.join(gcs_test_data_dir, self.saved_model_path)
+    else:
+      dataset_dir = str(_TEST_DATA_DIR / self.dataset_name)
+      saved_model_dir = str(_TEST_DATA_DIR / self.saved_model_path)
+
+    test_split = example_gen_pb2.Input.Split(name='test',
+                                             pattern=f'test/{self.test_file}')
+    unlabeled_example_gen = tfx.components.CsvExampleGen(
+        input_base=dataset_dir,
+        input_config=example_gen_pb2.Input(
+            splits=[test_split])).with_id('UnlabeledExampleGen')
+
+    saved_model = _saved_model_component(saved_model_dir)
+
+    bulk_inferrer = tfx.components.BulkInferrer(
+        examples=unlabeled_example_gen.outputs['examples'],
+        model=saved_model.outputs['model'],
+        data_spec=tfx.proto.DataSpec(),
+        model_spec=tfx.proto.ModelSpec(),
+    )
+
+    return {
+        'unlabeled_example_gen': unlabeled_example_gen,
+        'saved_model': saved_model,
+        'bulk_inferrer': bulk_inferrer,
+    }
+
+  def _create_pipeline(self,
+                       component_under_test: base_node.BaseNode,
+                       upstream_components: List[base_node.BaseNode],
+                       output_file: str,
+                       pipeline_dir: str,
+                       metadata_connection_config=None):
+    output_component = _get_output_component(
+        component_under_test.outputs['bigquery_export'], output_file)
+    components = (upstream_components +
+                  [component_under_test, output_component])
     return tfx.dsl.Pipeline(
         pipeline_name=self.pipeline_name,
-        pipeline_root=str(self.pipeline_root.full_path),
-        metadata_connection_config=(
-            tfx.orchestration.metadata.sqlite_metadata_connection_config(
-                self.metadata_path.full_path)),
-        components=components)
+        pipeline_root=pipeline_dir,
+        components=components,
+        metadata_connection_config=metadata_connection_config)
 
-  def _run_pipeline(self, component_under_test):
-    output_tempfile = self.create_tempfile()
-    pipeline = self._create_pipeline(component_under_test,
-                                     output_tempfile.full_path)
-    tfx.orchestration.LocalDagRunner().run(pipeline)
-    with open(output_tempfile.full_path, encoding='utf-8') as output_file:
-      output = json.load(output_file)
-    return output
+  def _run_local_pipeline(self, pipeline):
+    assert pipeline.metadata_connection_config is not None
+    return tfx.orchestration.LocalDagRunner().run(pipeline)
 
-  def test_bulk_inferrer_bigquery_integration(self):
-    """Tests component integration with BulkInferrer and BigQuery."""
-    predictions_to_bigquery = component.PredictionsToBigQueryComponent(
-        inference_results=self.bulk_inferrer.outputs['inference_result'],
+  def _run_vertex_pipeline(self, pipeline):
+    pipeline_definition_file = os.path.join(
+        '/tmp', f'{self.pipeline_name}-pipeline.json')
+    runner = tfx.orchestration.experimental.KubeflowV2DagRunner(
+        config=tfx.orchestration.experimental.KubeflowV2DagRunnerConfig(
+            default_image=_GCP_COMPONENT_IMAGE),
+        output_filename=pipeline_definition_file)
+    runner.run(pipeline)
+
+    aiplatform.init(project=_GOOGLE_CLOUD_PROJECT, location=self.location)
+    job = pipeline_jobs.PipelineJob(template_path=pipeline_definition_file,
+                                    display_name=self.pipeline_name)
+    return job.run(service_account=self.service_account, sync=True)
+
+  def _check_output(self, output_file: str):
+    with tf.io.gfile.GFile(output_file) as output_file_handler:
+      output = json.load(output_file_handler)
+
+    self.generated_bq_table_name = output['generated_bq_table_name']
+    self.assertStartsWith(self.generated_bq_table_name, self.bq_table_name)
+
+  def test_local_pipeline(self):
+    """Tests component using a local pipeline runner."""
+    upstream = self._create_upstream_components()
+    component_under_test = component.PredictionsToBigQueryComponent(
+        inference_results=(
+            upstream['bulk_inferrer'].outputs['inference_result']),
         bq_table_name=self.bq_table_name,
         gcs_temp_dir=self.gcs_temp_dir,
     )
+    output_file = self.create_tempfile()
+    pipeline_dir = self.create_tempdir()
+    metadata_path = self.create_tempfile()
+    metadata_connection_config = (
+        tfx.orchestration.metadata.sqlite_metadata_connection_config(
+            metadata_path.full_path))
+    pipeline = self._create_pipeline(
+        component_under_test,
+        [
+            upstream['unlabeled_example_gen'],
+            upstream['saved_model'],
+            upstream['bulk_inferrer'],
+        ],
+        output_file.full_path,
+        pipeline_dir.full_path,
+        metadata_connection_config,
+    )
+    self._run_local_pipeline(pipeline)
+    self._check_output(output_file.full_path)
 
-    output = self._run_pipeline(predictions_to_bigquery)
-    self.generated_bq_table_name = output['generated_bq_table_name']
-    self.assertStartsWith(self.generated_bq_table_name, self.bq_table_name)
+  def test_vertex_pipeline(self):
+    """Tests component using Vertex AI Pipelines."""
+    upstream = self._create_upstream_components(use_gcs=True)
+    component_under_test = component.PredictionsToBigQueryComponent(
+        inference_results=(
+            upstream['bulk_inferrer'].outputs['inference_result']),
+        bq_table_name=self.bq_table_name,
+        gcs_temp_dir=self.gcs_temp_dir,
+    )
+    output_file = self._create_gcs_tempfile()
+    pipeline_dir = os.path.join(_GCS_TEMP_DIR, 'pipeline-root')
+    pipeline = self._create_pipeline(
+        component_under_test,
+        [
+            upstream['unlabeled_example_gen'],
+            upstream['saved_model'],
+            upstream['bulk_inferrer'],
+        ],
+        output_file,
+        pipeline_dir,
+    )
+    self._run_vertex_pipeline(pipeline)
+    self._check_output(output_file)
 
 
 if __name__ == '__main__':

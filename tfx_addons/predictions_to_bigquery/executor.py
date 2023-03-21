@@ -18,7 +18,7 @@
 
 import datetime
 import re
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import apache_beam as beam
 import numpy as np
@@ -43,21 +43,21 @@ _REQUIRED_EXEC_PROPERTIES = (
 _REGEX_BQ_TABLE_NAME = re.compile(r'^[\w-]*:?[\w_]+\.[\w_]+$')
 
 
-def _check_exec_properties(exec_properties: dict[str, Any]) -> None:
+def _check_exec_properties(exec_properties: Dict[str, Any]) -> None:
   for key in _REQUIRED_EXEC_PROPERTIES:
     if exec_properties[key] is None:
       raise ValueError(f'{key} must be set in exec_properties')
 
 
-def _get_prediction_log_path(inference_results: list[Artifact]) -> str:
+def _get_prediction_log_path(inference_results: List[Artifact]) -> str:
   inference_results_uri = artifact_utils.get_single_uri(inference_results)
   return f'{inference_results_uri}/*.gz'
 
 
 def _get_tft_output(
-    transform_graph: Optional[list[Artifact]] = None
+    transform_graph: Optional[List[Artifact]] = None
 ) -> Optional[tft.TFTransformOutput]:
-  if transform_graph is None:
+  if not transform_graph:
     return None
 
   transform_graph_uri = artifact_utils.get_single_uri(transform_graph)
@@ -65,7 +65,7 @@ def _get_tft_output(
 
 
 def _get_labels(tft_output: tft.TFTransformOutput,
-                vocab_file: str) -> list[str]:
+                vocab_file: str) -> List[str]:
   tft_vocab = tft_output.vocabulary_by_name(vocab_filename=vocab_file)
   return [label.decode() for label in tft_vocab]
 
@@ -89,7 +89,7 @@ def _add_bq_table_name_suffix(basename: str,
 def _get_additional_bq_parameters(
     table_expiration_days: Optional[int] = None,
     table_partitioning: Optional[bool] = False,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
   output = {}
   if table_partitioning:
     time_partitioning = {'type': 'DAY'}
@@ -123,16 +123,16 @@ def _tensor_to_native_python_value(
 
 
 @beam.typehints.with_input_types(str)
-@beam.typehints.with_output_types(beam.typehints.Iterable[tuple[str, str,
+@beam.typehints.with_output_types(beam.typehints.Iterable[Tuple[str, str,
                                                                 Any]])
 class FilterPredictionToDictFn(beam.DoFn):
   """Converts a PredictionLog proto to a dict."""
   def __init__(
       self,
-      features: dict[str, tf.io.FixedLenFeature],
+      features: Dict[str, tf.io.FixedLenFeature],
       timestamp: datetime.datetime,
       filter_threshold: float,
-      labels: Optional[list[str]] = None,
+      labels: Optional[List[str]] = None,
       score_multiplier: float = 1.,
   ):
     super().__init__()
@@ -143,7 +143,7 @@ class FilterPredictionToDictFn(beam.DoFn):
     self._score_multiplier = score_multiplier
 
   def _parse_prediction(
-      self, predictions: npt.ArrayLike) -> tuple[Optional[str], float]:
+      self, predictions: npt.ArrayLike) -> Tuple[Optional[str], float]:
     prediction_id = np.argmax(predictions)
     logging.debug("Prediction id: %s", prediction_id)
     logging.debug("Predictions: %s", predictions)
@@ -151,7 +151,7 @@ class FilterPredictionToDictFn(beam.DoFn):
     score = predictions[0][prediction_id]
     return label, score
 
-  def _parse_example(self, serialized: bytes) -> dict[str, Any]:
+  def _parse_example(self, serialized: bytes) -> Dict[str, Any]:
     parsed_example = tf.io.parse_example(serialized, self._features)
     output = {}
     for key, tensor in parsed_example.items():
@@ -190,9 +190,9 @@ class Executor(base_beam_executor.BaseBeamExecutor):
   """Implements predictions-to-bigquery component logic."""
   def Do(
       self,
-      input_dict: dict[str, list[types.Artifact]],
-      output_dict: dict[str, list[types.Artifact]],
-      exec_properties: dict[str, Any],
+      input_dict: Dict[str, List[types.Artifact]],
+      output_dict: Dict[str, List[types.Artifact]],
+      exec_properties: Dict[str, Any],
   ) -> None:
     """Do function for predictions_to_bq executor."""
 
@@ -262,4 +262,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         output_dict['bigquery_export'])
     bigquery_export.set_string_custom_property('generated_bq_table_name',
                                                bq_table_name)
+    with tf.io.gfile.GFile(bigquery_export.uri, 'w') as output_file:
+      output_file.write(bq_table_name)
     logging.info(f'Annotated data exported to {bq_table_name}')

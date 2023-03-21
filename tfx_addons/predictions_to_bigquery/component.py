@@ -101,7 +101,9 @@ class PredictionsToBigQueryComponent(base_component.BaseComponent):
     """
     bigquery_export = bigquery_export or types.Channel(
         type=standard_artifacts.String)
-    schema = schema or types.Channel(type=standard_artifacts.Schema)
+    # schema = schema or types.Channel(type=standard_artifacts.Schema)
+    # transform_graph = (transform_graph or
+    #                    types.Channel(type=standard_artifacts.TransformGraph))
 
     spec = PredictionsToBigQueryComponentSpec(
         inference_results=inference_results,

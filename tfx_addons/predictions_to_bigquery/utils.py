@@ -30,8 +30,8 @@ from tensorflow_metadata.proto.v0 import schema_pb2
 from tensorflow_serving.apis import prediction_log_pb2
 from tfx.types import Artifact, artifact_utils
 
-FeatureSpec = dict[str, Union[tf.io.FixedLenFeature, tf.io.VarLenFeature]]
-BigQuerySchema = dict[str, Any]
+FeatureSpec = Dict[str, Union[tf.io.FixedLenFeature, tf.io.VarLenFeature]]
+BigQuerySchema = Dict[str, Any]
 
 _SCHEMA_FILE_NAME = "schema.pbtxt"
 _REGEX_CHARS_TO_REPLACE = re.compile(r'[^a-zA-Z0-9_]')
@@ -62,7 +62,7 @@ def _get_compress_type(file_path: str) -> Optional[str]:
       b'\x1f\x8b': 'GZIP'
   }
 
-  with open(file_path, 'rb') as input_file:
+  with tf.io.gfile.GFile(file_path, 'rb') as input_file:
     two_bytes = input_file.read(2)
 
   return magic_bytes.get(two_bytes)
@@ -123,10 +123,10 @@ def _get_feature_spec_from_prediction_results(
 
 
 def get_feature_spec(
-    schema: Optional[list[Artifact]] = None,
+    schema: Optional[List[Artifact]] = None,
     tft_output: Optional[tft.TFTransformOutput] = None,
     prediction_log_path: Optional[str] = None,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
   """Returns a TensorFlow feature spec representing the input data schema.
 
   Specify one of `schema`, `tft_output`, `prediction_log_path` as the source

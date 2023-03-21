@@ -231,6 +231,7 @@ class ExecutorTest(absltest.TestCase):
         mock.patch.object(types.Artifact,
                           'set_string_custom_property',
                           autospec=True))
+    self.enter_context(mock.patch.object(tf.io.gfile, 'GFile', autospec=True))
 
     self.executor = executor.Executor()
 
