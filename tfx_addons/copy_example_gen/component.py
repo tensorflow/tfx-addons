@@ -28,8 +28,8 @@ we will title this dictionary 'tfrecords_dict' and assign it to a dictionary:
 
 Currently tfx.dsl.components.Parameter only supports primitive types therefore,
 in order to properly use CopyExampleGen, the 'input_dict' of type Dict[str, str]
-needs to be converted into a JSON str. We can do this by simply using 'json.dumps()'
-by adding 'tfrecords_dict' in as a parameter like so:
+needs to be converted into a JSON str. We can do this by simply using
+'json.dumps()' by adding 'tfrecords_dict' in as a parameter like so:
 
   copy_example=component.CopyExampleGen(
       input_json_str=json.dumps(tfrecords_dict)
@@ -97,10 +97,10 @@ def CopyExampleGen(
     tfrecords_list = []
     output_example_uri = output_example.uri
 
-    for key, value in input_dict.items():
-      split_value = (f"/Split-{key}/")
+    for split in input_dict.items():
+      split_value = (f"/Split-{split}/")
       fileio.mkdir(f"{output_example_uri}{split_value}")
-      tfrecords_list = fileio.glob(f"{input_dict[key]}*.gz")
+      tfrecords_list = fileio.glob(f"{input_dict[split]}*.gz")
 
       # Copy files into directories
       for tfrecord in tfrecords_list:
