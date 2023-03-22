@@ -14,7 +14,7 @@
 """CopyExampleGen custom component.
 
 This component will accept tfrecord files and register them as an
-Examples Artifact for downstream components to use. CopyExampleGen accepts 
+Examples Artifact for downstream components to use. CopyExampleGen accepts
 a dictionary where keys are the split-names and their respective value is a
 uri to the folder that contains the tfrecords file(s).
 
