@@ -13,24 +13,26 @@
 # limitations under the License.
 """CopyExampleGen custom component.
 
-This component will accept tfrecord files and register them as an Examples Artifact for 
-downstream components to use. CopyExampleGen accepts a dictionary where keys are the split-names 
-and their respective value is a uri to the folder that contains the tfrecords file(s).
+This component will accept tfrecord files and register them as an
+Examples Artifact for downstream components to use. CopyExampleGen accepts 
+a dictionary where keys are the split-names and their respective value is a
+uri to the folder that contains the tfrecords file(s).
 
-User will need to create a dictionary of type Dict[str, str], in this case we will title this
-dictionary 'tfrecords_dict' and assign it to a dictionary like so:
+User will need to create a dictionary of type Dict[str, str], in this case
+we will title this dictionary 'tfrecords_dict' and assign it to a dictionary:
 
   tfrecords_dict: Dict[str, str]={
       "train":"gs://path/to/examples/Split-train/",
       "eval":"gs://path/to/examples/Split-eval/"
     }
 
-Currently tfx.dsl.components.Parameter only supports primitive types therefore, in order to properly 
-use CopyExampleGen, the 'input_dict' of type Dict[str, str] needs to be converted into a JSON str.
-We can do this by simply using 'json.dumps()' by adding 'tfrecords_dict' in as a parameter like so:
+Currently tfx.dsl.components.Parameter only supports primitive types therefore,
+in order to properly use CopyExampleGen, the 'input_dict' of type Dict[str, str]
+needs to be converted into a JSON str. We can do this by simply using 'json.dumps()'
+by adding 'tfrecords_dict' in as a parameter like so:
 
   copy_example=component.CopyExampleGen(
-      input_json_str=json.dumps(tfrecords_dict) 
+      input_json_str=json.dumps(tfrecords_dict)
     )
 
 """
@@ -38,7 +40,6 @@ import json
 import os
 from typing import List
 
-import tensorflow as tf
 from tfx import v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
 from tfx.dsl.io import fileio
@@ -57,7 +58,7 @@ def _split_names_string_builder(split_names_list: List):
   index = 0
 
   for element in split_names_list:
-    if (index == urlist_len):
+    if index == urlist_len:
       str1 += "\"" + element + "\"" + "]"
       break
     str1 += "\"" + element + "\"" + ","
@@ -72,12 +73,13 @@ def CopyExampleGen(
 ) -> tfx.dsl.components.OutputDict():
   """
   CopyExampleGen first converts the string input to a type Dict and extracts
-  the keys from the dictionary, input_dict, and creates a string containing the names.
-  This string is assigned to the output_example.split_uri property to register split_names.
-        
+  the keys from the dictionary, input_dict, and creates a string containing
+  the names. This string is assigned to the output_example.split_uri property
+  to register split_names.
+
   This component then creates a directory folder for each name in split_name.
-  Following the creation of the `Split-name` folder, the files in the uri path will then be copied
-  into the designated `Split-name` folder.
+  Following the creation of the `Split-name` folder, the files in the uri path
+  will then be copied into the designated `Split-name` folder.
 
   """
 
@@ -85,7 +87,7 @@ def CopyExampleGen(
 
   # Parse input_dict: creates a directory from the split-names and tfrecord uris provided
   split_names = []
-  for key, value in input_dict.items():
+  for key in input_dict.items():
     split_names.append(key)
 
     split_names_string = _split_names_string_builder(split_names)
