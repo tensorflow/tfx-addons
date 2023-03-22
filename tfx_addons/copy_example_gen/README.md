@@ -15,9 +15,12 @@ CopyExampleGen will allow the user to copy pre-existing tfrecords and ingest it 
 Example of pipeline component definition:
 ```python
  copy_example_gen = component.CopyExampleGen(
-      splits_dict = tfrecords_dict
+      input_dict = tfrecords_dict
  )
 ```
+
+Currently tfx.dsl.components.Parameter only supports primitive types therefore, in order to properly use CopyExampleGen, the 'input_dict' of type Dict[str, str] needs to be converted into a JSON str. We can do this by simply using `json.dumps()` by adding 'tfrecords_dict' in as an argument.
+
 
 ## Project Category
 Addon Component
@@ -25,7 +28,7 @@ Addon Component
 ## Project Use-Case(s)
 CopyExampleGen will replace ExampleGen when tfrecords and split names are already in the possession of the user. Hence, a Beam job will not be run nor will the tfrecords be shuffled and/ or randomized saving data ingestion pipeline process time.
 
-Currently, ingesting data with the ExampleGen component does not provide a way to split without random data shuffling and always runs a beam job. This component will save significant time (hours for large amounts of data) per pipeline run when a pipeline run does not require data to be shuffled. Some challenges users have had:
+Currently, ingesting data with the ExampleGen component does not provide a way to split without random data shuffling and always runs a beam job. This component will save significant time (hours for large amounts of data) per pipeline run when a pipeline run does not require data to be shuffled. Additionally, this component will save hundreds of dollars in Dataflow consumption every time the pipeline is ran/ reran. Some challenges users have had:
 
   1. “Reshuffle doesn't work well with DirectRunner and causes OOMing. Users have been patching out shuffling in every release and doing it in the DB query. They have given up on Beam based ExampleGen and have created an entire custom ExampleGen that reads from the database and doesn’t use Beam”.
 
@@ -35,41 +38,28 @@ Currently, ingesting data with the ExampleGen component does not provide a way t
 ## Project Implementation
 ### Component
 
-CopyExampleGenSpec Class:
-  Add parameters to following sections in CopyExampleGenSpec(types.ComponentSpec) class:
+Custom Python function component: CopyExampleGen
 
-- `PARAMETERS`: `’tfrecords_dict’: ‘ExecutionParameter(type=dict)’`. The user input dict will follow a pattern like {‘Split-name’: ‘uri_to_tfrecords_folder’} i.e. (see question #2):
-```python
-  { 
-    ‘train’: ‘./uri/path/to/Split_train/’,
-    ‘eval’: ‘./uri/path/to/Split_eval/’
-  }
-```
+ - `input_json_str`: will be the input parameter for CopyExampleGen of type `tfx.dsl.components.Parameter[str]`, where the user will assign their Dict[str, str] input, tfrecords_dict. However, because Python custom component development only supports primitive types, we must assign `input_json_str` to `json.dumps(tfrecords_dict)` and place the tfrecords_dict in as an argument.
 
- - `INPUTS`: will be empty since user will only have a dict
-  
- - `OUTPUTS`: `’output_data’: ‘ChannelParameter(type=standard_artifacts.Examples)’`
-
-CopyExampleGen Class:
-  `output_data` will contain a list of Channels for each split of the data. The splits in `output_data` will be derived from the keys in the ‘tfrecords_dict’.
+ - `output_example`: Output artifact can be referenced as an object of its' specified type ArtifactType in the component function being declared. For example, if the ArtifactType is Examples, one can reference properties in an Examples ArtifactType (span, version, split_names, etc.) by calling the OutputArtifact object. This will be the variable we reference to build and register our Examples Artifact after pasrsing the tfrecords_dict input.
 
 
-
-### Executor
+### Python Custom Component
 
 #### Part 1
 
   Using the keys and values from `tfrecords_dict`:
-  1. function `parse_tfrecords_dict(tfrecords_dict)`: determine the source (and possibly destination–see question #2) for the files in each split, building exact URIs as necessary. 
-  2. function `split_names(tfrecords_dict)`: parse the input into the list of split names that will become `split` properties of the output Examples artifact. Example: `[“train”,”eval”]`
-
-  Depending on when the file copying happens (see question #1), possibly copy the files at this point. 
+  1. function `_split_names_string_builder(tfrecords_dict)`: determine the source (and possibly destination–see question #2) for the files in each split, building exact URIs as necessary. Additionally, parse the input into the list of split names that will become `split` properties of the output Examples artifact. Example: `[“train”,”eval”]`
 
 
 #### Part 2
 
   Transform the result of `parse_tfrecords_dict` we created above into an Examples Artifact. Importer Node has the functionality and process we are trying to recreate in this CopyExampleGen because it registers an external resource into MLMD and outputs the user defined Artifact type. 
 
+  Using fileio.mkdir and fileio.copy,, the component will then create a directory folder for each name in `split_name`. Following the creation of the `Split-name` folder, the files in the uri path will then be copied into the designated `Split-name` folder.
+
+  Thoughts from original implementation in phase 1:
   This step can possibly use the [importer.generate_output_dict](https://github.com/tensorflow/tfx/blob/f8ce19339568ae58519d4eecfdd73078f80f84a2/tfx/dsl/components/common/importer.py#L153) function:
   Create standard ‘output_dict’ variable. The value will be created by calling the worker function. If file copying is done before this step, this method can probably be used as is to register the artifact.
  
