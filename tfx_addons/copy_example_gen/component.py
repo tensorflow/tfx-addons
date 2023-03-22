@@ -34,72 +34,73 @@ We can do this by simply using 'json.dumps()' by adding 'tfrecords_dict' in as a
     )
 
 """
-from typing import List
 import json
 import os
+from typing import List
 
 import tensorflow as tf
 from tfx import v1 as tfx
-from tfx.v1.types.standard_artifacts import Examples
 from tfx.dsl.component.experimental.decorators import component
 from tfx.dsl.io import fileio
+from tfx.v1.types.standard_artifacts import Examples
 
 
 def _split_names_string_builder(split_names_list: List):
-    """
-    _split_names_string_builder() creates a string of split-names for input to
-    output_example.split_names property.
 
-    """
+  """
+  _split_names_string_builder() creates a string of split-names for input to
+  output_example.split_names property.
 
-    str1 = "["
-    urlist_len = len(split_names_list)-1
-    index = 0
+  """
 
-    for element in split_names_list:
-        if(index==urlist_len):
-            str1 += "\""+element+"\""+"]"
-            break
-        str1 += "\""+element+"\""+","
-        index+=1
-    return str1
+  str1 = "["
+  urlist_len = len(split_names_list)-1
+  index = 0
+
+  for element in split_names_list:
+    if(index==urlist_len):
+        str1 += "\""+element+"\""+"]"
+        break
+    str1 += "\""+element+"\""+","
+    index+=1
+  return str1
 
 @component
 def CopyExampleGen(
-        input_json_str: tfx.dsl.components.Parameter[str],
-        output_example: tfx.dsl.components.OutputArtifact[Examples]
-      ) -> tfx.dsl.components.OutputDict():
-        """
-        CopyExampleGen first converts the string input to a type Dict and extracts
-        the keys from the dictionary, input_dict, and creates a string containing the names.
-        This string is assigned to the output_example.split_uri property to register split_names.
+    input_json_str: tfx.dsl.components.Parameter[str],
+    output_example: tfx.dsl.components.OutputArtifact[Examples]
+) -> tfx.dsl.components.OutputDict():
+  """
+  CopyExampleGen first converts the string input to a type Dict and extracts
+  the keys from the dictionary, input_dict, and creates a string containing the names.
+  This string is assigned to the output_example.split_uri property to register split_names.
         
-        This component then creates a directory folder for each name in split_name.
-        Following the creation of the `Split-name` folder, the files in the uri path will then be copied
-        into the designated `Split-name` folder.
+  This component then creates a directory folder for each name in split_name.
+  Following the creation of the `Split-name` folder, the files in the uri path will then be copied
+  into the designated `Split-name` folder.
 
-        """        
+  """        
         
-        input_dict = json.loads(input_json_str)
+  input_dict = json.loads(input_json_str)
 
-        # Parse input_dict: creates a directory from the split-names and tfrecord uris provided
-        split_names=[]
-        for key, value in input_dict.items():
-          split_names.append(key)
+  # Parse input_dict: creates a directory from the split-names and tfrecord uris provided
+  split_names=[]
+  for key, value in input_dict.items():
+    split_names.append(key)
 
-        split_names_string=_split_names_string_builder(split_names)
-        output_example.split_names=str(split_names_string)
+    split_names_string=_split_names_string_builder(split_names)
+    output_example.split_names=str(split_names_string)
         
-        # Make directories
-        tfrecords_list=[]
-        output_example_uri=output_example.uri
+    # Make directories
+    tfrecords_list=[]
+    output_example_uri=output_example.uri
 
-        for key, value in input_dict.items():
-          split_value=(f"/Split-{key}/")
-          fileio.mkdir(f"{output_example_uri}{split_value}")
-          tfrecords_list=fileio.glob(f"{input_dict[key]}*.gz")
+    for key, value in input_dict.items():
+      split_value=(f"/Split-{key}/")
+      fileio.mkdir(f"{output_example_uri}{split_value}")
+      tfrecords_list=fileio.glob(f"{input_dict[key]}*.gz")
 
-          # Copy files into directories
-          for tfrecord in tfrecords_list:
-                file_name=os.path.basename(os.path.normpath(tfrecord))
-                fileio.copy(tfrecord, output_example.uri+split_value+file_name, True)
+      # Copy files into directories
+      for tfrecord in tfrecords_list:
+        file_name=os.path.basename(os.path.normpath(tfrecord))
+        fileio.copy(tfrecord, output_example.uri+split_value+file_name, True)
