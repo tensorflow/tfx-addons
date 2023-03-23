@@ -87,7 +87,7 @@ def CopyExampleGen(  # pylint: disable=C0103
 
   # Parse input_dict: creates a directory from the split-names and tfrecord uris provided
   split_names = []
-  for key in input_dict.items():
+  for key in input_dict:
     split_names.append(key)
 
     split_names_string = _split_names_string_builder(split_names)
@@ -97,7 +97,7 @@ def CopyExampleGen(  # pylint: disable=C0103
     tfrecords_list = []
     output_example_uri = output_example.uri
 
-    for split in input_dict.items():
+    for split in input_dict:
       split_value = (f"/Split-{split}/")
       fileio.mkdir(f"{output_example_uri}{split_value}")
       tfrecords_list = fileio.glob(f"{input_dict[split]}*.gz")
