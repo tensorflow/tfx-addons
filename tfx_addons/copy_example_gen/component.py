@@ -67,7 +67,7 @@ def _split_names_string_builder(split_names_list: List):
 
 
 @component
-def CopyExampleGen(
+def CopyExampleGen(  # pylint: disable=C0103
     input_json_str: tfx.dsl.components.Parameter[str],
     output_example: tfx.dsl.components.OutputArtifact[Examples]
 ) -> tfx.dsl.components.OutputDict():
