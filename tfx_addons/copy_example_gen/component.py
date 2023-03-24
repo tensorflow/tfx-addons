@@ -61,9 +61,9 @@ def _split_names_property_builder(split_names_list: List):
 
   for name in split_names_list:
     if index == property_split_names_len:
-      property_split_names = (f'{property_split_names}"\""{name}"\""]')
+      property_split_names = (f'{property_split_names}"{name}"]')
       break
-    property_split_names = (f'{property_split_names}"\""{name}"\"",')
+    property_split_names = (f'{property_split_names}"{name}",')
     index += 1
   return property_split_names
 
