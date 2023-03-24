@@ -113,3 +113,4 @@ def CopyExampleGen(  # pylint: disable=C0103
       file_name = os.path.basename(os.path.normpath(tfrecord))
       file_destination = (f"{output_example_uri}{split_value}{file_name}")
       fileio.copy(tfrecord, file_destination, True)
+      
