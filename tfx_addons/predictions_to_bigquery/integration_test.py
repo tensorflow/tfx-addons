@@ -299,6 +299,11 @@ class ComponentIntegrationTest(parameterized.TestCase):
     if self.generated_bq_table_name is not None:
       self._expire_table(self.generated_bq_table_name)
 
+  def _add_test_label_to_table(self, table):
+    labels = {'test_method_name': self._testMethodName}
+    table.labels = labels
+    self.client.update_table(table, ['labels'])
+
   def _expire_table(self, full_bq_table_name):
     full_bq_table_name = full_bq_table_name.replace(':', '.')
     try:
@@ -307,7 +312,8 @@ class ComponentIntegrationTest(parameterized.TestCase):
       logging.warning('Unable to read table: %s', full_bq_table_name)
     else:
       table.expires = _BQ_TABLE_EXPIRATION_DATE
-      self.client.update_table(table, ['expires'])
+      table = self.client.update_table(table, ['expires'])
+      self._add_test_label_to_table(table)
 
   def _create_gcs_tempfile(self) -> str:
     timestamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -338,6 +344,12 @@ class ComponentIntegrationTest(parameterized.TestCase):
 
     transform = _transform_function_component(transform_dir=transform_dir)
 
+    statistics_gen = tfx.components.StatisticsGen(
+        examples=unlabeled_example_gen.outputs['examples'], )
+
+    schema_gen = tfx.components.SchemaGen(
+        statistics=statistics_gen.outputs['statistics'], )
+
     saved_model = _saved_model_component(saved_model_dir)
 
     bulk_inferrer = tfx.components.BulkInferrer(
@@ -349,6 +361,8 @@ class ComponentIntegrationTest(parameterized.TestCase):
 
     return {
         'unlabeled_example_gen': unlabeled_example_gen,
+        'statistics_gen': statistics_gen,
+        'schema_gen': schema_gen,
         'transform': transform,
         'saved_model': saved_model,
         'bulk_inferrer': bulk_inferrer,
@@ -396,10 +410,16 @@ class ComponentIntegrationTest(parameterized.TestCase):
     self.assertStartsWith(self.generated_bq_table_name, self.bq_table_name)
 
   @parameterized.named_parameters([
-      ('inference_results_only', False),
-      ('inference_results_transform', True),
+      (
+          'inference_results_only',
+          False,
+          False,
+      ),
+      ('inference_results_schema', True, False),
+      ('inference_results_transform', False, True),
+      ('inference_results_schema_transform', True, True),
   ])
-  def test_local_pipeline(self, add_transform):
+  def test_local_pipeline(self, add_schema, add_transform):
     """Tests component using a local pipeline runner."""
     upstream = self._create_upstream_component_map()
     upstream_components = [
@@ -407,6 +427,14 @@ class ComponentIntegrationTest(parameterized.TestCase):
         upstream['saved_model'],
         upstream['bulk_inferrer'],
     ]
+
+    if add_schema:
+      upstream_components.append(upstream['statistics_gen'])
+      upstream_components.append(upstream['schema_gen'])
+      schema = upstream['schema_gen'].outputs['schema']
+    else:
+      schema = None
+
     if add_transform:
       transform_graph = upstream['transform'].outputs['transform_graph']
       upstream_components.append(upstream['transform'])
@@ -414,20 +442,24 @@ class ComponentIntegrationTest(parameterized.TestCase):
     else:
       transform_graph = None
       vocab_label_file = None
+
     component_under_test = component.PredictionsToBigQueryComponent(
         inference_results=(
             upstream['bulk_inferrer'].outputs['inference_result']),
         transform_graph=transform_graph,
+        schema=schema,
         bq_table_name=self.bq_table_name,
         gcs_temp_dir=self.gcs_temp_dir,
         vocab_label_file=vocab_label_file,
     )
+
     output_file = self.create_tempfile()
     pipeline_dir = self.create_tempdir()
     metadata_path = self.create_tempfile()
     metadata_connection_config = (
         tfx.orchestration.metadata.sqlite_metadata_connection_config(
             metadata_path.full_path))
+
     pipeline = self._create_pipeline(
         component_under_test,
         upstream_components,
@@ -436,6 +468,7 @@ class ComponentIntegrationTest(parameterized.TestCase):
         metadata_connection_config,
     )
     self._run_local_pipeline(pipeline)
+
     self._check_output(output_file.full_path)
 
   @absltest.skip('debugging')
