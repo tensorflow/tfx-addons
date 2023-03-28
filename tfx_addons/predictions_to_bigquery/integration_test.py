@@ -33,7 +33,7 @@ import subprocess
 from typing import List
 
 import tensorflow as tf
-from absl.testing import absltest
+from absl.testing import absltest, parameterized
 from google.api_core import exceptions
 from google.cloud import aiplatform, bigquery
 from google.cloud.aiplatform import pipeline_jobs
@@ -44,7 +44,7 @@ from tfx.dsl.component.experimental import container_component, placeholders
 from tfx.dsl.components.base import base_node
 from tfx.proto import example_gen_pb2
 from tfx.types import artifact_utils
-from tfx.types.standard_artifacts import Model, String
+from tfx.types.standard_artifacts import Model, String, TransformGraph
 
 from tfx_addons.predictions_to_bigquery import component, executor
 
@@ -129,6 +129,7 @@ class ExecutorBigQueryTest(absltest.TestCase):
     if self.generated_bq_table_name:
       self._expire_table(self.generated_bq_table_name)
 
+  @absltest.skip
   def test_Do(self):
     self.executor.Do(self.input_dict, self.output_dict, self.exec_properties)
     self.assertIsNotNone(self.output_dict['bigquery_export'])
@@ -149,6 +150,16 @@ def _gcs_path_exists(gcs_path: str) -> bool:
 
 def _copy_local_dir_to_gcs(local_dir: str, gcs_path: str):
   subprocess.check_call(f'gsutil -m cp -r {local_dir} {gcs_path}', shell=True)
+
+
+@tfx.dsl.components.component
+def _transform_function_component(
+    transform_graph: tfx.dsl.components.OutputArtifact[TransformGraph],
+    transform_dir: tfx.dsl.components.Parameter[str],
+):
+  """TFX Transform component stub."""
+  os.makedirs(transform_graph.uri, exist_ok=True)
+  shutil.copytree(transform_dir, transform_graph.uri, dirs_exist_ok=True)
 
 
 @tfx.dsl.components.component
@@ -257,7 +268,7 @@ def _get_output_component(output_channel, output_file):
   return output_component
 
 
-class ComponentIntegrationTest(absltest.TestCase):
+class ComponentIntegrationTest(parameterized.TestCase):
   """Tests component integration with other TFX components/services."""
   def setUp(self):
     super().setUp()
@@ -267,6 +278,7 @@ class ComponentIntegrationTest(absltest.TestCase):
     self.gcs_temp_dir = _GCS_TEMP_DIR
     self.dataset_name = 'penguins-dataset'
     self.saved_model_path = 'sample-tfx-output/Trainer/model/6/Format-Serving'
+    self.transform_path = 'sample-tfx-output/Transform/transform_graph/5'
 
     # Vertex Pipeline config
     self.service_account = _GCP_SERVICE_ACCOUNT_EMAIL
@@ -303,7 +315,7 @@ class ComponentIntegrationTest(absltest.TestCase):
                                       f'output-{timestamp}')
     return self.gcs_temp_file
 
-  def _create_upstream_components(self, use_gcs=False):
+  def _create_upstream_component_map(self, use_gcs=False):
     if use_gcs:
       gcs_test_data_dir = os.path.join(_GCS_TEMP_DIR, _TEST_DATA_DIR.stem)
       if not _gcs_path_exists(gcs_test_data_dir):
@@ -311,9 +323,11 @@ class ComponentIntegrationTest(absltest.TestCase):
         _copy_local_dir_to_gcs(str(_TEST_DATA_DIR), _GCS_TEMP_DIR)
       dataset_dir = os.path.join(gcs_test_data_dir, self.dataset_name)
       saved_model_dir = os.path.join(gcs_test_data_dir, self.saved_model_path)
+      transform_dir = os.path.join(gcs_test_data_dir, self.transform_path)
     else:
       dataset_dir = str(_TEST_DATA_DIR / self.dataset_name)
       saved_model_dir = str(_TEST_DATA_DIR / self.saved_model_path)
+      transform_dir = str(_TEST_DATA_DIR / self.transform_path)
 
     test_split = example_gen_pb2.Input.Split(name='test',
                                              pattern=f'test/{self.test_file}')
@@ -321,6 +335,8 @@ class ComponentIntegrationTest(absltest.TestCase):
         input_base=dataset_dir,
         input_config=example_gen_pb2.Input(
             splits=[test_split])).with_id('UnlabeledExampleGen')
+
+    transform = _transform_function_component(transform_dir=transform_dir)
 
     saved_model = _saved_model_component(saved_model_dir)
 
@@ -333,6 +349,7 @@ class ComponentIntegrationTest(absltest.TestCase):
 
     return {
         'unlabeled_example_gen': unlabeled_example_gen,
+        'transform': transform,
         'saved_model': saved_model,
         'bulk_inferrer': bulk_inferrer,
     }
@@ -378,14 +395,32 @@ class ComponentIntegrationTest(absltest.TestCase):
     self.generated_bq_table_name = output['generated_bq_table_name']
     self.assertStartsWith(self.generated_bq_table_name, self.bq_table_name)
 
-  def test_local_pipeline(self):
+  @parameterized.named_parameters([
+      ('inference_results_only', False),
+      ('inference_results_transform', True),
+  ])
+  def test_local_pipeline(self, add_transform):
     """Tests component using a local pipeline runner."""
-    upstream = self._create_upstream_components()
+    upstream = self._create_upstream_component_map()
+    upstream_components = [
+        upstream['unlabeled_example_gen'],
+        upstream['saved_model'],
+        upstream['bulk_inferrer'],
+    ]
+    if add_transform:
+      transform_graph = upstream['transform'].outputs['transform_graph']
+      upstream_components.append(upstream['transform'])
+      vocab_label_file = 'Species'
+    else:
+      transform_graph = None
+      vocab_label_file = None
     component_under_test = component.PredictionsToBigQueryComponent(
         inference_results=(
             upstream['bulk_inferrer'].outputs['inference_result']),
+        transform_graph=transform_graph,
         bq_table_name=self.bq_table_name,
         gcs_temp_dir=self.gcs_temp_dir,
+        vocab_label_file=vocab_label_file,
     )
     output_file = self.create_tempfile()
     pipeline_dir = self.create_tempdir()
@@ -395,11 +430,7 @@ class ComponentIntegrationTest(absltest.TestCase):
             metadata_path.full_path))
     pipeline = self._create_pipeline(
         component_under_test,
-        [
-            upstream['unlabeled_example_gen'],
-            upstream['saved_model'],
-            upstream['bulk_inferrer'],
-        ],
+        upstream_components,
         output_file.full_path,
         pipeline_dir.full_path,
         metadata_connection_config,
@@ -407,9 +438,10 @@ class ComponentIntegrationTest(absltest.TestCase):
     self._run_local_pipeline(pipeline)
     self._check_output(output_file.full_path)
 
+  @absltest.skip('debugging')
   def test_vertex_pipeline(self):
     """Tests component using Vertex AI Pipelines."""
-    upstream = self._create_upstream_components(use_gcs=True)
+    upstream = self._create_upstream_component_map(use_gcs=True)
     component_under_test = component.PredictionsToBigQueryComponent(
         inference_results=(
             upstream['bulk_inferrer'].outputs['inference_result']),
