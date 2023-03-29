@@ -63,3 +63,6 @@
 
 # Apache Airflow Orchestrator
 /tfx_addons/apache_airflow @lego0901
+
+# CopyExampleGen Component
+/tfx_addons/copy_example_gen @alxndrnh
