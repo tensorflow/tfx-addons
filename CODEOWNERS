@@ -60,3 +60,6 @@
 
 # PandasTransform Component
 /tfx_addons/pandas_transform @rcrowe-google
+
+# Apache Airflow Orchestrator
+/tfx_addons/apache_airflow @lego0901
