@@ -219,7 +219,6 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       label_key = exec_properties['vocab_label_file']
       labels = _get_labels(tft_output, label_key)
       logging.info(f'Found the following labels from TFT vocab: {labels}.')
-      _ = features.pop(label_key, None)
     else:
       labels = None
       logging.info('No TFTransform output given; no labels parsed.')

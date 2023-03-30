@@ -243,13 +243,13 @@ def _create_annotation_fields(
 
 
 def feature_spec_to_bq_schema(feature_spec: FeatureSpec,
-                              required: bool = True,
+                              required: bool = False,
                               **kwargs: int) -> BigQuerySchema:
   """Converts a TensorFlow feature spec into a BigQuery schema.
 
   Args:
     feature_spec: TensorFlow feature spec.
-    required: If True, mark BigQuery fields as required.
+    required: If True, mark BigQuery fields as required (i.e. not nullable).
     **kwargs: Additional keyword-arguments to pass to
       `_create_annotation_fields`.
 
