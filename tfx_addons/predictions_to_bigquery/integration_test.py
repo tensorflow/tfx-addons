@@ -61,6 +61,7 @@ import os
 import pathlib
 import shutil
 import subprocess
+import tempfile
 from typing import List
 
 import tensorflow as tf
@@ -74,7 +75,6 @@ from tfx import v1 as tfx
 from tfx.dsl.component.experimental import container_component, placeholders
 from tfx.dsl.components.base import base_node
 from tfx.proto import example_gen_pb2
-from tfx.types import artifact_utils
 from tfx.types.standard_artifacts import Model, String, TransformGraph
 
 from tfx_addons.predictions_to_bigquery import component, executor
@@ -106,9 +106,6 @@ class ExecutorBigQueryTest(absltest.TestCase):
 
   This test generates a BigQuery table with an expiration date of 1 day.
   """
-  def _get_full_bq_table_name(self, generated_bq_table_name):
-    return f'{self.gcp_project}.{self.bq_dataset}.{generated_bq_table_name}'
-
   def _assert_bq_table_exists(self, full_bq_table_name):
     full_bq_table_name = full_bq_table_name.replace(':', '.')
     try:
@@ -137,9 +134,6 @@ class ExecutorBigQueryTest(absltest.TestCase):
         'schema':
         (self.test_data_dir / 'Transform/transform_graph/5/metadata'),
     })
-    self.temp_file = self.create_tempfile()
-    self.output_dict = _make_artifact_mapping(
-        {'bigquery_export': pathlib.Path(self.temp_file.full_path)})
     self.gcp_project = _GOOGLE_CLOUD_PROJECT
     self.bq_dataset = 'executor_bigquery_test_dataset'
     self.bq_table_name = f'{self.gcp_project}:{self.bq_dataset}.predictions'
@@ -164,18 +158,18 @@ class ExecutorBigQueryTest(absltest.TestCase):
       self._expire_table(self.generated_bq_table_name)
 
   def test_Do(self):
-    self.executor.Do(self.input_dict, self.output_dict, self.exec_properties)
-    self.assertIsNotNone(self.output_dict['bigquery_export'])
-    bigquery_export = artifact_utils.get_single_instance(
-        self.output_dict['bigquery_export'])
-    self.generated_bq_table_name = (
-        bigquery_export.get_custom_property('generated_bq_table_name'))
-    # Expected table name format by BigQuery client: project.dataset.table_name
-    with open(self.temp_file.full_path, encoding='utf-8') as input_file:
-      self.generated_bq_table_name = input_file.read()
-    self.generated_bq_table_name = (str(self.generated_bq_table_name).replace(
-        ':', '.'))
-    self._assert_bq_table_exists(self.generated_bq_table_name)
+    with tempfile.NamedTemporaryFile() as output_file:
+      output_dict = _make_artifact_mapping(
+          {'bigquery_export': pathlib.Path(output_file.name)})
+
+      self.executor.Do(self.input_dict, output_dict, self.exec_properties)
+
+      with open(output_file.name, encoding='utf-8') as input_file:
+        self.generated_bq_table_name = input_file.read()
+
+      self.generated_bq_table_name = (str(
+          self.generated_bq_table_name).replace(':', '.'))
+      self._assert_bq_table_exists(self.generated_bq_table_name)
 
 
 def _gcs_path_exists(gcs_path: str) -> bool:
@@ -527,23 +521,23 @@ class ComponentIntegrationTest(parameterized.TestCase):
         vocab_label_file=vocab_label_file,
     )
 
-    output_file = self.create_tempfile()
-    pipeline_dir = self.create_tempdir()
-    metadata_path = self.create_tempfile()
-    metadata_connection_config = (
-        tfx.orchestration.metadata.sqlite_metadata_connection_config(
-            metadata_path.full_path))
+    with tempfile.TemporaryDirectory() as pipeline_dir, \
+          tempfile.NamedTemporaryFile() as output_file, \
+          tempfile.NamedTemporaryFile() as metadata_path:
+      metadata_connection_config = (
+          tfx.orchestration.metadata.sqlite_metadata_connection_config(
+              metadata_path.name))
 
-    pipeline = self._create_pipeline(
-        component_under_test,
-        upstream_components,
-        output_file.full_path,
-        pipeline_dir.full_path,
-        metadata_connection_config,
-    )
-    self._run_local_pipeline(pipeline)
+      pipeline = self._create_pipeline(
+          component_under_test,
+          upstream_components,
+          output_file.name,
+          pipeline_dir,
+          metadata_connection_config,
+      )
+      self._run_local_pipeline(pipeline)
 
-    self._check_output(output_file.full_path)
+      self._check_output(output_file.name)
 
   @absltest.skip('long-running test')
   def test_vertex_pipeline(self):
