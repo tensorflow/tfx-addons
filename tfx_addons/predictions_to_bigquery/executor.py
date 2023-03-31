@@ -111,10 +111,14 @@ def _tensor_to_native_python_value(
     values = tensor.values.numpy()
   else:
     values = tensor.numpy()
-  if not values:
+  if not np.any(values):
     return None
-  values = np.squeeze(values)  # Removes extra dimension, e.g. shape (n, 1).
-  values = values.item()  # Converts to native Python type
+  # Removes any extra dimension, e.g. shape (n, 1).
+  values = np.squeeze(values)
+  try:
+    values = values.item()  # Convert to single Python value
+  except ValueError:
+    values = list(values)
   if isinstance(values, list) and isinstance(values[0], bytes):
     return [v.decode('utf-8') for v in values]
   if isinstance(values, bytes):

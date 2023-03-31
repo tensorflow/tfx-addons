@@ -348,6 +348,21 @@ class ExecutorModuleTest(parameterized.TestCase):
       }
       self.assertEqual(expected, output)
 
+  def test_check_exec_properties_error_key_not_found(self):
+    exec_properties = {
+        'bq_table_name': None,
+        'filter_threshold': 0.1,
+        'gcs_temp_dir': 'dir',
+    }
+    with self.assertRaises(ValueError):
+      executor._check_exec_properties(exec_properties)
+
+  def test_tensor_to_native_python_value_bytes_list(self):
+    tensor = tf.constant([b'1', b'2', b'3'])
+    expected = ['1', '2', '3']
+    output = executor._tensor_to_native_python_value(tensor)
+    self.assertEqual(expected, output)
+
 
 if __name__ == '__main__':
   absltest.main()

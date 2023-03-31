@@ -85,10 +85,14 @@ class UtilsTest(parameterized.TestCase):
       _ = utils.get_feature_spec(None, tft_output, None)
       mock_raw_feature_spec.assert_called_once()
 
-    else:
+    elif has_prediction_log_path:
       prediction_log_path = 'path'
       _ = utils.get_feature_spec(None, None, prediction_log_path)
       mock_parse_features_from_prediction_results.assert_called_once()
+
+    else:
+      with self.assertRaises(ValueError):
+        _ = utils.get_feature_spec(None, None, None)
 
   @parameterized.named_parameters([
       ('no_label_field', False),
@@ -150,6 +154,26 @@ class UtilsTest(parameterized.TestCase):
                                              add_label_field=add_label_field)
 
     self.assertEqual(expected, output)
+
+  @parameterized.named_parameters([
+      ('none', None, None, None),
+      ('int', None, int, tf.int64),
+  ])
+  def test_get_feature_type(self, feature, type_, expected):
+    output = utils._get_feature_type(feature=feature, type_=type_)
+    self.assertEqual(expected, output)
+
+  @parameterized.named_parameters([
+      ('unsupported', None, None),
+      ('boolean', tf.bool, 'BOOLEAN'),
+  ])
+  def test_convert_tensorflow_dtype_to_bq_type(self, tf_dtype, expected):
+    if tf_dtype is not None:
+      output = utils._convert_tensorflow_dtype_to_bq_type(tf_dtype)
+      self.assertEqual(expected, output)
+    else:
+      with self.assertRaises(ValueError):
+        _ = utils._convert_tensorflow_dtype_to_bq_type(tf_dtype)
 
 
 if __name__ == '__main__':

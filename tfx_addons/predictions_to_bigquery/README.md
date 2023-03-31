@@ -88,6 +88,37 @@ Install the package using pip:
 pip install absl-py
 ```
 
+### Test coverage
+
+Test coverage can be generated using the `coverage package`:
+```bash
+pip install coverage
+```
+
+To get test code coverage on the component code, run the following from the
+top directory of the tfx-addons repository:
+
+```bash
+coverage run -m unittest discover -s tfx_addons/predictions_to_bigquery -p *_test.py
+```
+
+Generate a summary report in the terminal:
+```bash
+coverage report -m
+
+```
+Generate an HTML report that also details missed lines
+```bash
+coverage html -d /tmp/htmlcov
+```
+
+If working on a remote machine, the HTML coverage report can be viewed
+by launching a web server
+```bash
+pushd /tmp/htmlcov
+python -m http.server 8000  # or another unused port number
+```
+
 ## Acknowledgements
 
 This code was originally written by Hannes Hapke (Digits Financial Inc.)
