@@ -55,7 +55,11 @@ class PredictionsToBigQueryComponentSpec(types.ComponentSpec):
   }
 
 
-class PredictionsToBigQueryComponent(base_component.BaseComponent):
+class PredictionsToBigQuery(base_component.BaseComponent):
+  """Predictions to BigQuery TFX component.
+
+  Exports BulkInferrer inference_results data to a BigQuery table.
+  """
 
   SPEC_CLASS = PredictionsToBigQueryComponentSpec
   EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(executor.Executor)
@@ -80,13 +84,13 @@ class PredictionsToBigQueryComponent(base_component.BaseComponent):
       inference_results: Inference results channel.
       bq_table_name: BigQuery table name in either PROJECT:DATASET.TABLE.
         or DATASET.TABLE formats.
-      bigquery_export: Outputs channel containing generated BigQuery table name.
+      bigquery_export: Outputs BigQuery table name containing results.
         The outputted name may contain a timestamp suffix defined by
         `table_suffix`.
-      transform_graph: TFTransform graph channel.
+      transform_graph: TFTransform output.
         If specified, and `schema` is not specified, the prediction
         input schema shall be derived from this channel.
-      schema: Schema channel.
+      schema: SchemaGen output.
         If specified, the prediction input schema shall be derived from this
         channel.
       expiration_days: BigQuery table expiration in number of days from
@@ -97,13 +101,12 @@ class PredictionsToBigQueryComponent(base_component.BaseComponent):
         See: https://cloud.google.com/bigquery/docs/partitioned-tables
       table_time_suffix: Time format for table suffix in Linux strftime format.
         Example: '%Y%m%d
-      vocab_label_file: Name of the TF transform vocabulary file for the label.
+      vocab_label_file: Name of the TF Transform vocabulary file for mapping
+        string labels into integer IDs. If specified, this would be used to
+        get back string labels from predicted label IDs.
     """
     bigquery_export = bigquery_export or types.Channel(
         type=standard_artifacts.String)
-    # schema = schema or types.Channel(type=standard_artifacts.Schema)
-    # transform_graph = (transform_graph or
-    #                    types.Channel(type=standard_artifacts.TransformGraph))
 
     spec = PredictionsToBigQueryComponentSpec(
         inference_results=inference_results,

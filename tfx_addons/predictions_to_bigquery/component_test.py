@@ -33,11 +33,12 @@ class ComponentTest(unittest.TestCase):
     self._schema = channel_utils.as_channel([standard_artifacts.Schema()])
 
   def testInit(self):
-    component_instance = component.PredictionsToBigQueryComponent(
+    component_instance = component.PredictionsToBigQuery(
         transform_graph=self._transform_graph,
         inference_results=self._inference_results,
         schema=self._schema,
         bq_table_name='gcp_project:bq_database.table',
+        gcs_temp_dir='gs://bucket/temp-dir',
         vocab_label_file='vocab_txt',
         filter_threshold=0.1,
         table_partitioning=False,
@@ -53,6 +54,7 @@ class ComponentTest(unittest.TestCase):
     self.assertCountEqual(
         {
             'bq_table_name',
+            'gcs_temp_dir',
             'table_expiration_days',
             'filter_threshold',
             'table_partitioning',

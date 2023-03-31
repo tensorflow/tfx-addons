@@ -12,15 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Integration test for the predictions-to-bigquery component.
+"""Integration test for PredictionsToBigQuery component.
 
 Prerequisites:
-- 'GOOGLE_CLOUD_PROJECT' environmental variable must be set containing
-  the GCP project ID to be used for testing.
-- 'GCS_TEMP_DIR' environmental variable must be set containing the
-  Cloud Storage URI to use for handling temporary files as part of the
-  BigQuery export process. e.g. `gs://path/to/temp/dir`.
-- BigQuery API must be enabled on the Cloud project.
+
+The following environmental variables should be defined.
+
+  GOOGLE_CLOUD_PROJECT: environmental variable must be set containing
+    the GCP project ID to be used for testing.
+
+  GCS_TEMP_DIR: Cloud Storage URI to use for handling temporary files as part
+    of the BigQuery export process. e.g. `gs://path/to/temp/dir`.
+
+  GCP_SERVICE_ACCOUNT_EMAIL: Service account address to use for Vertex AI
+    pipeline runs. The service account should be have access to Cloud
+    Storage and Vertex AI. Local test runs may still work without this variable.
+
+  GCP_COMPONENT_IMAGE: Docker image repository name that would be used for
+    Vertex AI Pipelines integration testing. The Dockerfile associated with
+    this component will create a custom TFX image with the component that
+    should be uploaded to Artifact Registry.
+    A new Docker image should be uploaded whenever there are any changes
+    to the non-test module files of this component.
+
+
+The following Google Cloud APIs should be enabled
+
+  BigQuery API: For generating the BigQuery table output of this component.
+
+  Vertex AI API: For running TFX pipeline jobs in Vertex.
+
+  Artifact Registry API: For storing the Docker image to be used in order
+    to run a TFX pipeline with this component in Vertex AI.
+
+Vertex AI test:
+
+The `ComponentIntegrationTest` test class has a test to run the component
+in Vertex AI Pipelines. The test is skipped by default, since it can take
+several minutes to complete. You can comment out the skip decorator
+(i.e. `@absltest.skip(...)`) and add similar decorators to other tests that
+you don't want to run.
 """
 
 import datetime
@@ -71,7 +102,10 @@ def _make_artifact_mapping(
 
 
 class ExecutorBigQueryTest(absltest.TestCase):
-  """Tests executor pipeline exporting predicitons to a BigQuery table."""
+  """Tests executor pipeline exporting predictions to a BigQuery table.
+
+  This test generates a BigQuery table with an expiration date of 1 day.
+  """
   def _get_full_bq_table_name(self, generated_bq_table_name):
     return f'{self.gcp_project}.{self.bq_dataset}.{generated_bq_table_name}'
 
@@ -103,9 +137,9 @@ class ExecutorBigQueryTest(absltest.TestCase):
         'schema':
         (self.test_data_dir / 'Transform/transform_graph/5/metadata'),
     })
-    self.temp_dir = self.create_tempdir()
+    self.temp_file = self.create_tempfile()
     self.output_dict = _make_artifact_mapping(
-        {'bigquery_export': pathlib.Path(self.temp_dir.full_path)})
+        {'bigquery_export': pathlib.Path(self.temp_file.full_path)})
     self.gcp_project = _GOOGLE_CLOUD_PROJECT
     self.bq_dataset = 'executor_bigquery_test_dataset'
     self.bq_table_name = f'{self.gcp_project}:{self.bq_dataset}.predictions'
@@ -129,7 +163,6 @@ class ExecutorBigQueryTest(absltest.TestCase):
     if self.generated_bq_table_name:
       self._expire_table(self.generated_bq_table_name)
 
-  @absltest.skip
   def test_Do(self):
     self.executor.Do(self.input_dict, self.output_dict, self.exec_properties)
     self.assertIsNotNone(self.output_dict['bigquery_export'])
@@ -138,6 +171,8 @@ class ExecutorBigQueryTest(absltest.TestCase):
     self.generated_bq_table_name = (
         bigquery_export.get_custom_property('generated_bq_table_name'))
     # Expected table name format by BigQuery client: project.dataset.table_name
+    with open(self.temp_file.full_path, encoding='utf-8') as input_file:
+      self.generated_bq_table_name = input_file.read()
     self.generated_bq_table_name = (str(self.generated_bq_table_name).replace(
         ':', '.'))
     self._assert_bq_table_exists(self.generated_bq_table_name)
@@ -303,7 +338,10 @@ def _get_output_component(output_channel, output_file):
 
 
 class ComponentIntegrationTest(parameterized.TestCase):
-  """Tests component integration with other TFX components/services."""
+  """Tests component integration with other TFX components/services.
+
+  This test generates a BigQuery table with an expiration date of 1 day.
+  """
   def setUp(self):
     super().setUp()
     # Pipeline config
@@ -445,7 +483,6 @@ class ComponentIntegrationTest(parameterized.TestCase):
     self.generated_bq_table_name = output['generated_bq_table_name']
     self.assertStartsWith(self.generated_bq_table_name, self.bq_table_name)
 
-  @absltest.skip('debugging')
   @parameterized.named_parameters([
       (
           'inference_results_only',
@@ -480,7 +517,7 @@ class ComponentIntegrationTest(parameterized.TestCase):
       transform_graph = None
       vocab_label_file = None
 
-    component_under_test = component.PredictionsToBigQueryComponent(
+    component_under_test = component.PredictionsToBigQuery(
         inference_results=(
             upstream['bulk_inferrer'].outputs['inference_result']),
         transform_graph=transform_graph,
@@ -525,7 +562,7 @@ class ComponentIntegrationTest(parameterized.TestCase):
     transform_graph = upstream['transform'].outputs['transform_graph']
     vocab_label_file = 'Species'
 
-    component_under_test = component.PredictionsToBigQueryComponent(
+    component_under_test = component.PredictionsToBigQuery(
         inference_results=(
             upstream['bulk_inferrer'].outputs['inference_result']),
         transform_graph=transform_graph,
