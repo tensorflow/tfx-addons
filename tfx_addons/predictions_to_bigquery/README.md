@@ -119,7 +119,9 @@ pushd /tmp/htmlcov
 python -m http.server 8000  # or another unused port number
 ```
 
-## Acknowledgements
-
-This code was originally written by Hannes Hapke (Digits Financial Inc.)
-on Feb. 6, 2023.
+## Project team
+- Hannes Hapke (@hanneshapke, Digits Financial Inc.)
+- Carlos Ezequiel (@cfezequiel, Google)
+- Michael Sherman (@michaelwsherman, Google)
+- Robert Crowe (@rcrowe-google, Google)
+- Gerard Casas Saez (@casassg, Cash App)
