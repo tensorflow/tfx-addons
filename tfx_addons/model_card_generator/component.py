@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Model Card TFX Component.
 
 The ModelCardGenerator is used to generate model cards in a TFX pipeline.
@@ -34,29 +33,27 @@ class ModelCardGeneratorSpec(component_spec.ComponentSpec):
   """Component spec for the ModelCardGenerator."""
   PARAMETERS = {
       'json':
-          component_spec.ExecutionParameter(type=str, optional=True),
+      component_spec.ExecutionParameter(type=str, optional=True),
       # template_io's type is List[Tuple[str, str]],
       # but we need List[Any] to pass ExecutionParameter.type_check().
       # See below link for details.
       # https://github.com/tensorflow/tfx/blob/4ff5e97b09540ff8a858076a163ecdf209716324/tfx/types/component_spec.py#L308
       'template_io':
-          component_spec.ExecutionParameter(
-              type=List[Any], optional=True)
+      component_spec.ExecutionParameter(type=List[Any], optional=True)
   }
   INPUTS = {
       standard_component_specs.STATISTICS_KEY:
-          component_spec.ChannelParameter(
-              type=standard_artifacts.ExampleStatistics, optional=True),
+      component_spec.ChannelParameter(
+          type=standard_artifacts.ExampleStatistics, optional=True),
       standard_component_specs.EVALUATION_KEY:
-          component_spec.ChannelParameter(
-              type=standard_artifacts.ModelEvaluation, optional=True),
+      component_spec.ChannelParameter(type=standard_artifacts.ModelEvaluation,
+                                      optional=True),
       standard_component_specs.PUSHED_MODEL_KEY:
-          component_spec.ChannelParameter(
-              type=standard_artifacts.PushedModel, optional=True),
+      component_spec.ChannelParameter(type=standard_artifacts.PushedModel,
+                                      optional=True),
   }
   OUTPUTS = {
-      MODEL_CARD_KEY:
-          component_spec.ChannelParameter(type=artifact.ModelCard),
+      MODEL_CARD_KEY: component_spec.ChannelParameter(type=artifact.ModelCard),
   }
 
 
@@ -101,8 +98,7 @@ class ModelCardGenerator(BaseComponent):
                statistics: Optional[types.Channel] = None,
                pushed_model: Optional[types.Channel] = None,
                json: Optional[str] = None,
-               template_io: Optional[List[Tuple[str, str]]] = None
-              ):
+               template_io: Optional[List[Tuple[str, str]]] = None):
     """Generate a model card for a TFX pipeline.
 
     This executes a Model Card Toolkit workflow, producing a `ModelCard`

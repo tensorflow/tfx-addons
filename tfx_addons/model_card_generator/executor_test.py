@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Tests for model_card_toolkit.tfx.executor."""
 
 import os
@@ -70,24 +69,21 @@ class ExecutorTest(parameterized.TestCase, TfxTest):
         store=mlmd_store)
 
   @parameterized.named_parameters(
-      dict(
-          testcase_name='fullInput',
-          eval_artifacts=True,
-          example_stats_artifacts=True,
-          pushed_model_artifact=True,
-          exec_props=True),
-      dict(
-          testcase_name='emptyInput',
-          eval_artifacts=False,
-          example_stats_artifacts=False,
-          pushed_model_artifact=False,
-          exec_props=False),
-      dict(
-          testcase_name='partialInput',
-          eval_artifacts=False,
-          example_stats_artifacts=True,
-          pushed_model_artifact=False,
-          exec_props=True))
+      dict(testcase_name='fullInput',
+           eval_artifacts=True,
+           example_stats_artifacts=True,
+           pushed_model_artifact=True,
+           exec_props=True),
+      dict(testcase_name='emptyInput',
+           eval_artifacts=False,
+           example_stats_artifacts=False,
+           pushed_model_artifact=False,
+           exec_props=False),
+      dict(testcase_name='partialInput',
+           eval_artifacts=False,
+           example_stats_artifacts=True,
+           pushed_model_artifact=False,
+           exec_props=True))
   def test_do(self, eval_artifacts: bool, example_stats_artifacts: bool,
               pushed_model_artifact: bool, exec_props: bool):
 
@@ -95,8 +91,8 @@ class ExecutorTest(parameterized.TestCase, TfxTest):
     if eval_artifacts:
       input_dict[standard_component_specs.EVALUATION_KEY] = self.eval_artifacts
     if example_stats_artifacts:
-      input_dict[standard_component_specs
-                 .STATISTICS_KEY] = self.example_stats_artifacts
+      input_dict[standard_component_specs.
+                 STATISTICS_KEY] = self.example_stats_artifacts
     if pushed_model_artifact:
       input_dict[standard_component_specs.PUSHED_MODEL_KEY] = [
           self.pushed_model_artifact
@@ -106,15 +102,18 @@ class ExecutorTest(parameterized.TestCase, TfxTest):
 
     exec_properties = {}
     if exec_props:
-      exec_properties['json'] = {'model_details': {'name': 'json_test',}}
+      exec_properties['json'] = {
+          'model_details': {
+              'name': 'json_test',
+          }
+      }
       exec_properties['template_io'] = [(self.template_file.full_path,
                                          'my_cool_model_card.html')]
 
     # Call MCT Executor
-    self.mct_executor.Do(
-        input_dict=input_dict,
-        output_dict=output_dict,
-        exec_properties=exec_properties)
+    self.mct_executor.Do(input_dict=input_dict,
+                         output_dict=output_dict,
+                         exec_properties=exec_properties)
 
     # Verify model card proto and document were generated
     self.assertIn(
@@ -132,15 +131,15 @@ class ExecutorTest(parameterized.TestCase, TfxTest):
       model_card_proto.ParseFromString(f.read())
 
     with self.subTest(name='exec_props'):
-      model_card_dir = os.path.join(self.model_card_artifact.uri, 'model_cards')
+      model_card_dir = os.path.join(self.model_card_artifact.uri,
+                                    'model_cards')
       if exec_props:
         self.assertEqual(model_card_proto.model_details.name, 'json_test')
         model_card_file_name = 'my_cool_model_card.html'
       else:
         model_card_file_name = 'model_card.html'
       self.assertIn(model_card_file_name, os.listdir(model_card_dir))
-      model_card_filepath = os.path.join(model_card_dir,
-                                         model_card_file_name)
+      model_card_filepath = os.path.join(model_card_dir, model_card_file_name)
       with open(model_card_filepath) as f:
         model_card_content = f.read()
       if exec_props:
@@ -174,13 +173,14 @@ class ExecutorTest(parameterized.TestCase, TfxTest):
                 graphic.image,
                 msg=f'No image found for graphic: {dataset.name} {graphic.name}'
             )
-            graphic.image = bytes()  # ignore graphic.image for below assertions
+            graphic.image = bytes(
+            )  # ignore graphic.image for below assertions
         self.assertIn(
             model_card_pb2.Dataset(
                 name=self.train_dataset_name,
                 graphics=model_card_pb2.GraphicsCollection(collection=[
-                    model_card_pb2.Graphic(
-                        name='counts | feature_name1', image='')
+                    model_card_pb2.Graphic(name='counts | feature_name1',
+                                           image='')
                 ]),
                 sensitive=model_card_pb2.SensitiveData()),
             model_card_proto.model_parameters.data)
@@ -188,8 +188,8 @@ class ExecutorTest(parameterized.TestCase, TfxTest):
             model_card_pb2.Dataset(
                 name=self.eval_dataset_name,
                 graphics=model_card_pb2.GraphicsCollection(collection=[
-                    model_card_pb2.Graphic(
-                        name='counts | feature_name2', image='')
+                    model_card_pb2.Graphic(name='counts | feature_name2',
+                                           image='')
                 ]),
                 sensitive=model_card_pb2.SensitiveData()),
             model_card_proto.model_parameters.data)

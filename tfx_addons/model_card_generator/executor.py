@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Model Card TFX Component Executor.
 
 The ModelCard Executor handles the ModelCardToolkit workflow in the
@@ -23,11 +22,9 @@ from typing import Any, Dict, List, Optional
 
 from model_card_toolkit import core
 from model_card_toolkit.utils import source as src
-
 from tfx import types
 from tfx.dsl.components.base.base_executor import BaseExecutor
-from tfx.types import artifact_utils
-from tfx.types import standard_component_specs
+from tfx.types import artifact_utils, standard_component_specs
 
 _DEFAULT_MODEL_CARD_FILE_NAME = 'model_card.html'
 
@@ -36,8 +33,8 @@ class Executor(BaseExecutor):
   """Executor for Model Card TFX component."""
 
   def _tfma_source(
-      self, input_dict: Dict[str,
-                             List[types.Artifact]]) -> Optional[src.TfmaSource]:
+      self,
+      input_dict: Dict[str, List[types.Artifact]]) -> Optional[src.TfmaSource]:
     """See base class."""
     if not input_dict.get(standard_component_specs.EVALUATION_KEY):
       return None
@@ -46,8 +43,8 @@ class Executor(BaseExecutor):
           standard_component_specs.EVALUATION_KEY])
 
   def _tfdv_source(
-      self, input_dict: Dict[str,
-                             List[types.Artifact]]) -> Optional[src.TfdvSource]:
+      self,
+      input_dict: Dict[str, List[types.Artifact]]) -> Optional[src.TfdvSource]:
     """See base class."""
     if not input_dict.get(standard_component_specs.STATISTICS_KEY):
       return None
@@ -57,7 +54,8 @@ class Executor(BaseExecutor):
 
   def _model_source(
       self,
-      input_dict: Dict[str, List[types.Artifact]]) -> Optional[src.ModelSource]:
+      input_dict: Dict[str,
+                       List[types.Artifact]]) -> Optional[src.ModelSource]:
     """See base class."""
     if not input_dict.get(standard_component_specs.PUSHED_MODEL_KEY):
       return None
@@ -106,13 +104,12 @@ class Executor(BaseExecutor):
     """
 
     # Initialize ModelCardToolkit
-    mct = core.ModelCardToolkit(
-        source=src.Source(
-            tfma=self._tfma_source(input_dict),
-            tfdv=self._tfdv_source(input_dict),
-            model=self._model_source(input_dict)),
-        output_dir=artifact_utils.get_single_instance(
-            output_dict['model_card']).uri)
+    mct = core.ModelCardToolkit(source=src.Source(
+        tfma=self._tfma_source(input_dict),
+        tfdv=self._tfdv_source(input_dict),
+        model=self._model_source(input_dict)),
+                                output_dir=artifact_utils.get_single_instance(
+                                    output_dict['model_card']).uri)
     template_io = exec_properties.get('template_io') or [
         (mct.default_template, _DEFAULT_MODEL_CARD_FILE_NAME)
     ]
@@ -120,5 +117,4 @@ class Executor(BaseExecutor):
     # Create model card assets from inputs
     mct.scaffold_assets(json=exec_properties.get('json'))
     for template_path, output_file in template_io:
-      mct.export_format(
-          template_path=template_path, output_file=output_file)
+      mct.export_format(template_path=template_path, output_file=output_file)

@@ -12,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Tests for model_card_toolkit.tfx.component."""
 
 import json as json_lib
 
 from absl.testing import absltest
-
+from tfx.types import channel_utils, standard_artifacts
 from tfx_addons.model_card_generator import artifact
 from tfx_addons.model_card_generator.component import ModelCardGenerator
-
-from tfx.types import channel_utils
-from tfx.types import standard_artifacts
 
 
 class ComponentTest(absltest.TestCase):
@@ -53,7 +49,8 @@ class ComponentTest(absltest.TestCase):
     with self.subTest('exec_properties'):
       self.assertDictEqual(
           {
-              'json': json_lib.dumps({
+              'json':
+              json_lib.dumps({
                   'model_details': {
                       'name': 'my model',
                       'version': {
