@@ -1,10 +1,10 @@
 # Current Version (Still in Development)
 
-### Last Update: 15 September 2021
+### Last Update: 3 April 2023
 
 ## Major Features and Improvements
 
-*   None at this time
+*   Model Card Generator for TFX pipelines using the `model-card-toolkit`
 
 ## Breaking Changes
 
