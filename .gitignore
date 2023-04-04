@@ -40,3 +40,8 @@ env/*
 #Editor
 .idea/*
 .vscode/*
+
+# unnecessary project files
+examples/model_card_generator/census_income_constants.py
+examples/model_card_generator/census_income_trainer.py
+examples/model_card_generator/census_income_transform.py
