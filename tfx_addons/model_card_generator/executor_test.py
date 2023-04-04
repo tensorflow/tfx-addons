@@ -21,12 +21,12 @@ from absl.testing import absltest, parameterized
 from model_card_toolkit.proto import model_card_pb2
 from model_card_toolkit.utils.testdata.tfxtest import TfxTest
 from tfx.types import standard_artifacts, standard_component_specs
+
 from tfx_addons.model_card_generator import artifact as artifact_utils
 from tfx_addons.model_card_generator import executor
 
 
 class ExecutorTest(parameterized.TestCase, TfxTest):
-
   def setUp(self):
     super(ExecutorTest, self).setUp()
     self.mct_executor = executor.Executor()

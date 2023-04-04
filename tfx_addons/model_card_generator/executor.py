@@ -31,7 +31,6 @@ _DEFAULT_MODEL_CARD_FILE_NAME = 'model_card.html'
 
 class Executor(BaseExecutor):
   """Executor for Model Card TFX component."""
-
   def _tfma_source(
       self,
       input_dict: Dict[str, List[types.Artifact]]) -> Optional[src.TfmaSource]:

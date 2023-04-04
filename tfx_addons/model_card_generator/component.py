@@ -24,6 +24,7 @@ from tfx.dsl.components.base import executor_spec
 from tfx.dsl.components.base.base_component import BaseComponent
 from tfx.types import (component_spec, standard_artifacts,
                        standard_component_specs)
+
 from tfx_addons.model_card_generator import artifact, executor
 
 MODEL_CARD_KEY = 'model_card'

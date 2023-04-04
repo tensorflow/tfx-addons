@@ -18,12 +18,12 @@ import json as json_lib
 
 from absl.testing import absltest
 from tfx.types import channel_utils, standard_artifacts
+
 from tfx_addons.model_card_generator import artifact
 from tfx_addons.model_card_generator.component import ModelCardGenerator
 
 
 class ComponentTest(absltest.TestCase):
-
   def test_component_construction(self):
     this_component = ModelCardGenerator(
         statistics=channel_utils.as_channel(
