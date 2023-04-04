@@ -1,4 +1,4 @@
-# Current Version (Still in Development)
+# Current Version 
 
 ### Last Update: 3 April 2023
 
