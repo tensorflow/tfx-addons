@@ -35,4 +35,4 @@ Component `outputs` contains:
     materialized sampled examples, based on the input splits, which includes
     copied splits unless otherwise specified by copy_others.
 
-[Initial Proposal](../proposals/20210721-sampling_component.md)
+[Initial Proposal](https://github.com/tensorflow/tfx-addons/blob/main/proposals/20210721-sampling_component.md)
