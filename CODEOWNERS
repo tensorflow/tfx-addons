@@ -37,7 +37,7 @@
 /tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse 
+/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse
 /examples/fraud_feast @BACtaki @casassg @wihanbooyse
 
 # Feature Selection Component
@@ -55,3 +55,7 @@
 
 # PandasTransform Component
 /tfx_addons/pandas_transform @rcrowe-google
+
+# PandasTransform Component
+/tfx_addons/model_card_generator @codesue @hanneshapke
+/eamples/model_card_generator @codesue @hanneshapke
