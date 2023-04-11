@@ -1,0 +1,4 @@
+# unnecessary project files
+census_income_constants.py
+census_income_trainer.py
+census_income_transform.py
