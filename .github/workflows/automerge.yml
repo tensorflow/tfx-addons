@@ -9,8 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Run Codeowners merge check
-        uses: hanneshapke/auto-merge-bot@update-node-version
-        # uses: casassg/auto-merge-bot@v0.3
+        uses: casassg/auto-merge-bot@v0.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
