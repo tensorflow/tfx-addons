@@ -63,7 +63,7 @@
 
 # PandasTransform Component
 /tfx_addons/model_card_generator @codesue @hanneshapke
-/eamples/model_card_generator @codesue @hanneshapke
+/examples/model_card_generator @codesue @hanneshapke
 
 # Apache Airflow Orchestrator
 /tfx_addons/apache_airflow @lego0901
