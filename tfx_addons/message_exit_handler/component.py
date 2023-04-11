@@ -19,7 +19,6 @@ import json
 from absl import logging
 from kfp.pipeline_spec import pipeline_spec_pb2
 from tfx import v1 as tfx
-from tfx.orchestration.kubeflow.v2.decorators import exit_handler
 from tfx.utils import proto_utils
 
 from tfx_addons.message_exit_handler import constants
@@ -31,7 +30,7 @@ from tfx_addons.message_exit_handler.message_providers.slack_provider import \
     SlackMessageProvider
 
 
-@exit_handler
+@tfx.orchestration.experimental.exit_handler
 def MessageExitHandler(
     final_status: tfx.dsl.components.Parameter[str],
     on_failure_only: tfx.dsl.components.Parameter[bool] = False,

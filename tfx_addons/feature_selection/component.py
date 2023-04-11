@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,20 +93,46 @@ def _get_file_list(dir_path):
 
 @component
 def FeatureSelection(  # pylint: disable=C0103
-    module_file: Parameter[str], orig_examples: InputArtifact[Examples],
+    orig_examples: InputArtifact[Examples],
     feature_selection: OutputArtifact[FeatureSelectionArtifact],
-    updated_data: OutputArtifact[Examples]):
-  """Feature Selection component
-    Args (from the module file):
+    updated_data: OutputArtifact[Examples],
+    module_file: Parameter[str] = None,
+    module_path: Parameter[str] = None,
+):
+  """Runs a user-specified feature selection algorithm on an `Examples` artifact
+    Args:
+      - orig_examples: An `Examples` input artifact with the data to be
+        processed
+      - module_file: Python module file containing the configuration
+        Example: `modules_files.module_file_a`
+        Exactly one of `module_file` and `module_path` should be passed.
+        If both are used, module_file would be preferred
+      - module_path: Python module path containing the configuration
+        Example: `absolute_path/module_files/module_file_a.py` or
+        `./module_files/module_file_a.py`
+        Exactly one of `module_file` and `module_path` should be passed.
+        If both are used, module_file would be preferred
+
+    Module file configuration:
     - SELECTOR_PARAMS: Parameters for SelectorFunc in the form of
       a kwargs dictionary
+      Example: {"score_func": chi2, "k": 2}
+      Here, `chi2` has been imported from sklearn.feature_selection
     - TARGET_FEATURE: Name of the feature containing target data
     - SelectorFunc: Selector function for univariate feature selection
-      example: SelectKBest, SelectPercentile from sklearn.feature_selection
+      Example: SelectKBest, SelectPercentile from sklearn.feature_selection
   """
 
   # importing the required functions and variables from the module file
-  modules = importlib.import_module(module_file)
+
+  if module_file:
+    modules = importlib.import_module(module_file)
+  elif module_path:
+    module_spec = importlib.util.spec_from_file_location(
+        "all_modules", module_path)
+    modules = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(modules)
+
   mod_names = ["SELECTOR_PARAMS", "TARGET_FEATURE", "SelectorFunc"]
   selector_params, target_feature, selector_func = [
       getattr(modules, i) for i in mod_names

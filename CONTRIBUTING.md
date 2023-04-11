@@ -18,7 +18,62 @@ Follow either of the two links above to access the appropriate CLA and instructi
 
 ***NOTE***: Only original source code from you and other people that have signed the CLA can be accepted into the main repository.
 
-### Contributing code
+### SIG Membership
+
+We encourage any developers working in production ML environments, infrastructure, or applications to [join and participate in the activities of the SIG](http://goo.gle/tfx-addons-group). Whether you are working on advancing the platform, prototyping or building specific applications, or authoring new components, templates, libraries, and/or orchestrator support, we welcome your feedback on and contributions to TFX and its tooling, and are eager to hear about any downstream results, implementations, and extensions.
+
+### Project Maintainership 
+
+TFX Addons has been designed to compartmentalize submodules so 
+that they can be maintained by community users who have expertise, and a vested 
+interest in that component. We heavily encourage users to submit sign up to maintain a 
+submodule by submitting your username to the [CODEOWNERS](CODEOWNERS) file.
+
+Full write access will only be granted after substantial contribution 
+has been made in order to limit the number of users with write permission. 
+Contributions can come in the form of issue closings, bug fixes, documentation, 
+new code, or optimizing existing code. Submodule maintainership can be granted 
+with a lower barrier for entry as this will not include write permissions to 
+the repo.
+
+
+### Project proposals
+
+If you have a new project, you can contribute it to TFX Addons! Before doing so, make sure to submit a project proposal to 
+the repository under [proposals/](proposals/). Use [proposals/yyyymmdd-project_template.md](proposals/yyyymmdd-project_template.md) as a template to get started.
+
+1. Project proposals will be submitted to the SIG and published for open review and comment by SIG members for 2 weeks.
+2. Following review and approval by the Google TFX team, core team members will vote either in person or offline on whether to approve or reject project proposals.
+3. All projects must meet the following criteria:
+   - Team members must be named in the proposal
+   - All team members must have completed a [Contributor License Agreement](https://cla.developers.google.com/)
+   - The project must not violate the [TensorFlow Code of Conduct](https://github.com/tensorflow/tensorflow/blob/master/CODE_OF_CONDUCT.md), [Google AI Principles](https://ai.google/principles/) or [Responsible AI Practices](https://ai.google/responsibilities/responsible-ai-practices/).
+4. Projects must code to supported open interfaces only, and not reach into core TFX to make changes or rely on private classes, methods, properties, or interfaces.
+5. **Google retains the right to reject any proposal.**
+6. Projects must first be approved by the Google team.  Projects are then sent for approval to the core community team.  Projects will be approved with a minimum of three `+1` votes, but can be sent for changes and re-review with a single `-1` vote.
+
+
+
+### Periodic Evaluation of Components and Examples
+
+Components may become less and less useful to the community and TFX examples might become outdated as future TFX versions are released. In order to keep the repository sustainable, we'll be performing bi-annual reviews of our code to ensure everything still belongs within the repo. Contributing factors to this review will be:
+
+1. Number of active maintainers
+2. Amount of issues or bugs attributed to the code
+3. If a better solution is now available
+
+Functionality within TFX Addons can be categorized into three groups:
+
+* **Suggested**: well-maintained components and examples; use is encouraged.
+* **Discouraged**: a better alternative is available; the API is kept for historic reasons; or the components and examples require maintenance and is the waiting period to be deprecated.
+* **Deprecated**: use at your own risk; subject to be deleted.
+
+The status change between these three groups is: Suggested <-> Discouraged -> Deprecated.
+
+The period between an API being marked as deprecated and being deleted will be 90 days. The rationale being:
+In the event that TFX Addons releases monthly, there will be 2-3 releases before an API is deleted. The release notes could give user enough warning. 90 days gives maintainers ample time to fix their code.
+
+## Contributing code
 
 If you have improvements to TFX Addons, send us your pull requests! For those
 just getting started, Github has a [howto](https://help.github.com/articles/using-pull-requests/).
@@ -39,6 +94,23 @@ SIG team members will be assigned to review your pull requests. Once the pull re
     if the initial contributors agree.
   * In case, the initial contributors have abandoned the project or can't be reached, the TFX Addons core team can decide about the ownership reassignment.
   * Requesting project code ownership requires a substantial contribution (e.g. update of a component to a newer TFX version).
+
+### Specifying project dependencies
+
+Each project specifies it's own Python dependencies depending on what folder it lives under:
+
+* **Projects in `examples/`**: Those need to provide a `requirements.txt` in the root of their folder. Example: `examples/xgboost_penguins/requirements.txt`. You can depend on a `tfx_addons` project by using `../..[project_name]` in your `requirements.txt` file.
+* **Projects in `tfx_addons/`**: In order for project to be included in release and be tested, you will need to specify dependencies in [tfx_addons/version.py](https://github.com/tensorflow/tfx-addons/blob/main/tfx_addons/version.py) `_PKG_METADATA` where key is the project name (aka tfx_addons/{project_name}) and value is a list of requirements strings needed for your component. Once added, this will automatically be picked up by CI and will automatically include your project into the tfx-addons release. In addition, your project will be added to the `tfx_addons.{project_name}` namespace, such that it can be used:
+
+```python
+
+import tfx_addons as tfxa
+
+tfxa.project_name
+```
+
+Note that CI runs on `pytest`, see _Testing your code_ below to check how to create tests for your code.
+
 ### Development tips
 
 We use [pre-commit](https://pre-commit.com/) to validate our code before we push to the repository. We use push over commit to allow more flexibility.
@@ -48,7 +120,7 @@ Here's how to install it locally:
 - Activate virtual environment: `source env/bin/activate`
 - Upgrade pip: `pip install --upgrade pip`
 - Install test packages: `pip install -e ".[test]"`
-- Install pre-commit hooks for push hooks: `pre-commit install pre-push`
+- Install pre-commit hooks for push hooks: `pre-commit install --hook-type pre-push`
 - Change and commit files. pre-commit will run the tests and linting before you push. You can also manually trigger the tests and linting with `pre-commit run --hook-stage push --all-files`
 
 Note that pre-commit will be run via GitHub Action automatically for new PRs.
@@ -88,17 +160,14 @@ Include a license at the top of new files.
 
 * [Python license example](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/nn.py#L1)
 
-Pre-commit will add the files for you if installed.
-
-```bash
-pre-commit run --hook-stage push --files tfx_addons/__init__.py
-```
-
 #### Testing your code
 
 We use pytest to run tests. You can run tests locally using:
 
 - Create virtual environemnt: `python3 -m venv env`
-- Activate virtual environment: `source env/bin/activate`
-- Install test packages: `pip install -e ".[all,test]"`
-- Run tests: `pytest`
+- Activate virtual environment: `source env/bin/activate && pip install --upgrade pip`
+- Choose component to develop: `export COMPONENT_NAME=mlmd_client` (replace with the component you will be developing)
+- Install test packages: `pip install -e ".[$COMPONENT_NAME,test]"`
+- Run tests: `python -m pytest tfx_addons/$COMPONENT_NAME`
+
+Note that only files that end with `_test.py` will be recognized as test. Learn more on writing pytest tests in [pytest docs](https://docs.pytest.org/en/latest/getting-started.html#create-your-first-test).

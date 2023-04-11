@@ -1,17 +1,23 @@
 # Global owners for SIG TFX-Addons
 * @rcrowe-google @theadactyl
 
-# Core team for reviews of project proposals and main distribution files
+# SIG operations: proposals and contributions guidelines
 /proposals/ @rcrowe-google
-/tfx_addons/__init__.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
-/setup.py  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
-/pyproject.toml  @casassg @hanneshapke @junbopark @marcromeyn @michalbrys @pselden @rclough
 
+# SIG core members
+/CONTRIBUTING.md @rcrowe-google @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/README.md @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
 
-# CI configuration (for now owned by @casassg)
-/.github/workflows/*.yml @casassg @vulkomilev
-/.github/ci  @casassg @vulkomilev
+# PyPi distribution files
+/tfx_addons/__init__.py @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/tfx_addons/version.py @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/setup.py @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
+/pyproject.toml @casassg @hanneshapke @codesue @deutranium @wihanbooyse @BACtaki
 
+# CI/CD configuration (Release team)
+/.github/workflows/ @casassg @hanneshapke
+/.github/ci  @casassg @hanneshapke
+/RELEASE.md @casassg @hanneshapke
 
 # Sci-Kit Learn Example using the Penguins dataset
 /examples/sklearn_penguins/ @TheMichaelHu @1025KB
@@ -33,7 +39,8 @@
 /tfx_addons/sampling @kindalime @cent5 @casassg
 
 # Feast ExampleGen Component
-/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse @neelanpather
+/tfx_addons/feast_examplegen @BACtaki @casassg @wihanbooyse
+/examples/fraud_feast @BACtaki @casassg @wihanbooyse
 
 # Feature Selection Component
 /tfx_addons/feature_selection @nirzu97 @pratishtha-abrol @FatimahAdwan @deutranium
@@ -41,5 +48,21 @@
 # Firebase Publisher
 /tfx_addons/firebase_publisher @deep-diver @sayakpaul
 
+# HuggingFace Pusher
+/tfx_addons/huggingface_pusher @deep-diver @sayakpaul
+
 # Message Exit Handler
 /tfx_addons/message_exit_handler @hanneshapke
+/tfx_addons/utils @hanneshapke
+
+# Predictions to Bigquery Component
+/tfx_addons/predictions_to_bigquery @hanneshapke @cfezequiel
+
+# PandasTransform Component
+/tfx_addons/pandas_transform @rcrowe-google
+
+# Apache Airflow Orchestrator
+/tfx_addons/apache_airflow @lego0901
+
+# CopyExampleGen Component
+/tfx_addons/copy_example_gen @alxndrnh

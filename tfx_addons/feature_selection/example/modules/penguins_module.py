@@ -15,5 +15,9 @@
 """Supplement for palmer penguins example with specific feature modification.
 This module file will be used in the feature selection component example.
 """
-NUM_PARAM = 2
+from sklearn.feature_selection import \
+    SelectKBest as SelectorFunc  # pylint: disable=W0611
+from sklearn.feature_selection import chi2
+
+SELECTOR_PARAMS = {"score_func": chi2, "k": 2}
 TARGET_FEATURE = 'species'

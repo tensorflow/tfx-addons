@@ -1,4 +1,4 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,19 @@
 # ==============================================================================
 """Init module for TFX."""
 
-from .version import __version__
+import importlib as _importlib
+
+from .version import _PKG_METADATA, __version__
+
+_ACTIVE_MODULES = [
+    "__version__",
+] + list(_PKG_METADATA.keys())
+
+
+def __getattr__(name):  # pylint: disable=C0103
+  # PEP-562: Lazy loaded attributes on python modules
+  # NB(gcasassaez): We lazy load to avoid issues with dependencies not installed
+  # for some subpackes
+  if name in _ACTIVE_MODULES:
+    return _importlib.import_module("." + name, __name__)
+  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
