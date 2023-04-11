@@ -27,8 +27,9 @@ jobs:
     strategy:
       # Test for several versions of TFX in parallel
       # keep constraints in sync with version.py
+      max-parallel: 1
       matrix:
-        depconstraint: 
+        depconstraint:
           - "tfx~=1.4.0 tensorflow~=2.6.0"
           - "tfx~=1.7.0 tensorflow~=2.8.0"
         extras: ["all, test"]
