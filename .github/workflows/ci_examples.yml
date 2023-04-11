@@ -24,7 +24,7 @@ on:
       - main
       - r*
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -55,9 +55,9 @@ jobs:
     needs: filter_examples
     timeout-minutes: 60
     strategy:
-      # Test for each project in parallel using ci_max and ci_min to ensure 
+      # Test for each project in parallel using ci_max and ci_min to ensure
       # tested in range of tfx/tensorflow supported versions
-      max-parallel: 1
+      max-parallel: 2
       matrix:
         project: ${{fromJson(needs.filter_examples.outputs.projects)}}
     steps:
