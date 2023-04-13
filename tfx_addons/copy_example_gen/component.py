@@ -89,5 +89,6 @@ def CopyExampleGen(  # pylint: disable=C0103
       fileio.copy(tfrecord, file_destination, True)
 
   # Build split_names in required Examples Artifact properties format.
-  example_properties_split_names = "[\"{}\"]".format('","'.join(input_dict.keys()))
+  example_properties_split_names = "[\"{}\"]".format('","'.join(
+      input_dict.keys()))
   output_example.split_names = example_properties_split_names
