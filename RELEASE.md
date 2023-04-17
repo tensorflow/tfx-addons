@@ -6,7 +6,7 @@ TFX Addons follows [Semantic Versioning 2.0](https://semver.org/) strategy.
 
 ## Minor automatic release from main
 
-1. Trigger [Create Minor Release](https://github.com/tensorflow/tfx-addons/actions/workflows/minor_release.yml] workflow and ensure it runs to completion.
+1. Trigger [Create Minor Release](https://github.com/tensorflow/tfx-addons/actions/workflows/minor_release.yml) workflow and ensure it runs to completion.
 2. Find created [draft release](https://github.com/tensorflow/tfx-addons/releases).
     * Add updates for new features, enhancements, bug fixes
     * Add contributors using `git shortlog <last-version>..HEAD -s`
