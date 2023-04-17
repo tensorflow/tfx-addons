@@ -49,12 +49,13 @@ jobs:
     - name: Filter projects
       id: set-matrix
       run: |
-        echo "::set-output name=projects::$(python ./.github/workflows/filter_projects.py $HOME/files.json)"
+        echo "projects=$(python ./.github/workflows/filter_projects.py $HOME/files.json)" >> $GITHUB_OUTPUT
 
   ci:
     runs-on: ubuntu-latest
     needs: filter_projects
     timeout-minutes: 60
+    if: needs.filter_examples.outputs.projects != '[]'
     strategy:
       # Test for each project in parallel using ci_max and ci_min to ensure 
       # tested in range of tfx/tensorflow supported versions
