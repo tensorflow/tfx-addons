@@ -1,17 +1,28 @@
+# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 import importlib
-import json
 import os
+import re
+from typing import Callable, TypeVar
 
 import tensorflow as tf
 from tfx.dsl.component.experimental.annotations import OutputDict
-from tfx.dsl.component.experimental.decorators import component
-from tfx.types import artifact, artifact_utils
 from tfx.types import standard_artifacts
 from tfx.v1.dsl.components import InputArtifact, OutputArtifact, Parameter
 from tfx_bsl.coders import example_coder
-from typing import Callable, TypeVar
-from pathy.gcs import BucketClientGCS
-import re
+from google.cloud import storage
 
 # get a list of files for the specified path
 def _get_file_list(dir_path,bucket_name='default'):
@@ -52,11 +63,10 @@ def _get_data_from_tfrecords(train_uri: str):
 return_type = TypeVar("return_type")
 
 
-@component
+#@component
 def FilterComponent(
         input_data: InputArtifact[standard_artifacts.Examples],
         filter_function_str: Parameter[str],
-        filtered_data: OutputArtifact[standard_artifacts.Examples],
         output_file: Parameter[str]
 ) -> OutputDict(list_len=int):
     """Filters the data from input data by using the filter function.
@@ -88,11 +98,16 @@ def FilterComponent(
     """
     records = _get_data_from_tfrecords(input_data.uri + "/Split-train")
     filter_function = importlib.import_module(filter_function_str).filter_function
-    filtered_data tf.data.Dataset.from_tensor_slices( filter_function(records))
-    result_len = len(records)
-    filename = 'test.tfrecord'
-    writer = tf.data.experimental.TFRecordWriter(filename)
-    writer.write(filtered_data)
+    filtered_data =  filter_function(records)
+    result_len = len(filtered_data)
+    new_data = []
+    for key in list(filtered_data[0].keys()):
+        local_list = []
+        for i in range(result_len):
+            local_list.append(str(filtered_data[i][key][0]))
+        new_data.append(str(local_list))
+    writer = tf.data.experimental.TFRecordWriter(output_file)
+    writer.write(tf.data.Dataset.from_tensor_slices(new_data).map(lambda  x: x))
 
     return {
         'list_len': result_len
