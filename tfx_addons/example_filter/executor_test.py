@@ -16,14 +16,14 @@
 """Tests for gcp."""
 
 import os
-from typing import List, Text, Optional, Dict
+from typing import Dict, List, Optional, Text
 from unittest import mock
 
 import tensorflow as tf
 import tensorflow_model_analysis as tfma
 from tfx import v1 as tfx
-from tfx.utils import test_case_utils
 from tfx.orchestration.kubeflow import kubeflow_dag_runner
+from tfx.utils import test_case_utils
 
 
 def _create_pipeline(

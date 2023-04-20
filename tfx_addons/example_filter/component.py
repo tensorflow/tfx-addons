@@ -20,11 +20,11 @@ import os
 import re
 
 import tensorflow as tf
+from google.cloud import storage
 from tfx.dsl.component.experimental.annotations import OutputDict
 from tfx.types import standard_artifacts
 from tfx.v1.dsl.components import InputArtifact, Parameter
 from tfx_bsl.coders import example_coder
-from google.cloud import storage
 
 
 # get a list of files for the specified path

@@ -14,10 +14,11 @@
 # ==============================================================================
 """Component test for the filter component."""
 
-import tensorflow as tf
 import os
+
+import tensorflow as tf
 from absl.testing import absltest
-from tfx.types import (artifact_utils, standard_artifacts)
+from tfx.types import artifact_utils, standard_artifacts
 from tfx_addons.example_filter.component import filter_component
 
 
