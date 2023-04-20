@@ -1,3 +1,13 @@
+"""Filters the data from input data by using the filter function.
+
+Args:
+  x_list: Input list of data to be filtered.
+
+
+Returns:
+  filtered list
+
+"""
 # Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
