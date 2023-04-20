@@ -64,10 +64,7 @@ def _get_data_from_tfrecords(train_uri: str):
     return np_dataset
 
 
-
-
-# @component
-def FilterComponent(
+def filter_component(
         input_data: InputArtifact[standard_artifacts.Examples],
         filter_function_str: Parameter[str],
         output_file: Parameter[str]
@@ -91,7 +88,7 @@ def FilterComponent(
                 return output_list
 
             pipeline.py:
-            FilterComponent(input_data ,'my_example.my_filter',output_data)
+            filter_component(input_data ,'my_example.my_filter',output_data)
 
     Returns:
       len of the list after the filter

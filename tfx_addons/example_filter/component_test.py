@@ -18,7 +18,7 @@ import tensorflow as tf
 import os
 from absl.testing import absltest
 from tfx.types import (artifact_utils, standard_artifacts)
-from tfx_addons.example_filter.component import FilterComponent
+from tfx_addons.example_filter.component import filter_component
 
 
 class ComponentTest(absltest.TestCase):
@@ -35,7 +35,7 @@ class ComponentTest(absltest.TestCase):
             "filter_function_str": 'filter_function',
             "output_file": 'output',
         }
-        FilterComponent(**params)
+        filter_component(**params)
 
 
 if __name__ == '__main__':
