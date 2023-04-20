@@ -1,3 +1,6 @@
+"""
+the component for filter addon
+"""
 # Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +18,6 @@
 import importlib
 import os
 import re
-from typing import Callable, TypeVar
 
 import tensorflow as tf
 from tfx.dsl.component.experimental.annotations import OutputDict
@@ -26,7 +28,7 @@ from google.cloud import storage
 
 
 # get a list of files for the specified path
-def _get_file_list(dir_path, bucket_name='default'):
+def _get_file_list(dir_path):
     if 'gs' == dir_path[:2]:
 
         client = storage.Client()
@@ -62,7 +64,6 @@ def _get_data_from_tfrecords(train_uri: str):
     return np_dataset
 
 
-return_type = TypeVar("return_type")
 
 
 # @component
@@ -76,7 +77,8 @@ def FilterComponent(
     Args:
       input_data: Input list of data to be filtered.
       output_file: the name of the file to be saved to.
-      filter_function_str: Module name of the function that will be used to filter the data.
+      filter_function_str: Module name of the function that will be used to
+      filter the data.
         Example for the function
             my_example/my_filter.py:
 

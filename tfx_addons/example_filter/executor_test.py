@@ -1,3 +1,4 @@
+
 # Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +23,7 @@ import tensorflow as tf
 import tensorflow_model_analysis as tfma
 from tfx import v1 as tfx
 from tfx.utils import test_case_utils
+from tfx.orchestration.kubeflow import kubeflow_dag_runner
 
 
 def _create_pipeline(
@@ -169,7 +171,7 @@ class ExampleFilterTest(test_case_utils.TfxTest):
             ai_platform_training_args=self._ai_platform_training_args,
             ai_platform_serving_args=self._ai_platform_serving_args,
             beam_pipeline_args=[])
-        from tfx.orchestration.kubeflow import kubeflow_dag_runner
+
 
         kubeflow_dag_runner.KubeflowDagRunner().run(logical_pipeline)
         file_path = os.path.join(self.tmp_dir, 'sklearn_test.tar.gz')
