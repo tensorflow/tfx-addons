@@ -17,18 +17,14 @@
 import tensorflow as tf
 import os
 from absl.testing import absltest
-from tfx.types import (artifact_utils, channel_utils, standard_artifacts,
-                       standard_component_specs)
+from tfx.types import (artifact_utils, standard_artifacts)
 from tfx_addons.example_filter.component import FilterComponent
-
-
 
 
 class ComponentTest(absltest.TestCase):
 
     def testConstructWithOptions(self):
         source_data_dir = os.path.join(os.path.dirname(__file__), 'data')
-
 
         examples = standard_artifacts.Examples()
         examples.uri = os.path.join(source_data_dir, "example_gen")

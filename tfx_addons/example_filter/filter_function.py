@@ -13,6 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 def filter_function(x_list):
+    """Filters the data from input data by using the filter function.
+
+    Args:
+      x_list: Input list of data to be filtered.
+
+
+    Returns:
+      filtered list
+
+    """
     new_list = []
     for element in x_list:
         if element['label'] == [0]:
