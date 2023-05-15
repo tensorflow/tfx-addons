@@ -43,7 +43,7 @@ jobs:
         python-version: 3.7
     - name: Get Changed Files
       id: changed_files
-      uses: trilom/file-changes-action@v1.2.3
+      uses: trilom/file-changes-action@v1.2.4
       with:
         output: json
     - name: Filter example projects
