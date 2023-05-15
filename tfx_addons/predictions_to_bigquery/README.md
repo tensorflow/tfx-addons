@@ -58,7 +58,8 @@ import tfx_addons as tfxa
 ...
 
 predictions_to_bigquery = tfxa.predictions_to_bigquery.PredictionsToBigQuery(
-    schema=schema_gen.outputs['schema']
+    inference_results=bulk_inferrer.outputs['inference_result'],
+    schema=schema_gen.outputs['schema'],
     transform_graph=transform.outputs['transform_graph'],
     bq_table_name='my_bigquery_table',
     gcs_temp_dir='gs://bucket/temp-dir',
@@ -66,7 +67,8 @@ predictions_to_bigquery = tfxa.predictions_to_bigquery.PredictionsToBigQuery(
 )
 ```
 
-TFX pipeline examples can be found in `integration_test.py`.
+Refer to `integration_test.py` for tests that demonstrates how to use the
+component.
 
 For a description of the inputs and execution parameters of the component,
 refer to the `component.py` file.
@@ -77,7 +79,7 @@ See `version.py` in the top repo directory for component dependencies.
 
 ## Testing
 
-Each Python module has a correspondin unit test file ending in `_test.py`.
+Each Python module has a corresponding unit test file ending in `_test.py`.
 
 An integration test is also available and requires use of a Google Cloud
 project. Additional instructions for running the unit test can be found in `integration_test.py`.
