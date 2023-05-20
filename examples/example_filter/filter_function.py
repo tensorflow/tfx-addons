@@ -1,13 +1,3 @@
-"""Filters the data from input data by using the filter function.
-
-Args:
-  x_list: Input list of data to be filtered.
-
-
-Returns:
-  filtered list
-
-"""
 # Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,21 +12,22 @@ Returns:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Filters the data from input data by using the filter function."""
 
 
 def filter_function(x_list):
-  """Filters the data from input data by using the filter function.
+    """Filters the data from input data by using the filter function.
 
-    Args:
-      x_list: Input list of data to be filtered.
+      Args:
+        x_list: Input list of data to be filtered.
 
 
-    Returns:
-      filtered list
+      Returns:
+        filtered list
 
-    """
-  new_list = []
-  for element in x_list:
-    if element['label'] == [0]:
-      new_list.append(element)
-  return new_list
+      """
+    new_list = []
+    for element in x_list:
+        if element['label'] == [0]:
+            new_list.append(element)
+    return new_list
