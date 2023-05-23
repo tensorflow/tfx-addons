@@ -19,8 +19,7 @@
 import datetime
 import os
 import re
-from collections.abc import Mapping, Sequence
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
 
 import apache_beam as beam
 import numpy as np

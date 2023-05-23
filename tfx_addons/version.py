@@ -79,5 +79,6 @@ _PKG_METADATA = {
     "huggingface_pusher":
     [f"tfx{_TFXVERSION_CONSTRAINT}", "huggingface-hub>=0.10.0,<1.0.0"],
     "model_card_generator":
-    [f"tfx{_TFXVERSION_CONSTRAINT}", "model-card-toolkit>=2.0.0,<3.0.0"]
+    [f"tfx{_TFXVERSION_CONSTRAINT}", "model-card-toolkit>=2.0.0,<3.0.0"],
+    "predictions_to_bigquery": [f"tfx{_TFXVERSION_CONSTRAINT}"]
 }
