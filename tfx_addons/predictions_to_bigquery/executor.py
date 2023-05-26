@@ -40,6 +40,10 @@ _REQUIRED_EXEC_PROPERTIES = (
     'filter_threshold',
     'gcs_temp_dir',
 )
+
+# Regular expression to check for a proper BigQuery table name, i.e.
+# [PROJECT:]DATASET.TABLE,
+# where specifying GCP PROJECT is optional.
 _REGEX_BQ_TABLE_NAME = re.compile(r'^[\w-]*:?[\w_]+\.[\w_]+$')
 
 
@@ -116,7 +120,7 @@ def _tensor_to_native_python_value(
   # Removes any extra dimension, e.g. shape (n, 1).
   values = np.squeeze(values)
   try:
-    values = values.item()  # Convert to single Python value
+    values = values.item()  # Convert to single Python value.
   except ValueError:
     values = list(values)
   if isinstance(values, list) and isinstance(values[0], bytes):
@@ -200,10 +204,10 @@ class Executor(base_beam_executor.BaseBeamExecutor):
   ) -> None:
     """Do function for predictions_to_bq executor."""
 
-    # Check required keys set in exec_properties
+    # Check required keys set in exec_properties.
     _check_exec_properties(exec_properties)
 
-    # Get prediction log file path and decoder
+    # Get prediction log file path and decoder.
     prediction_log_path = _get_prediction_log_path(
         input_dict['inference_results'])
     prediction_log_decoder = beam.coders.ProtoCoder(
@@ -211,14 +215,14 @@ class Executor(base_beam_executor.BaseBeamExecutor):
 
     tft_output = _get_tft_output(input_dict.get('transform_graph'))
 
-    # get schema features
+    # Get schema features
     features = utils.get_feature_spec(
         schema=input_dict.get('schema'),
         tft_output=tft_output,
         prediction_log_path=prediction_log_path,
     )
 
-    # get label names from TFTransformOutput object, if applicable
+    # Get label names from TFTransformOutput object, if applicable.
     if tft_output is not None and 'vocab_label_file' in exec_properties:
       label_key = exec_properties['vocab_label_file']
       labels = _get_labels(tft_output, label_key)
@@ -227,14 +231,14 @@ class Executor(base_beam_executor.BaseBeamExecutor):
       labels = None
       logging.info('No TFTransform output given; no labels parsed.')
 
-    # set BigQuery table name and timestamp suffix if specified.
+    # Set BigQuery table name and timestamp suffix if specified.
     _check_bq_table_name(exec_properties['bq_table_name'])
     timestamp = datetime.datetime.now().replace(second=0, microsecond=0)
     bq_table_name = _add_bq_table_name_suffix(
         exec_properties['bq_table_name'], timestamp,
         exec_properties.get('table_time_suffix'))
 
-    # generate bigquery schema from tf transform features
+    # Generate bigquery schema from tf transform features.
     add_label_field = labels is not None
     bq_schema = utils.feature_spec_to_bq_schema(
         features, add_label_field=add_label_field)
@@ -244,7 +248,7 @@ class Executor(base_beam_executor.BaseBeamExecutor):
         exec_properties.get('table_expiration_days'),
         exec_properties.get('table_partitioning'))
 
-    # run the Beam pipeline to write the inference data to bigquery
+    # Run the Beam pipeline to write the inference data to bigquery.
     with self._make_beam_pipeline() as pipeline:
       _ = (pipeline
            | 'Read Prediction Log' >> beam.io.ReadFromTFRecord(

@@ -133,7 +133,7 @@ def get_feature_spec(
   for the data schema.
 
   Args:
-    schema: Path to a `_SCHEMA_FILENAME` file.
+    schema: Artifact containing the URI to a `_SCHEMA_FILENAME` file.
     tft_output: TensorFlow Transform output path.
     prediction_log_path: Path to a TFRecord file containing inference results.
   """
@@ -203,16 +203,20 @@ def _create_annotation_fields(
     add_label_field: bool = False,
     add_datetime_field: bool = True,
 ) -> List[Dict]:
-  """Creates a list of annotation fields in BigQuery schema formatkjjjj.
+  """Creates annotation fields in BigQuery schema format.
+
+  This function creates the following fields: score, category_label, and
+  datetime, where the last two are optional.
 
   Args:
-      label_field_name: The name of the label field.
-      score_field_name: The name of the score field.
-      required: Whether the fields are required.
-      add_datetime_field: Whether to add a datetime field.
+    required: Whether the field is required or not.
+    add_label_field: If true, add a field representing the label of the
+      model prediction input.
+    add_datetime_field: Whether to add a datetime field representing the
+      data creation timestamp.
 
   Returns:
-      A list of BigQuery schema fields.
+      A list of the BigQuery schema fields.
   """
 
   fields = []
@@ -242,16 +246,21 @@ def _create_annotation_fields(
   return fields
 
 
-def feature_spec_to_bq_schema(feature_spec: FeatureSpec,
-                              required: bool = False,
-                              **kwargs: int) -> BigQuerySchema:
+def feature_spec_to_bq_schema(
+    feature_spec: FeatureSpec,
+    required: bool = False,
+    add_label_field: bool = False,
+    add_datetime_field: bool = True,
+) -> BigQuerySchema:
   """Converts a TensorFlow feature spec into a BigQuery schema.
 
   Args:
     feature_spec: TensorFlow feature spec.
     required: If True, mark BigQuery fields as required (i.e. not nullable).
-    **kwargs: Additional keyword-arguments to pass to
-      `_create_annotation_fields`.
+    add_label_field: If true, add a field representing the label of the
+      model prediction input.
+    add_datetime_field: Whether to add a datetime field representing the
+      data creation timestamp.
 
   Returns:
     A `BigQuerySchema` object.
@@ -259,5 +268,9 @@ def feature_spec_to_bq_schema(feature_spec: FeatureSpec,
   bq_schema_fields = _feature_spec_to_bq_schema_fields(feature_spec,
                                                        required=required)
   bq_schema_fields.extend(
-      _create_annotation_fields(required=required, **kwargs))
+      _create_annotation_fields(
+          required=required,
+          add_label_field=add_label_field,
+          add_datetime_field=add_datetime_field,
+      ))
   return {"fields": bq_schema_fields}

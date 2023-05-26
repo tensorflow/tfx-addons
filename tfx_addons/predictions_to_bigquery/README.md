@@ -1,6 +1,5 @@
 # Prediction results to BigQuery component
 
-[![Python](https://img.shields.io/pypi/pyversions/tfx.svg?style=plastic)](https://github.com/tensorflow/tfx)
 [![TensorFlow](https://img.shields.io/badge/TFX-orange)](https://www.tensorflow.org/tfx)
 
 ## Project Description
