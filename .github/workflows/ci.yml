@@ -24,7 +24,7 @@ on:
       - main
       - r*
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -37,10 +37,10 @@ jobs:
       projects: ${{ steps.set-matrix.outputs.projects }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Get Changed Files
       id: changed_files
       uses: trilom/file-changes-action@v1.2.4
@@ -57,19 +57,19 @@ jobs:
     timeout-minutes: 60
     if: needs.filter_examples.outputs.projects != '[]'
     strategy:
-      # Test for each project in parallel using ci_max and ci_min to ensure 
+      # Test for each project in parallel using ci_max and ci_min to ensure
       # tested in range of tfx/tensorflow supported versions
       matrix:
         project: ${{fromJson(needs.filter_projects.outputs.projects)}}
-        depconstraint: 
+        depconstraint:
           - ci_max
           - ci_min
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Cache python environment
       uses: actions/cache@v2
       with:
