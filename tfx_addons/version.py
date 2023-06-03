@@ -1,4 +1,4 @@
-# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@ if _VERSION_SUFFIX:
 
 # Required TFX version [min, max)
 _INCLUSIVE_MIN_TFX_VERSION = "1.6.0"
-_EXCLUSIVE_MAX_TFX_VERSION = "1.11.0"
+_EXCLUSIVE_MAX_TFX_VERSION = "1.14.0"
 _TFXVERSION_CONSTRAINT = (
     f">={_INCLUSIVE_MIN_TFX_VERSION},<{_EXCLUSIVE_MAX_TFX_VERSION}")
-_CI_MAX_CONSTRAINTS = ["tfx~=1.10.0", "tensorflow~=2.9.0"]
+_CI_MAX_CONSTRAINTS = ["tfx~=1.12.0", "tensorflow~=2.12.0"]
 _CI_MIN_CONSTRAINTS = [
     f"tfx~={_INCLUSIVE_MIN_TFX_VERSION}",
     "tensorflow~=2.8.0",
