@@ -64,7 +64,7 @@ _PKG_METADATA = {
     ],
     "xgboost_evaluator": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
-        "xgboost>=1.0.0",
+        "xgboost>=1.0.0,<1.7.0",
     ],
     "sampling": [f"tfx{_TFXVERSION_CONSTRAINT}", "tensorflow>=2.0.0"],
     "message_exit_handler": [
