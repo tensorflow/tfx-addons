@@ -37,10 +37,10 @@ jobs:
       projects: ${{ steps.set-matrix.outputs.projects }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python 3.7
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.7
     - name: Get Changed Files
       id: changed_files
       uses: trilom/file-changes-action@v1.2.4
@@ -62,10 +62,10 @@ jobs:
         project: ${{fromJson(needs.filter_examples.outputs.projects)}}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python 3.7
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.7
     - name: Cache python environment
       uses: actions/cache@v2
       with:
