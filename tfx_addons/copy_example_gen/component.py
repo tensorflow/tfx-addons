@@ -13,12 +13,12 @@
 # limitations under the License.
 """CopyExampleGen custom component.
 
-This component will accept tfrecord files and register them as an
+This component will accept TFRecord files and register them as an
 Examples Artifact for downstream components to use. CopyExampleGen accepts
 a dictionary where keys are the split-names and their respective value is a
-uri to the folder that contains the tfrecords file(s).
+URI to the folder that contains the TFRecords file(s).
 
-Tfrecord file(s) in uri must resemble same `.gz` file format as the output of
+TFRecord file(s) in URI must resemble same `.gz` file format as the output of
 ExampleGen component.
 
 User will need to create a dictionary of type Dict[str, str], in this case
@@ -52,43 +52,52 @@ from tfx.v1.types.standard_artifacts import Examples
 def CopyExampleGen(  # pylint: disable=C0103
     input_json_str: tfx.dsl.components.Parameter[str],
     output_example: tfx.dsl.components.OutputArtifact[Examples]
-) -> tfx.dsl.components.OutputDict():
-  """
+  ) -> tfx.dsl.components.OutputDict():
+  """Copies the TFRecords from input Split directories to reuse.
+
   CopyExampleGen first converts the string input to a type Dict and extracts
   the keys from the dictionary, input_dict, and creates a string containing
-  the names. This string is assigned to the output_example.split_uri property
-  to register split_names property.
+  the names. This string is assigned to the `output_example.split_uri` property
+  to register `split_names` property.
 
-  This component then creates a directory folder for each name in split_name.
-  Following the creation of the `Split-name` folder, the files in the uri path
-  will then be copied into the designated `Split-name` folder.
+  This component then creates a directory folder for each `name` in
+  `split_name`. Following the creation of the `Split-{name}` folder, the files
+  in the URI path will then be copied into the designated `Split-{name}` folder.
 
+  Args:
+    input_json_str: JSON string containing the split labels (key) and URIs
+      containing the split label's TFRecords (value). These TFRecords are copied
+      to `output_example`.
+    output_example: Output Examples object containing the output `uri` and
+      `split_names`.
+
+  Returns:
+    TODO(@zyang7): Update after return statement is finalized.
   """
 
   # Convert primitive type str to Dict[str, str].
   input_dict = json.loads(input_json_str)
 
-  # Creates directories from the split-names and tfrecord uris provided into
-  # output_example.split_names property.
   tfrecords_list = []
   output_example_uri = output_example.uri
 
   for split_label, split_tfrecords_uri in input_dict.items():
     # Create Split-name folder name and create directory.
-    # output_example_uri = output_example.uri
-    split_value = (f"/Split-{split_label}/")
+    split_value = f"/Split-{split_label}/"
     fileio.mkdir(f"{output_example_uri}{split_value}")
 
-    # Pull all files from uri.
+    # Pull all files from URI.
     tfrecords_list = fileio.glob(f"{split_tfrecords_uri}*.gz")
 
     # Copy files into folder directories.
     for tfrecord in tfrecords_list:
       file_name = os.path.basename(os.path.normpath(tfrecord))
-      file_destination = (f"{output_example_uri}{split_value}{file_name}")
+      file_destination = f"{output_example_uri}{split_value}{file_name}"
       fileio.copy(tfrecord, file_destination, True)
 
   # Build split_names in required Examples Artifact properties format.
   example_properties_split_names = "[\"{}\"]".format('","'.join(
       input_dict.keys()))
   output_example.split_names = example_properties_split_names
+
+  # TODO(@zyang7): Check if return statement is needed.
