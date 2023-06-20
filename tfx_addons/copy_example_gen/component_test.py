@@ -15,13 +15,15 @@
 """
 Tests for tfx_addons.copy_example_gen.component.
 """
-import tensorflow as tf
 from unittest import mock
+
+import tensorflow as tf
 
 from tfx_addons.copy_example_gen import component
 
-class TestCopyExampleGen(tf.test.TestCase):
 
+class TestCopyExampleGen(tf.test.TestCase):
+  """Test module for CopyExampleGen."""
   def setUp(self):
     self.input_json_str = """
     {
@@ -29,7 +31,6 @@ class TestCopyExampleGen(tf.test.TestCase):
       "label2": "fakeuri2",
     }
     """
-
 
   def test_empty_input(self) -> None:
     empty_input_json_str = ""
@@ -54,13 +55,13 @@ class TestCopyExampleGen(tf.test.TestCase):
 
   def test_empty_gcs_directory(self) -> None:
     with mock.patch(
-      'tfx_addons.copy_example_gen.component.fileio') as mock_fileio:
+        'tfx_addons.copy_example_gen.component.fileio') as mock_fileio:
       # Returns an empty list indicating no matching files in that location.
       mock_fileio.glob.return_value = []
       with self.assertLogs() as warning_msg:
-        component.copy_examples(
-          split_tfrecords_uri="mock_uri", split_value_uri="mock_uri_2")
+        component.copy_examples(split_tfrecords_uri="mock_uri",
+                                split_value_uri="mock_uri_2")
         expected_msg = (
-          "WARNING:root:Directory mock_uri does not contain files with .gz "
-          "suffix.")
+            "WARNING:root:Directory mock_uri does not contain files with .gz "
+            "suffix.")
         self.assertEqual(warning_msg.output, [expected_msg])

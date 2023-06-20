@@ -42,19 +42,19 @@ needs to be converted into a JSON str. We can do this by simply using
 import json
 import logging
 import os
+from typing import Dict
 
 from tfx import v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
 from tfx.dsl.io import fileio
 from tfx.v1.types.standard_artifacts import Examples
-from typing import Dict
 
 
 @component
 def CopyExampleGen(  # pylint: disable=C0103
     input_json_str: tfx.dsl.components.Parameter[str],
     output_example: tfx.dsl.components.OutputArtifact[Examples]
-  ) -> tfx.dsl.components.OutputDict():
+) -> tfx.dsl.components.OutputDict():
   """Copies the TFRecords from input Split directories to reuse.
 
   CopyExampleGen first converts the string input to a type Dict and extracts
@@ -91,28 +91,37 @@ def CopyExampleGen(  # pylint: disable=C0103
 
 
 def create_input_dictionary(input_json_str: str) -> Dict[str, str]:
-  """Creates a dictionary of Split label (key) to Split URI (value)."""
+  """Creates a dictionary from input JSON string.
+
+  Args:
+    input_json_str: JSON string with Split label (key) to Split URI (value)/
+  """
   # Convert primitive type str to Dict[str, str].
   if len(input_json_str) == 0:
     raise ValueError(
-      f"Input string is not provided. Expected format is Split label (key) and "
-      "Split URI (value).")
+        "Input string is not provided. Expected format is Split label (key) "
+        "and Split URI (value).")
 
   input_dict = json.loads(input_json_str)
   if not isinstance(input_dict, dict):
     raise ValueError(
-      f"Input string {input_json_str} is not provided as a dictionary. "
-      "Expected format is Split label (key) and Split URI (value).")
+        f"Input string {input_json_str} is not provided as a dictionary. "
+        "Expected format is Split label (key) and Split URI (value).")
   return input_dict
 
 
 def copy_examples(split_tfrecords_uri: str, split_value_uri: str) -> None:
+  """Copies files from `split_tfrecords_uri` to the output `split_value_uri`.
+
+  Args:
+    split_tfrecords_uri: Source URI where TFRecords to be copied are located.
+    split_value_uri: Destination URI where the TFRecords should be copied to.
+  """
   # Pull all files from URI.
   tfrecords_list = fileio.glob(f"{split_tfrecords_uri}*.gz")
   if len(tfrecords_list) == 0:
-    logging.warning(
-      f"Directory {split_tfrecords_uri} does not contain files with .gz "
-      "suffix.")
+    logging.warning("Directory %s does not contain files with .gz suffix.",
+                    split_tfrecords_uri)
 
   # Copy files into folder directories.
   for tfrecord in tfrecords_list:
