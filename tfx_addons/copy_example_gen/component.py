@@ -107,6 +107,10 @@ def create_input_dictionary(input_json_str: str) -> Dict[str, str]:
     raise ValueError(
         f"Input string {input_json_str} is not provided as a dictionary. "
         "Expected format is Split label (key) and Split URI (value).")
+  if len(input_dict.items()) == 0:
+    raise ValueError(
+        "Input dictionary is empty. Expected format is Split label (key) "
+        "and Split URI (value).")
   return input_dict
 
 

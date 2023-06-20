@@ -34,20 +34,30 @@ class TestCopyExampleGen(tf.test.TestCase):
 
   def test_empty_input(self) -> None:
     empty_input_json_str = ""
-    with self.assertRaises(ValueError):
+    expected_error = (
+        "Input string is not provided. Expected format is Split label (key) "
+        "and Split URI (value).")
+
+    with self.assertRaises(ValueError, msg=expected_error):
       component.create_input_dictionary(input_json_str=empty_input_json_str)
 
   def test_non_dictionary_input(self) -> None:
     non_dictionary_input = "'a', 'b', 'c'"
+    expected_error = (
+        f"Input string {non_dictionary_input} is not provided as a dictionary. "
+        "Expected format is Split label (key) and Split URI (value).")
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises(ValueError, msg=expected_error):
       component.create_input_dictionary(input_json_str=non_dictionary_input)
 
   def test_empty_dictionary(self) -> None:
     empty_input_json_str = "{}"
-    # TODO(zyang7): Decide if an empty dictionary should be allowed or if an
-    # exception should be thrown.
-    component.create_input_dictionary(input_json_str=empty_input_json_str)
+    expected_error = (
+        "Input dictionary is empty. Expected format is Split label (key) "
+        "and Split URI (value).")
+
+    with self.assertRaises(ValueError, msg=expected_error):
+      component.create_input_dictionary(input_json_str=empty_input_json_str)
 
   def test_valid_input(self) -> None:
     with mock.patch('tfx_addons.copy_example_gen.component.fileio'):
