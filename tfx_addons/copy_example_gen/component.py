@@ -94,7 +94,7 @@ def create_input_dictionary(input_json_str: str) -> Dict[str, str]:
   """Creates a dictionary from input JSON string.
 
   Args:
-    input_json_str: JSON string with Split label (key) to Split URI (value)/
+    input_json_str: JSON string with Split label (key) to Split URI (value).
   """
   # Convert primitive type str to Dict[str, str].
   if len(input_json_str) == 0:
