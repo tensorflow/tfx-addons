@@ -15,22 +15,52 @@
 """
 Tests for tfx_addons.copy_example_gen.component.
 """
-import pytest
+import tensorflow as tf
+from unittest import mock
 
-from tfx.v1.types.standard_artifacts import Examples
 from tfx_addons.copy_example_gen import component
 
-class TestCopyExampleGen:
+class TestCopyExampleGen(tf.test.TestCase):
+
+  def setUp(self):
+    self.input_json_str = """
+    {
+      "label1": "fakeuri",
+      "label2": "fakeuri2",
+    }
+    """
+
 
   def test_empty_input(self) -> None:
     empty_input_json_str = ""
-    component.CopyExampleGen(
-      input_json_str=empty_input_json_str)
+    with self.assertRaises(ValueError):
+      component.create_input_dictionary(input_json_str=empty_input_json_str)
 
-  # TODO(zyang7): Tests to write:
-  # 1. the input is even a Dict to begin with
-  # 2. then we check if the Dict has content in it
-  # 3. check if content has a [str:str] key value pairing
-  # 4. check if the value is an accessible gs:// bucket
-  # 5. check if there is anything in those buckets
-  # 6. check if those buckets are of type .gz
+  def test_non_dictionary_input(self) -> None:
+    non_dictionary_input = "'a', 'b', 'c'"
+
+    with self.assertRaises(ValueError):
+      component.create_input_dictionary(input_json_str=non_dictionary_input)
+
+  def test_empty_dictionary(self) -> None:
+    empty_input_json_str = "{}"
+    # TODO(zyang7): Decide if an empty dictionary should be allowed or if an
+    # exception should be thrown.
+    component.create_input_dictionary(input_json_str=empty_input_json_str)
+
+  def test_valid_input(self) -> None:
+    with mock.patch('tfx_addons.copy_example_gen.component.fileio'):
+      component.CopyExampleGen(input_json_str=self.input_json_str)
+
+  def test_empty_gcs_directory(self) -> None:
+    with mock.patch(
+      'tfx_addons.copy_example_gen.component.fileio') as mock_fileio:
+      # Returns an empty list indicating no matching files in that location.
+      mock_fileio.glob.return_value = []
+      with self.assertLogs() as warning_msg:
+        component.copy_examples(
+          split_tfrecords_uri="mock_uri", split_value_uri="mock_uri_2")
+        expected_msg = (
+          "WARNING:root:Directory mock_uri does not contain files with .gz "
+          "suffix.")
+        self.assertEqual(warning_msg.output, [expected_msg])

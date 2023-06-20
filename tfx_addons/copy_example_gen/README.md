@@ -10,7 +10,7 @@
 **Project name:** CopyExampleGen component
 
 ## Project Description
-CopyExampleGen will allow the user to copy pre-existing TFRecords and ingest it into the pipeline as examples, ultimately skipping the process of shuffling and running the Beam job that is in the standard component, ExampleGen. This process will require a dict input with split names as keys and their respective URIs as the value from the user. Following suit, the component will set the artifact’s properties, generate output dict, and register contexts and execution for downstream components to use. Lastly, TFRecord file(s) in uri must resemble same `.gz` file format as the output of ExampleGen component.
+CopyExampleGen will allow the user to copy pre-existing TFRecords and ingest it into the pipeline as examples, ultimately skipping the process of shuffling and running the Beam job that is in the standard component, ExampleGen. This process will require a dict input with split names as keys and their respective URIs as the value from the user. Following suit, the component will set the artifact’s properties, generate output dict, and register contexts and execution for downstream components to use. Lastly, TFRecord file(s) in URI must resemble same `.gz` file format as the output of ExampleGen component.
 
 Example of pipeline component definition:
 ```python
@@ -47,12 +47,12 @@ Custom Python function component: CopyExampleGen
 
  - `input_json_str`: will be the input parameter for CopyExampleGen of type `tfx.dsl.components.Parameter[str]`, where the user will assign their Dict[str, str] input, tfrecords_dict. However, because Python custom component development only supports primitive types, we must assign `input_json_str` to `json.dumps(tfrecords_dict)` and place the tfrecords_dict in as an argument.
 
- - `output_example`: Output artifact can be referenced as an object of its' specified type ArtifactType in the component function being declared. For example, if the ArtifactType is Examples, one can reference properties in an Examples ArtifactType (span, version, split_names, etc.) by calling the OutputArtifact object. This will be the variable we reference to build and register our Examples Artifact after pasrsing the tfrecords_dict input.
+ - `output_example`: Output artifact can be referenced as an object of its specified type ArtifactType in the component function being declared. For example, if the ArtifactType is Examples, one can reference properties in an Examples ArtifactType (span, version, split_names, etc.) by calling the OutputArtifact object. This will be the variable we reference to build and register our Examples Artifact after pasrsing the tfrecords_dict input.
 
 
 ### Python Custom Component Implementation Details
 
-  Using fileio.mkdir and fileio.copy, the component will then create a directory folder for each name in `split_name`. Following the creation of the `Split-name` folder, the files in the uri path will then be copied into the designated `Split-name` folder.
+  Using fileio.mkdir and fileio.copy, the component will then create a directory folder for each name in `split_name`. Following the creation of the `Split-name` folder, the files in the URI path will then be copied into the designated `Split-name` folder.
 
   Thoughts from original implementation in phase 1:
   This step can possibly use the [importer.generate_output_dict](https://github.com/tensorflow/tfx/blob/f8ce19339568ae58519d4eecfdd73078f80f84a2/tfx/dsl/components/common/importer.py#L153) function:

@@ -40,12 +40,14 @@ needs to be converted into a JSON str. We can do this by simply using
 
 """
 import json
+import logging
 import os
 
 from tfx import v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
 from tfx.dsl.io import fileio
 from tfx.v1.types.standard_artifacts import Examples
+from typing import Dict
 
 
 @component
@@ -69,35 +71,51 @@ def CopyExampleGen(  # pylint: disable=C0103
       containing the split label's TFRecords (value). These TFRecords are copied
       to `output_example`.
     output_example: Output Examples object containing the output `uri` and
-      `split_names`.
-
-  Returns:
-    TODO(@zyang7): Update after return statement is finalized.
+      `split_names`. This value specifies an OutputArtifact, and does not need
+      to be provided by the caller.
   """
+  logging.getLogger().setLevel(logging.INFO)
+  input_dict = create_input_dictionary(input_json_str)
 
-  # Convert primitive type str to Dict[str, str].
-  input_dict = json.loads(input_json_str)
-
-  tfrecords_list = []
   output_example_uri = output_example.uri
 
   for split_label, split_tfrecords_uri in input_dict.items():
     # Create Split-name folder name and create directory.
-    split_value = f"/Split-{split_label}/"
-    fileio.mkdir(f"{output_example_uri}{split_value}")
-
-    # Pull all files from URI.
-    tfrecords_list = fileio.glob(f"{split_tfrecords_uri}*.gz")
-
-    # Copy files into folder directories.
-    for tfrecord in tfrecords_list:
-      file_name = os.path.basename(os.path.normpath(tfrecord))
-      file_destination = f"{output_example_uri}{split_value}{file_name}"
-      fileio.copy(tfrecord, file_destination, True)
+    split_value_uri = f"{output_example_uri}/Split-{split_label}/"
+    copy_examples(split_tfrecords_uri, split_value_uri)
 
   # Build split_names in required Examples Artifact properties format.
   example_properties_split_names = "[\"{}\"]".format('","'.join(
       input_dict.keys()))
   output_example.split_names = example_properties_split_names
 
-  # TODO(@zyang7): Check if return statement is needed.
+
+def create_input_dictionary(input_json_str: str) -> Dict[str, str]:
+  """Creates a dictionary of Split label (key) to Split URI (value)."""
+  # Convert primitive type str to Dict[str, str].
+  if len(input_json_str) == 0:
+    raise ValueError(
+      f"Input string is not provided. Expected format is Split label (key) and "
+      "Split URI (value).")
+
+  input_dict = json.loads(input_json_str)
+  if not isinstance(input_dict, dict):
+    raise ValueError(
+      f"Input string {input_json_str} is not provided as a dictionary. "
+      "Expected format is Split label (key) and Split URI (value).")
+  return input_dict
+
+
+def copy_examples(split_tfrecords_uri: str, split_value_uri: str) -> None:
+  # Pull all files from URI.
+  tfrecords_list = fileio.glob(f"{split_tfrecords_uri}*.gz")
+  if len(tfrecords_list) == 0:
+    logging.warning(
+      f"Directory {split_tfrecords_uri} does not contain files with .gz "
+      "suffix.")
+
+  # Copy files into folder directories.
+  for tfrecord in tfrecords_list:
+    file_name = os.path.basename(os.path.normpath(tfrecord))
+    file_destination = f"{split_value_uri}{file_name}"
+    fileio.copy(tfrecord, file_destination, True)
