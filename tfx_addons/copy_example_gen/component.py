@@ -82,6 +82,8 @@ def CopyExampleGen(  # pylint: disable=C0103
   for split_label, split_tfrecords_uri in input_dict.items():
     # Create Split-name folder name and create directory.
     split_value_uri = f"{output_example_uri}/Split-{split_label}/"
+    fileio.mkdir(f"{split_value_uri}")
+
     copy_examples(split_tfrecords_uri, split_value_uri)
 
   # Build split_names in required Examples Artifact properties format.
