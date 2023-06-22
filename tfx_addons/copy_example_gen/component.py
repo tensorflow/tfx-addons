@@ -75,7 +75,7 @@ def CopyExampleGen(  # pylint: disable=C0103
       to be provided by the caller.
   """
   logging.getLogger().setLevel(logging.INFO)
-  input_dict = create_input_dictionary(input_json_str)
+  input_dict = _create_input_dictionary(input_json_str)
 
   output_example_uri = output_example.uri
 
@@ -84,7 +84,7 @@ def CopyExampleGen(  # pylint: disable=C0103
     split_value_uri = f"{output_example_uri}/Split-{split_label}/"
     fileio.mkdir(f"{split_value_uri}")
 
-    copy_examples(split_tfrecords_uri, split_value_uri)
+    _copy_examples(split_tfrecords_uri, split_value_uri)
 
   # Build split_names in required Examples Artifact properties format.
   example_properties_split_names = "[\"{}\"]".format('","'.join(
@@ -92,7 +92,7 @@ def CopyExampleGen(  # pylint: disable=C0103
   output_example.split_names = example_properties_split_names
 
 
-def create_input_dictionary(input_json_str: str) -> Dict[str, str]:
+def _create_input_dictionary(input_json_str: str) -> Dict[str, str]:
   """Creates a dictionary from input JSON string.
 
   Args:
@@ -116,7 +116,7 @@ def create_input_dictionary(input_json_str: str) -> Dict[str, str]:
   return input_dict
 
 
-def copy_examples(split_tfrecords_uri: str, split_value_uri: str) -> None:
+def _copy_examples(split_tfrecords_uri: str, split_value_uri: str) -> None:
   """Copies files from `split_tfrecords_uri` to the output `split_value_uri`.
 
   Args:

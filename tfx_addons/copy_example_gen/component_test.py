@@ -39,7 +39,8 @@ class TestCopyExampleGen(tf.test.TestCase):
         "and Split URI (value).")
 
     with self.assertRaises(ValueError, msg=expected_error):
-      component.create_input_dictionary(input_json_str=empty_input_json_str)
+      # pylint: disable=protected-access
+      component._create_input_dictionary(input_json_str=empty_input_json_str)
 
   def test_non_dictionary_input(self) -> None:
     non_dictionary_input = "'a', 'b', 'c'"
@@ -48,7 +49,8 @@ class TestCopyExampleGen(tf.test.TestCase):
         "Expected format is Split label (key) and Split URI (value).")
 
     with self.assertRaises(ValueError, msg=expected_error):
-      component.create_input_dictionary(input_json_str=non_dictionary_input)
+      # pylint: disable=protected-access
+      component._create_input_dictionary(input_json_str=non_dictionary_input)
 
   def test_empty_dictionary(self) -> None:
     empty_input_json_str = "{}"
@@ -57,10 +59,12 @@ class TestCopyExampleGen(tf.test.TestCase):
         "and Split URI (value).")
 
     with self.assertRaises(ValueError, msg=expected_error):
-      component.create_input_dictionary(input_json_str=empty_input_json_str)
+      # pylint: disable=protected-access
+      component._create_input_dictionary(input_json_str=empty_input_json_str)
 
   def test_valid_input(self) -> None:
     with mock.patch('tfx_addons.copy_example_gen.component.fileio'):
+      # pylint: disable=protected-access
       component.CopyExampleGen(input_json_str=self.input_json_str)
 
   def test_empty_gcs_directory(self) -> None:
@@ -69,8 +73,9 @@ class TestCopyExampleGen(tf.test.TestCase):
       # Returns an empty list indicating no matching files in that location.
       mock_fileio.glob.return_value = []
       with self.assertLogs() as warning_msg:
-        component.copy_examples(split_tfrecords_uri="mock_uri",
-                                split_value_uri="mock_uri_2")
+        # pylint: disable=protected-access
+        component._copy_examples(split_tfrecords_uri="mock_uri",
+                                 split_value_uri="mock_uri_2")
         expected_msg = (
             "WARNING:root:Directory mock_uri does not contain files with .gz "
             "suffix.")
