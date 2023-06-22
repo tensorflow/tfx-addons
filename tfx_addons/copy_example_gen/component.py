@@ -13,12 +13,12 @@
 # limitations under the License.
 """CopyExampleGen custom component.
 
-This component will accept tfrecord files and register them as an
+This component will accept TFRecord files and register them as an
 Examples Artifact for downstream components to use. CopyExampleGen accepts
 a dictionary where keys are the split-names and their respective value is a
-uri to the folder that contains the tfrecords file(s).
+URI to the folder that contains the TFRecords file(s).
 
-Tfrecord file(s) in uri must resemble same `.gz` file format as the output of
+TFRecord file(s) in URI must resemble same `.gz` file format as the output of
 ExampleGen component.
 
 User will need to create a dictionary of type Dict[str, str], in this case
@@ -40,7 +40,9 @@ needs to be converted into a JSON str. We can do this by simply using
 
 """
 import json
+import logging
 import os
+from typing import Dict
 
 from tfx import v1 as tfx
 from tfx.dsl.component.experimental.decorators import component
@@ -53,42 +55,82 @@ def CopyExampleGen(  # pylint: disable=C0103
     input_json_str: tfx.dsl.components.Parameter[str],
     output_example: tfx.dsl.components.OutputArtifact[Examples]
 ) -> tfx.dsl.components.OutputDict():
-  """
+  """Copies the TFRecords from input Split directories to reuse.
+
   CopyExampleGen first converts the string input to a type Dict and extracts
   the keys from the dictionary, input_dict, and creates a string containing
-  the names. This string is assigned to the output_example.split_uri property
-  to register split_names property.
+  the names. This string is assigned to the `output_example.split_uri` property
+  to register `split_names` property.
 
-  This component then creates a directory folder for each name in split_name.
-  Following the creation of the `Split-name` folder, the files in the uri path
-  will then be copied into the designated `Split-name` folder.
+  This component then creates a directory folder for each `name` in
+  `split_name`. Following the creation of the `Split-{name}` folder, the files
+  in the URI path will then be copied into the designated `Split-{name}` folder.
 
+  Args:
+    input_json_str: JSON string containing the split labels (key) and URIs
+      containing the split label's TFRecords (value). These TFRecords are copied
+      to `output_example`.
+    output_example: Output Examples object containing the output `uri` and
+      `split_names`. This value specifies an OutputArtifact, and does not need
+      to be provided by the caller.
   """
+  logging.getLogger().setLevel(logging.INFO)
+  input_dict = _create_input_dictionary(input_json_str)
 
-  # Convert primitive type str to Dict[str, str].
-  input_dict = json.loads(input_json_str)
-
-  # Creates directories from the split-names and tfrecord uris provided into
-  # output_example.split_names property.
-  tfrecords_list = []
   output_example_uri = output_example.uri
 
   for split_label, split_tfrecords_uri in input_dict.items():
     # Create Split-name folder name and create directory.
-    # output_example_uri = output_example.uri
-    split_value = (f"/Split-{split_label}/")
-    fileio.mkdir(f"{output_example_uri}{split_value}")
+    split_value_uri = f"{output_example_uri}/Split-{split_label}/"
+    fileio.mkdir(f"{split_value_uri}")
 
-    # Pull all files from uri.
-    tfrecords_list = fileio.glob(f"{split_tfrecords_uri}*.gz")
-
-    # Copy files into folder directories.
-    for tfrecord in tfrecords_list:
-      file_name = os.path.basename(os.path.normpath(tfrecord))
-      file_destination = (f"{output_example_uri}{split_value}{file_name}")
-      fileio.copy(tfrecord, file_destination, True)
+    _copy_examples(split_tfrecords_uri, split_value_uri)
 
   # Build split_names in required Examples Artifact properties format.
   example_properties_split_names = "[\"{}\"]".format('","'.join(
       input_dict.keys()))
   output_example.split_names = example_properties_split_names
+
+
+def _create_input_dictionary(input_json_str: str) -> Dict[str, str]:
+  """Creates a dictionary from input JSON string.
+
+  Args:
+    input_json_str: JSON string with Split label (key) to Split URI (value).
+  """
+  # Convert primitive type str to Dict[str, str].
+  if len(input_json_str) == 0:
+    raise ValueError(
+        "Input string is not provided. Expected format is Split label (key) "
+        "and Split URI (value).")
+
+  input_dict = json.loads(input_json_str)
+  if not isinstance(input_dict, dict):
+    raise ValueError(
+        f"Input string {input_json_str} is not provided as a dictionary. "
+        "Expected format is Split label (key) and Split URI (value).")
+  if len(input_dict.items()) == 0:
+    raise ValueError(
+        "Input dictionary is empty. Expected format is Split label (key) "
+        "and Split URI (value).")
+  return input_dict
+
+
+def _copy_examples(split_tfrecords_uri: str, split_value_uri: str) -> None:
+  """Copies files from `split_tfrecords_uri` to the output `split_value_uri`.
+
+  Args:
+    split_tfrecords_uri: Source URI where TFRecords to be copied are located.
+    split_value_uri: Destination URI where the TFRecords should be copied to.
+  """
+  # Pull all files from URI.
+  tfrecords_list = fileio.glob(f"{split_tfrecords_uri}*.gz")
+  if len(tfrecords_list) == 0:
+    logging.warning("Directory %s does not contain files with .gz suffix.",
+                    split_tfrecords_uri)
+
+  # Copy files into folder directories.
+  for tfrecord in tfrecords_list:
+    file_name = os.path.basename(os.path.normpath(tfrecord))
+    file_destination = f"{split_value_uri}{file_name}"
+    fileio.copy(tfrecord, file_destination, True)
