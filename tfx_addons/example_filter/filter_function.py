@@ -22,6 +22,8 @@ Returns:
   filtered list
 
 """
+
+
 def filter_function(x_list):
   """Filters the data from input data by using the filter function.
 

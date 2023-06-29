@@ -16,7 +16,7 @@
 
 
 def filter_function(x_list):
-    """Filters the data from input data by using the filter function.
+  """Filters the data from input data by using the filter function.
 
       Args:
         x_list: Input list of data to be filtered.
@@ -26,8 +26,8 @@ def filter_function(x_list):
         filtered list
 
       """
-    new_list = []
-    for element in x_list:
-        if element['label'] == [0]:
-            new_list.append(element)
-    return new_list
+  new_list = []
+  for element in x_list:
+    if element['label'] == [0]:
+      new_list.append(element)
+  return new_list
