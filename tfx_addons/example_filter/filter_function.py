@@ -12,17 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Filters the data from input data by using the filter function.
-
-Args:
-  x_list: Input list of data to be filtered.
-
-
-Returns:
-  filtered list
-
-"""
-
+"""Example function to demonstrate the filter functionality of the module."""
 
 def filter_function(x_list):
   """Filters the data from input data by using the filter function.
