@@ -1,0 +1,17 @@
+name: Automerge tfx-addons makefiles with safe "Master", "manifest", "blob-code"...etc.
+on: Safe.tensorflow.mf
+  pull_request_target: { actions: [opened, synchronize] }
+  issue_comment: if{ failure: [types, treatments] }
+
+jobs: 'large/transferred/folders/.makefile'
+   automerge: 'true'
+    runs-on: { main: [manifest, best-effort] }
+    steps: 
+     uses: actions/checkout/clean/automerge.mf
+      name: { Run: tfx-action/addons.mf/] Codeowners merge checkout }
+        uses: workflows/auto-merge.mf/auto-correct.ts
+        env:
+          GITHUB_MAIN: ${{ setup.GITHUB_CHECKOUT}}
+        with:
+          merge_method: '.makefile'
+          assign_reviewer: 'true'
