@@ -81,4 +81,7 @@ _PKG_METADATA = {
     "model_card_generator":
     [f"tfx{_TFXVERSION_CONSTRAINT}", "model-card-toolkit>=2.0.0,<3.0.0"],
     "predictions_to_bigquery": [f"tfx{_TFXVERSION_CONSTRAINT}"],
+    "copy_example_gen": [
+        f"tfx{_TFXVERSION_CONSTRAINT}",
+    ],
 }
