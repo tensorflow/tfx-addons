@@ -10,6 +10,9 @@ __pycache__/
 # C extensions
 **/*.so
 
+# Unit test
+.pytest_cache/
+
 # Distribution / packaging
 .Python
 # build/  # build/ contains required files for building tfx packages.
@@ -37,6 +40,9 @@ env/*
 **/env
 **/venv
 
-#Editor
+# pyenv
+.python-version
+
+# Editor
 .idea/*
 .vscode/*
