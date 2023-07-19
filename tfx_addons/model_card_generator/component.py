@@ -40,7 +40,15 @@ class ModelCardGeneratorSpec(component_spec.ComponentSpec):
       # See below link for details.
       # https://github.com/tensorflow/tfx/blob/4ff5e97b09540ff8a858076a163ecdf209716324/tfx/types/component_spec.py#L308
       'template_io':
-      component_spec.ExecutionParameter(type=List[Any], optional=True)
+      component_spec.ExecutionParameter(type=List[Any], optional=True),
+      'features_include':
+      component_spec.ExecutionParameter(type=List[str], optional=True),
+      'features_exclude':
+      component_spec.ExecutionParameter(type=List[str], optional=True),
+      'metrics_include':
+      component_spec.ExecutionParameter(type=List[str], optional=True),
+      'metrics_exclude':
+      component_spec.ExecutionParameter(type=List[str], optional=True),
   }
   INPUTS = {
       standard_component_specs.STATISTICS_KEY:
@@ -94,12 +102,18 @@ class ModelCardGenerator(BaseComponent):
   SPEC_CLASS = ModelCardGeneratorSpec
   EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
 
-  def __init__(self,
-               evaluation: Optional[types.Channel] = None,
-               statistics: Optional[types.Channel] = None,
-               pushed_model: Optional[types.Channel] = None,
-               json: Optional[str] = None,
-               template_io: Optional[List[Tuple[str, str]]] = None):
+  def __init__(
+      self,
+      evaluation: Optional[types.Channel] = None,
+      statistics: Optional[types.Channel] = None,
+      pushed_model: Optional[types.Channel] = None,
+      json: Optional[str] = None,
+      template_io: Optional[List[Tuple[str, str]]] = None,
+      features_include: Optional[List[str]] = None,
+      features_exclude: Optional[List[str]] = None,
+      metrics_include: Optional[List[str]] = None,
+      metrics_exclude: Optional[List[str]] = None,
+  ):
     """Generate a model card for a TFX pipeline.
 
     This executes a Model Card Toolkit workflow, producing a `ModelCard`
@@ -136,12 +150,42 @@ class ModelCardGenerator(BaseComponent):
         `ModelCardToolkit`'s default HTML template
         (`default_template.html.jinja`) and file name (`model_card.html`) are
         used.
+      features_include: The feature paths to include for the dataset statistics.
+        By default, all features are included. Mutually exclusive with
+        features_exclude.
+      features_exclude: The feature paths to exclude for the dataset statistics.
+        By default, all features are included. Mutually exclusive with
+        features_include.
+      metrics_include: The list of metric names to include in the model card. By
+        default, all metrics are included. Mutually exclusive with
+        metrics_exclude.
+      metrics_exclude: The list of metric names to exclude in the model card. By
+        default, no metrics are excluded. Mutually exclusive with
+        metrics_include.
+
+    Raises:
+      ValueError:
+        - When both `features_include` and `features_exclude` are specified.
+        - When both `metrics_include` and `metrics_exclude` are specified.
     """
+    if features_include and features_exclude:
+      raise ValueError(
+          'Only one of features_include or features_exclude may be specified.')
+
+    if metrics_include and metrics_exclude:
+      raise ValueError(
+          'Only one of metrics_include or metrics_exclude may be specified.')
+
     spec = ModelCardGeneratorSpec(
         evaluation=evaluation,
         statistics=statistics,
         pushed_model=pushed_model,
         model_card=types.Channel(type=artifact.ModelCard),
         json=json,
-        template_io=template_io)
+        template_io=template_io,
+        features_include=features_include,
+        features_exclude=features_exclude,
+        metrics_include=metrics_include,
+        metrics_exclude=metrics_exclude,
+    )
     super(ModelCardGenerator, self).__init__(spec=spec)
