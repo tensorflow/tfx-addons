@@ -74,7 +74,7 @@ class ModelCardGenerator(BaseComponent):
   that generates model cards.
 
   The model cards are written to a `ModelCard` artifact that can be fetched
-  from the `outputs['model_card]'` property.
+  from the `outputs['model_card']` property.
 
   Example:
 
