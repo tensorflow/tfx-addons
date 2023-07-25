@@ -22,6 +22,10 @@ _ACTIVE_MODULES = [
     "__version__",
 ] + list(_PKG_METADATA.keys())
 
+_ARTIFACTS = {
+    "ModelCard": "model_card_generator.artifact.ModelCard",
+}
+
 
 def __getattr__(name):  # pylint: disable=C0103
   # PEP-562: Lazy loaded attributes on python modules
@@ -29,4 +33,6 @@ def __getattr__(name):  # pylint: disable=C0103
   # for some subpackes
   if name in _ACTIVE_MODULES:
     return _importlib.import_module("." + name, __name__)
+  elif name in _ARTIFACTS:
+    return _importlib.import_module("." + _ARTIFACTS[name], __name__)
   raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
