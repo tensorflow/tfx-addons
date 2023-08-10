@@ -84,4 +84,7 @@ _PKG_METADATA = {
     "copy_example_gen": [
         f"tfx{_TFXVERSION_CONSTRAINT}",
     ],
+    "example_filter": [
+        f"tfx{_TFXVERSION_CONSTRAINT}",
+    ],
 }
