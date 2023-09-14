@@ -1,36 +1,31 @@
-# tfx-addons-feast-examplegen
-Examplegen for Feast Feature Store
+# FeastExampleGen
 
-## (WIP) Setup
+ExampleGen for Feast feature store.
 
-### MacOS (old)
+This component generates a Dataset out of a Feast entity_query and either a list of features or a feature service key.
 
-```
-python -m venv venv
-. venv/bin/activate
-pip install -e ".[feast_examplegen] tfx==1.3"
-```
+## Installation
 
-### MacOS M1
-Ensure you have Python 3.8 installed: 3.7 won't work on M1 and TFX won't work with 3.9.
-
-```
-brew install python@3.8
-brew link --force python@3.8
-
-which pip
+```sh
+pip install tfx-addons[feast_examplegen]
 ```
 
-### Install TFX on MacOS M1
-Adpated from: https://towardsdatascience.com/installing-tensorflow-on-the-m1-mac-410bb36b776
+## Example usage
 
+```python
+example_gen = FeastExampleGen(
+  repo_config=RepoConfig(register="gs://..."),
+  entity_query="SELECT user, timestamp from some_user_dataset",
+  features=["f1", "f2"],
+)
 ```
-pip install six absl-py numpy google google-api-python-client wrapt opt-einsum gast astunparse termcolor flatbuffers
+Component can be configured the same way as any [QueryBasedExampleGen](https://www.tensorflow.org/tfx/guide/examplegen#query-based_examplegen_customization_experimental).
 
-pip install --upgrade --force --no-dependencies https://github.com/apple/tensorflow_macos/releases/download/v0.1alpha3/tensorflow_addons_macos-0.1a3-cp38-cp38-macosx_11_0_arm64.whl https://github.com/apple/tensorflow_macos/releases/download/v0.1alpha3/tensorflow_macos-0.1a3-cp38-cp38-macosx_11_0_arm64.whl
+Component `outputs` contains:
+   - `examples`: Channel of type `standard_artifacts.Examples` for output train
+                 and eval examples.
 
---
+## Extra information
 
-python -m pip install tensorflow-macos
-
-```
+- [Proposal](https://github.com/tensorflow/tfx-addons/blob/main/proposals/20210525-feast_example_gen.md)
+- [Example usage](https://github.com/tensorflow/tfx-addons/tree/main/examples/fraud_feast)
