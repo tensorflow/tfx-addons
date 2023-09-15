@@ -39,8 +39,9 @@ class ArtifactTest(absltest.TestCase):
                             self.store.get_artifacts_by_id([mc_artifact.id]))
     with self.subTest('properties'):
       with self.subTest('type_id'):
-        self.assertEqual(mc_artifact.type_id,
-                         self.store.get_artifact_type('ModelCard').id)
+        self.assertEqual(
+            mc_artifact.type_id,
+            self.store.get_artifact_type('tfx_addons.ModelCard').id)
       with self.subTest('uri'):
         self.assertEqual(mc_artifact.uri, '/path/to/model/card/assets')
       with self.subTest('name'):

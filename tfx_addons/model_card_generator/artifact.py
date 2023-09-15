@@ -32,7 +32,7 @@ class ModelCard(Artifact):
     `<uri>/data/model_card.proto`.
     * the model card itself, located at the `<uri>/model_card/ directory`.
   """
-  TYPE_NAME = 'ModelCard'
+  TYPE_NAME = 'tfx_addons.ModelCard'
   TYPE_ANNOTATION = Metrics
 
 
