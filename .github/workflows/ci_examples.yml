@@ -24,7 +24,7 @@ on:
       - main
       - r*
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -56,7 +56,7 @@ jobs:
     timeout-minutes: 60
     if: needs.filter_examples.outputs.projects != '[]'
     strategy:
-      # Test for each project in parallel using ci_max and ci_min to ensure 
+      # Test for each project in parallel using ci_max and ci_min to ensure
       # tested in range of tfx/tensorflow supported versions
       matrix:
         project: ${{fromJson(needs.filter_examples.outputs.projects)}}
@@ -71,7 +71,7 @@ jobs:
       with:
         # Cache installed dependencies
         path: ~/.cache/pip
-        # Look to see if there is a cache hit for the corresponding requirement.txt + project name 
+        # Look to see if there is a cache hit for the corresponding requirement.txt + project name
         key: ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}-${{ hashFiles(format('examples/{0}/requirements.txt', matrix.project)) }}
         restore-keys: |
           ${{ runner.os }}-pip-ciexamples-${{ matrix.project }}
@@ -84,4 +84,4 @@ jobs:
       run: |
         cd examples/${{ matrix.project }}
         python -m pytest .
-  
+
