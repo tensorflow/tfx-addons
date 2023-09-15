@@ -1,0 +1,290 @@
+feature {
+  name: "Body Mass (g)"
+  type: INT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Clutch Completion"
+  type: BYTES
+  domain: "Clutch Completion"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Comments"
+  type: BYTES
+  domain: "Comments"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Culmen Depth (mm)"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Culmen Length (mm)"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Date Egg"
+  type: BYTES
+  domain: "Date Egg"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Delta 13 C (o/oo)"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Delta 15 N (o/oo)"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Flipper Length (mm)"
+  type: INT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Individual ID"
+  type: BYTES
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Island"
+  type: BYTES
+  domain: "Island"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Region"
+  type: BYTES
+  domain: "Region"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Sample Number"
+  type: INT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Sex"
+  type: BYTES
+  domain: "Sex"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+}
+feature {
+  name: "Species"
+  type: BYTES
+  domain: "Species"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Stage"
+  type: BYTES
+  domain: "Stage"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "studyName"
+  type: BYTES
+  domain: "studyName"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+string_domain {
+  name: "Clutch Completion"
+  value: "No"
+  value: "Yes"
+}
+string_domain {
+  name: "Comments"
+  value: "Adult not sampled."
+  value: "Nest never observed with full clutch."
+  value: "Nest never observed with full clutch. Not enough blood for isotopes."
+  value: "No blood sample obtained for sexing."
+  value: "No blood sample obtained."
+  value: "Not enough blood for isotopes."
+  value: "Sexing primers did not amplify. Not enough blood for isotopes."
+}
+string_domain {
+  name: "Date Egg"
+  value: "11/10/07"
+  value: "11/10/08"
+  value: "11/10/09"
+  value: "11/11/07"
+  value: "11/11/08"
+  value: "11/12/07"
+  value: "11/12/09"
+  value: "11/13/07"
+  value: "11/13/08"
+  value: "11/13/09"
+  value: "11/14/08"
+  value: "11/15/07"
+  value: "11/15/08"
+  value: "11/15/09"
+  value: "11/16/07"
+  value: "11/16/09"
+  value: "11/17/08"
+  value: "11/17/09"
+  value: "11/18/09"
+  value: "11/19/07"
+  value: "11/19/09"
+  value: "11/2/08"
+  value: "11/20/09"
+  value: "11/21/07"
+  value: "11/21/09"
+  value: "11/22/07"
+  value: "11/22/09"
+  value: "11/23/09"
+  value: "11/24/08"
+  value: "11/25/08"
+  value: "11/25/09"
+  value: "11/26/07"
+  value: "11/27/07"
+  value: "11/27/09"
+  value: "11/28/07"
+  value: "11/29/07"
+  value: "11/3/08"
+  value: "11/30/07"
+  value: "11/4/08"
+  value: "11/6/08"
+  value: "11/7/08"
+  value: "11/8/08"
+  value: "11/9/07"
+  value: "11/9/08"
+  value: "11/9/09"
+  value: "12/1/09"
+  value: "12/3/07"
+  value: "11/14/09"
+  value: "11/18/07"
+  value: "11/5/08"
+}
+string_domain {
+  name: "Island"
+  value: "Biscoe"
+  value: "Dream"
+  value: "Torgersen"
+}
+string_domain {
+  name: "Region"
+  value: "Anvers"
+}
+string_domain {
+  name: "Sex"
+  value: "FEMALE"
+  value: "MALE"
+  value: "."
+}
+string_domain {
+  name: "Species"
+  value: "Adelie Penguin (Pygoscelis adeliae)"
+  value: "Chinstrap penguin (Pygoscelis antarctica)"
+  value: "Gentoo penguin (Pygoscelis papua)"
+}
+string_domain {
+  name: "Stage"
+  value: "Adult, 1 Egg Stage"
+}
+string_domain {
+  name: "studyName"
+  value: "PAL0708"
+  value: "PAL0809"
+  value: "PAL0910"
+}
